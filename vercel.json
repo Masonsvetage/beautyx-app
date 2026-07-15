@@ -1,0 +1,24 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/reset-counters",
+      "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/cron/check-subscriptions",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-inactive",
+      "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/cron/koibox-sync",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/koibox-sync",
+      "schedule": "0 21 * * *"
+    }
+  ]
+}

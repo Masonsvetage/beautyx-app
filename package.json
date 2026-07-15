@@ -1,0 +1,41 @@
+{
+  "name": "beautyx-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check",
+    "format": "biome format --write",
+    "seed": "node scripts/seed-beauty-centers.js",
+    "import-bank": "node scripts/import-bank-movements.js",
+    "clear-bank": "node scripts/clear-bank-movements.js",
+    "analyze-bank": "node scripts/analyze-bank-movements.js",
+    "categorize-vendors": "node scripts/categorize-vendors.js",
+    "apply-categories": "node scripts/apply-categories.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.87.1",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "imapflow": "^1.2.10",
+    "next": "16.0.3",
+    "nodemailer": "^8.0.1",
+    "qrcode": "^1.5.4",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "recharts": "^3.6.0",
+    "stripe": "^20.3.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "@tailwindcss/postcss": "^4",
+    "pg": "^8.18.0",
+    "tailwindcss": "^4"
+  }
+}

@@ -1,0 +1,101 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:0.1" />
+    </radialGradient>
+
+    <linearGradient id="hairGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7" />
+      <stop offset="50%" style="stop-color:#ec4899" />
+      <stop offset="100%" style="stop-color:#8b5cf6" />
+    </linearGradient>
+
+    <linearGradient id="faceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fde68a" />
+      <stop offset="100%" style="stop-color:#fbbf24" />
+    </linearGradient>
+
+    <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#fff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:0" />
+    </radialGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="98" fill="url(#bgGradient)"/>
+
+  <!-- Hair back -->
+  <ellipse cx="100" cy="80" rx="50" ry="60" fill="url(#hairGradient)" opacity="0.9"/>
+
+  <!-- Face -->
+  <circle cx="100" cy="95" r="38" fill="url(#faceGradient)"/>
+
+  <!-- Eyes with sparkle -->
+  <ellipse cx="88" cy="88" rx="4" ry="6" fill="#1f2937"/>
+  <ellipse cx="112" cy="88" rx="4" ry="6" fill="#1f2937"/>
+  <circle cx="89" cy="86" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="113" cy="86" r="1.5" fill="#fff" opacity="0.8"/>
+
+  <!-- Nose -->
+  <ellipse cx="100" cy="96" rx="2" ry="3" fill="#f59e0b" opacity="0.3"/>
+
+  <!-- Smile -->
+  <path d="M 90 100 Q 100 108 110 100"
+        stroke="#ec4899"
+        stroke-width="2.5"
+        fill="none"
+        stroke-linecap="round"/>
+
+  <!-- Hair front with highlights -->
+  <path d="M 55 75 Q 70 50 100 48 Q 130 50 145 75 L 140 80 Q 120 60 100 58 Q 80 60 60 80 Z"
+        fill="url(#hairGradient)"/>
+
+  <!-- Hair shine -->
+  <ellipse cx="85" cy="62" rx="8" ry="15" fill="#fff" opacity="0.15" transform="rotate(-20 85 62)"/>
+
+  <!-- Neck -->
+  <rect x="88" y="125" width="24" height="15" fill="#fbbf24" rx="3"/>
+
+  <!-- Shoulders / Blazer -->
+  <path d="M 70 140 L 88 135 L 88 160 L 60 180 Z" fill="#6366f1"/>
+  <path d="M 130 140 L 112 135 L 112 160 L 140 180 Z" fill="#6366f1"/>
+
+  <!-- Collar -->
+  <path d="M 88 135 L 95 145 L 100 140 Z" fill="#fff" opacity="0.9"/>
+  <path d="M 112 135 L 105 145 L 100 140 Z" fill="#fff" opacity="0.9"/>
+
+  <!-- AI Sparkles -->
+  <g filter="url(#glow)">
+    <circle cx="145" cy="60" r="3" fill="#fbbf24" opacity="0.9">
+      <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="55" cy="70" r="2.5" fill="#ec4899" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="140" cy="110" r="2" fill="#a855f7" opacity="0.7">
+      <animate attributeName="opacity" values="0.7;0.2;0.7" dur="3s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- AI Tech Lines (circuitry) -->
+  <g opacity="0.15" stroke="#a855f7" stroke-width="1.5" fill="none">
+    <path d="M 160 90 L 170 90 L 175 95"/>
+    <path d="M 40 100 L 30 100 L 25 105"/>
+    <circle cx="170" cy="90" r="2" fill="#ec4899"/>
+    <circle cx="30" cy="100" r="2" fill="#8b5cf6"/>
+  </g>
+
+  <!-- Subtle glow around head -->
+  <circle cx="100" cy="90" r="55" fill="url(#glowGradient)" opacity="0.2"/>
+</svg>
