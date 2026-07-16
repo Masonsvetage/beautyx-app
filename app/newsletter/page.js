@@ -38,6 +38,7 @@ const argomenti = [
 
 export default function NewsletterPage() {
   const [email, setEmail] = useState('')
+  const [website, setWebsite] = useState('')
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -50,7 +51,7 @@ export default function NewsletterPage() {
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website }),
       })
 
       const data = await res.json()
@@ -115,6 +116,16 @@ export default function NewsletterPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
@@ -186,6 +197,16 @@ export default function NewsletterPage() {
         </p>
         {status !== 'success' && (
           <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
@@ -198,22 +219,3 @@ export default function NewsletterPage() {
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-60 text-sm whitespace-nowrap"
-              >
-                {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
-              </button>
-            </div>
-          </form>
-        )}
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-6 text-center">
-        <p className="text-xs text-gray-400">
-          © 2025 Beautyx · <Link href="/privacy" className="hover:text-gray-600">Privacy</Link> · <Link href="/login" className="hover:text-gray-600">Accedi al gestionale</Link>
-        </p>
-      </footer>
-
-    </div>
-  )
-}
