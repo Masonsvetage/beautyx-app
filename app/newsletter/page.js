@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const argomenti = [
   {
@@ -16,7 +17,7 @@ const argomenti = [
   },
   {
     emoji: '📅',
-    titolo: 'L\'agenda piena non è il tuo obiettivo',
+    titolo: "L'agenda piena non è il tuo obiettivo",
     descrizione: 'Perché lavorare meno ore può farti guadagnare di più — i numeri che non ti aspetti.',
   },
   {
@@ -31,7 +32,7 @@ const argomenti = [
   },
   {
     emoji: '🌍',
-    titolo: 'Cosa fanno i centri estetici all\'estero che qui non facciamo ancora',
+    titolo: "Cosa fanno i centri estetici all'estero che qui non facciamo ancora",
     descrizione: 'Trend internazionali beauty & wellness che stanno arrivando in Italia — e come prepararsi.',
   },
 ]
@@ -39,7 +40,7 @@ const argomenti = [
 export default function NewsletterPage() {
   const [email, setEmail] = useState('')
   const [website, setWebsite] = useState('')
-  const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
   const handleSubmit = async (e) => {
@@ -70,52 +71,82 @@ export default function NewsletterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+    <div style={{ background: '#080c2a', minHeight: '100vh', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
 
-      {/* Header */}
-      <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-9 w-9 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
-            <span className="text-sm font-bold text-white">B</span>
-          </div>
-          <span className="font-semibold text-gray-800">Beautyx</span>
+      {/* Top nav */}
+      <header style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+          <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={36} height={36} style={{ borderRadius: '4px' }} />
+          <span style={{ fontWeight: 700, color: '#fff', fontSize: '16px' }}>Beautyx</span>
         </Link>
         <Link
           href="/login"
-          className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          style={{ fontSize: '13px', color: '#94a3b8', textDecoration: 'none' }}
         >
-          Hai già un account? <span className="text-pink-600 font-medium">Accedi</span>
+          Hai già un account?{' '}
+          <span style={{ color: '#EC4899', fontWeight: 600 }}>Accedi</span>
         </Link>
       </header>
 
-      {/* Hero */}
-      <section className="max-w-3xl mx-auto px-6 pt-16 pb-12 text-center">
-        <span className="inline-block bg-pink-100 text-pink-700 text-xs font-semibold px-3 py-1 rounded-full mb-6 uppercase tracking-wide">
+      {/* Matrix header banner */}
+      <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', lineHeight: 0 }}>
+        <Image
+          src="/header_beautyx_matrix.png"
+          alt="Beautyx — L'AI che fa crescere il tuo centro"
+          width={1200}
+          height={440}
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+          priority
+        />
+      </div>
+
+      {/* Hero text + form */}
+      <section style={{ maxWidth: '720px', margin: '0 auto', padding: '56px 24px 48px', textAlign: 'center' }}>
+        <span style={{
+          display: 'inline-block',
+          background: 'rgba(236,72,153,0.15)',
+          border: '1px solid rgba(236,72,153,0.4)',
+          color: '#EC4899',
+          fontSize: '11px',
+          fontWeight: 700,
+          padding: '4px 14px',
+          borderRadius: '999px',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          marginBottom: '24px',
+        }}>
           Newsletter gratuita · Ogni settimana
         </span>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-5">
+
+        <h1 style={{ fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 800, lineHeight: 1.2, marginBottom: '20px', color: '#fff' }}>
           Il centro estetico che vuoi<br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
-            si costruisce con le giuste informazioni
-          </span>
+          <span style={{ color: '#EC4899' }}>si costruisce con le giuste informazioni</span>
         </h1>
-        <p className="text-lg text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+
+        <p style={{ fontSize: '17px', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px' }}>
           Ogni settimana un argomento concreto sulla gestione del tuo centro: personale, prezzi, clienti, numeri.
           Niente teoria, niente fronzoli. Solo quello che puoi applicare subito.
         </p>
 
-        {/* Form iscrizione */}
         {status === 'success' ? (
-          <div className="bg-green-50 border border-green-200 rounded-2xl px-8 py-8 max-w-md mx-auto">
-            <div className="text-4xl mb-3">🎉</div>
-            <h3 className="text-lg font-bold text-green-800 mb-2">Sei dentro!</h3>
-            <p className="text-green-700 text-sm">
+          <div style={{
+            background: 'rgba(16,185,129,0.1)',
+            border: '1px solid rgba(16,185,129,0.3)',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '440px',
+            margin: '0 auto',
+          }}>
+            <div style={{ fontSize: '36px', marginBottom: '12px' }}>🎉</div>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#6ee7b7', marginBottom: '8px' }}>Sei dentro!</h3>
+            <p style={{ fontSize: '14px', color: '#a7f3d0' }}>
               Controlla la tua email — ti abbiamo inviato un messaggio di benvenuto.
               La prima newsletter arriva martedì.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+          <form onSubmit={handleSubmit} style={{ maxWidth: '480px', margin: '0 auto' }}>
+            {/* Honeypot */}
             <input
               type="text"
               name="website"
@@ -126,27 +157,47 @@ export default function NewsletterPage() {
               autoComplete="off"
               aria-hidden="true"
             />
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="la-tua-email@centro.it"
                 required
-                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-sm"
+                style={{
+                  flex: '1 1 220px',
+                  padding: '13px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  outline: 'none',
+                }}
               />
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-sm whitespace-nowrap"
+                style={{
+                  padding: '13px 24px',
+                  background: 'linear-gradient(135deg, #EC4899, #a855f7)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  whiteSpace: 'nowrap',
+                  opacity: status === 'loading' ? 0.6 : 1,
+                }}
               >
                 {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
               </button>
             </div>
             {status === 'error' && (
-              <p className="mt-3 text-red-600 text-sm">{errorMsg}</p>
+              <p style={{ marginTop: '10px', color: '#f87171', fontSize: '13px' }}>{errorMsg}</p>
             )}
-            <p className="mt-3 text-xs text-gray-400">
+            <p style={{ marginTop: '10px', fontSize: '12px', color: '#475569' }}>
               Niente spam. Disiscriviti quando vuoi con un click.
             </p>
           </form>
@@ -154,49 +205,64 @@ export default function NewsletterPage() {
       </section>
 
       {/* Argomenti trattati */}
-      <section className="max-w-5xl mx-auto px-6 py-12">
-        <h2 className="text-center text-2xl font-bold text-gray-800 mb-2">
+      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '16px 24px 56px' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
           Di cosa parla la newsletter
         </h2>
-        <p className="text-center text-gray-500 text-sm mb-10">
+        <p style={{ textAlign: 'center', color: '#64748b', fontSize: '14px', marginBottom: '36px' }}>
           Argomenti che abbiamo già trattato — e altri in arrivo
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '16px',
+        }}>
           {argomenti.map((a, i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-pink-200 hover:shadow-sm transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '16px',
+                padding: '24px',
+                transition: 'border-color 0.2s',
+              }}
             >
-              <div className="text-3xl mb-3">{a.emoji}</div>
-              <h3 className="font-semibold text-gray-900 mb-2 text-sm leading-snug">{a.titolo}</h3>
-              <p className="text-gray-500 text-xs leading-relaxed">{a.descrizione}</p>
+              <div style={{ fontSize: '28px', marginBottom: '12px' }}>{a.emoji}</div>
+              <h3 style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '14px', marginBottom: '8px', lineHeight: 1.4 }}>{a.titolo}</h3>
+              <p style={{ color: '#64748b', fontSize: '13px', lineHeight: 1.6 }}>{a.descrizione}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Social proof */}
-      <section className="max-w-3xl mx-auto px-6 py-10 text-center">
-        <div className="bg-white rounded-2xl border border-gray-100 px-8 py-8">
-          <p className="text-gray-700 text-base italic leading-relaxed mb-4">
+      <section style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 56px', textAlign: 'center' }}>
+        <div style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(236,72,153,0.2)',
+          borderRadius: '20px',
+          padding: '36px 32px',
+        }}>
+          <p style={{ color: '#cbd5e1', fontSize: '16px', fontStyle: 'italic', lineHeight: 1.7, marginBottom: '16px' }}>
             &ldquo;Finalmente una newsletter che parla di gestione vera — non di prodotti o tendenze nail art.
             Ogni numero ha almeno una cosa che riesco ad applicare subito nel mio centro.&rdquo;
           </p>
-          <p className="text-sm font-semibold text-gray-800">Chiara R.</p>
-          <p className="text-xs text-gray-400">Titolare di centro estetico, Milano</p>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Chiara R.</p>
+          <p style={{ fontSize: '12px', color: '#475569' }}>Titolare di centro estetico, Milano</p>
         </div>
       </section>
 
       {/* CTA finale */}
-      <section className="max-w-3xl mx-auto px-6 pt-6 pb-20 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+      <section style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 80px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>
           Pronta a gestire il tuo centro in modo diverso?
         </h2>
-        <p className="text-gray-500 text-sm mb-8">
+        <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '28px' }}>
           Iscriviti gratis. Nessuna carta di credito, nessun impegno.
         </p>
         {status !== 'success' && (
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+          <form onSubmit={handleSubmit} style={{ maxWidth: '480px', margin: '0 auto' }}>
             <input
               type="text"
               name="website"
@@ -207,19 +273,39 @@ export default function NewsletterPage() {
               autoComplete="off"
               aria-hidden="true"
             />
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="la-tua-email@centro.it"
                 required
-                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 text-sm"
+                style={{
+                  flex: '1 1 220px',
+                  padding: '13px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  outline: 'none',
+                }}
               />
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-60 text-sm whitespace-nowrap"
+                style={{
+                  padding: '13px 24px',
+                  background: 'linear-gradient(135deg, #EC4899, #a855f7)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  whiteSpace: 'nowrap',
+                  opacity: status === 'loading' ? 0.6 : 1,
+                }}
               >
                 {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
               </button>
@@ -229,9 +315,12 @@ export default function NewsletterPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-6 text-center">
-        <p className="text-xs text-gray-400">
-          © 2025 Beautyx · <Link href="/privacy" className="hover:text-gray-600">Privacy</Link> · <Link href="/login" className="hover:text-gray-600">Accedi al gestionale</Link>
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '24px', textAlign: 'center' }}>
+        <p style={{ fontSize: '12px', color: '#334155' }}>
+          © 2025 Beautyx ·{' '}
+          <Link href="/privacy" style={{ color: '#475569', textDecoration: 'none' }}>Privacy</Link>
+          {' · '}
+          <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Accedi al gestionale</Link>
         </p>
       </footer>
 
