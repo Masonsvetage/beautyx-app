@@ -219,3 +219,22 @@ export default function NewsletterPage() {
               <button
                 type="submit"
                 disabled={status === 'loading'}
+                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-60 text-sm whitespace-nowrap"
+              >
+                {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
+              </button>
+            </div>
+          </form>
+        )}
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-100 py-6 text-center">
+        <p className="text-xs text-gray-400">
+          © 2025 Beautyx · <Link href="/privacy" className="hover:text-gray-600">Privacy</Link> · <Link href="/login" className="hover:text-gray-600">Accedi al gestionale</Link>
+        </p>
+      </footer>
+
+    </div>
+  )
+}

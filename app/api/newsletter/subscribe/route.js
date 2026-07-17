@@ -45,4 +45,33 @@ export async function POST(request) {
       return Response.json({ error: 'Configurazione mancante' }, { status: 500 })
     }
 
-    cons
+    const res = await fetch(
+      `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          email,
+          reactivate_existing: false,
+          send_welcome_email: true,
+          double_opt_override: "on",
+          utm_source: 'beautyx-app',
+          utm_medium: 'newsletter-page',
+          utm_campaign: 'organic',
+        }),
+      }
+    )
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      console.error('Beehiiv error:', data)
+      return Response.json({ error: data.message || 'Errore iscrizione' }, { status: res.status })
+    }
+
+    return Response.json({ success: true })
+  } catch (err) {
+    console.error('Newsletter subscribe error:', err)
+    return Response.json({ error: 'Errore di rete' }, { status: 500 })
+  }
+}

@@ -8,7 +8,7 @@ const publicRoutes = ['/', '/login', '/signup', '/reset-password', '/api/public'
 const adminRoutes = ['/admin']
 const hpaRoutes = ['/hpa']
 
-export async function middleware(req) {
+export async function proxy(req) {
   const pathname = req.nextUrl.pathname
 
   // Route API: skip middleware completamente (gestiscono auth internamente)
