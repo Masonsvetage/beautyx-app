@@ -236,10 +236,11 @@ export default function NewsletterPage() {
 
         {/* ── 3 BENEFITS ── */}
         <section style={{ maxWidth: '860px', margin: '0 auto', padding: '48px 32px 60px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '36px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '28px' }}>
             {[
               { emoji: '⏱', title: 'Risparmi tempo', desc: 'Solo quello che puoi applicare lunedì mattina. Niente teoria da convegno.' },
               { emoji: '💰', title: 'Guadagni di più', desc: 'I numeri, i prezzi, i margini. Come fare in modo che il centro renda davvero.' },
+              { emoji: '📚', title: 'Gli errori degli altri li paghi gratis', desc: 'Chi è partita prima di te ha già sbagliato. Ogni settimana impari da quello che è costato caro a qualcun altro — senza pagarne il prezzo.' },
               { emoji: '👑', title: 'Lavori da imprenditrice', desc: 'Non da dipendente di te stessa. Sistemi per smettere di correre senza avanzare.' },
             ].map(b => (
               <div key={b.title}>
