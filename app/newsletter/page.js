@@ -355,33 +355,59 @@ export default function NewsletterPage() {
           </div>
         </section>
 
-        {/* ── BRAND SECTION ── */}
-        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '72px 32px' }}>
-          <div style={{ display: 'flex', gap: '48px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ flexShrink: 0 }}>
-              <div style={{
-                border: '3px solid #EC4899',
-                borderRadius: '16px',
-                width: '120px',
-                height: '120px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: '#fff',
-              }}>
-                <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={80} height={80} />
-              </div>
+        {/* ── CHI È BEAUTYX ── */}
+        <section style={{ background: '#faf7f2', padding: '80px 32px' }}>
+          <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+
+            {/* Logo + label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '36px' }}>
+              <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={40} height={40} style={{ borderRadius: '8px' }} />
+              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.13em', textTransform: 'uppercase', color: '#bbb' }}>
+                Ma cos&apos;è esattamente Beautyx?
+              </p>
             </div>
-            <div>
-              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '8px' }}>
-                Creata da
+
+            {/* Headline */}
+            <h2 style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 'clamp(28px, 4vw, 42px)',
+              fontWeight: 900,
+              color: '#1a1a0f',
+              lineHeight: 1.2,
+              marginBottom: '32px',
+            }}>
+              Un team di agenti AI<br />
+              <span style={{ fontStyle: 'italic', color: '#EC4899' }}>con un cuore umano.</span>
+            </h2>
+
+            {/* Corpo */}
+            <div style={{ fontSize: '17px', color: '#555', lineHeight: 1.85 }}>
+              <p style={{ marginBottom: '22px' }}>
+                Non l&apos;ennesima newsletter scritta da qualcuno che ha letto troppi libri di business. Beautyx è qualcosa di diverso: un progetto che ridisegna il modo di lavorare nel mondo dell&apos;estetica. Una strategia gestionale spiegata in modo semplice, personalizzata su chi sei tu e su come funziona davvero il tuo centro — non su come funziona in teoria.
               </p>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '34px', fontWeight: 700, color: '#1a1a0f', marginBottom: '12px' }}>
-                Beautyx
-              </h3>
-              <p style={{ fontSize: '15px', color: '#777', lineHeight: 1.75, maxWidth: '460px' }}>
-                La piattaforma AI per i centri estetici italiani. Ogni settimana trasformiamo quello che i centri che guadagnano davvero fanno in modo diverso — condensato in 5 minuti da portare subito in cabina.
+              <p style={{ marginBottom: '22px' }}>
+                Dietro ogni numero ci sono agenti AI che lavorano in parallelo — analizzano dati, scovano errori, monitorano trend internazionali — e persone che trasformano tutto questo in qualcosa che puoi usare il lunedì mattina. Trovi il metodo. Trovi le novità del settore prima che diventino problemi. E trovi la possibilità di interagire davvero: raccontare la tua difficoltà concreta — quella vera, quella che non racconti in pubblico — e costruire insieme la soluzione migliore.
               </p>
+              <p style={{ marginBottom: '32px' }}>
+                Iscrivendoti, non ottieni solo una newsletter. Ottieni un team — AI e umano — con un obiettivo solo. Perché qui nessuno finge che il lavoro sia &quot;solo lavoro&quot;: sappiamo benissimo che quando le cose non girano al centro, non restano al centro. Si portano a casa, si portano a letto, si portano ovunque.
+              </p>
+
+              {/* Frase chiave */}
+              <div style={{
+                borderLeft: '3px solid #EC4899',
+                paddingLeft: '24px',
+                marginBottom: '8px',
+              }}>
+                <p style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontStyle: 'italic',
+                  fontSize: '20px',
+                  color: '#1a1a0f',
+                  lineHeight: 1.6,
+                }}>
+                  Beautyx esiste per fare in modo che questo succeda il meno possibile. Il tuo successo, nella sua forma più vera, si chiama così: <strong style={{ fontStyle: 'normal' }}>serenità</strong>.
+                </p>
+              </div>
             </div>
           </div>
         </section>
