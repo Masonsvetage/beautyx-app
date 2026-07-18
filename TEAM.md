@@ -2,170 +2,154 @@
 
 ## Obiettivo condiviso
 
-Crescere l'ecosistema Beautyx attraverso una strategia content-first: una newsletter che attira titolari di centri estetici italiani gratuitamente, un funnel che li converte in utenti del SaaS, e un'infrastruttura tecnica resiliente e scalabile — con piena visibilità economica su ogni attività.
+Costruire l'ecosistema Beautyx in tre fasi: (1) newsletter settimanale per attrarre titolari di centri estetici italiani e costruire community, (2) lancio del libro Beautyx come primo prodotto commerciale quando la community è solida (obiettivo: 500+ iscritti attivi), (3) SaaS/app come evoluzione naturale per chi è già cliente. Infrastruttura tecnica resiliente e piena visibilità economica su ogni attività.
 
 ---
 
-## Roster
+## Struttura: 3 squadre + supervisione
 
-| Nome | Ruolo | Input riceve da | Output passa a |
-|------|-------|-----------------|----------------|
-| **Giulia** | Scout argomenti popolari | Coordinatore, Lorenzo | Coordinatore (briefing), Federica |
-| **Marco** | Scout argomenti innovativi | Coordinatore, Lorenzo | Coordinatore (briefing), Federica |
-| **Lorenzo** | Community & dialogo lettori | Coordinatore, utente (feedback) | Giulia, Marco, Coordinatore |
-| **Federica** | Writer newsletter | Coordinatore (argomento selezionato), Giulia o Marco (scheda ricerca) | Alessia, Coordinatore |
-| **Alessia** | Growth & conversione | Federica (CTA), Matteo (dati), Coordinatore | Davide, Coordinatore |
-| **Davide** | Developer Next.js | Alessia (specifiche), Simona→Matteo (upgrade approvati) | Coordinatore, Elena |
+### 🟡 Squadra Contenuti
+| Agente | Ruolo | Input | Output |
+|--------|-------|-------|--------|
+| **Giulia** | Scout argomenti popolari | Coordinatore, Lorenzo | Coordinatore, Federica |
+| **Marco** | Scout argomenti innovativi + rubrica globale | Coordinatore, Lorenzo | Coordinatore, Federica |
+| **Lorenzo** | Community & feedback lettori | Coordinatore, utente | Giulia, Marco, Coordinatore |
+| **Federica** | Writer (voce Beautyx) | Coordinatore, Giulia o Marco | Elena → Coordinatore |
+
+> Giulia + Marco + Lorenzo girano **in parallelo** durante il briefing.
+> Federica scrive solo dopo che l'utente ha selezionato l'argomento.
+> Elena rivede sempre l'output di Federica **prima** che arrivi al Coordinatore o ad Alessia.
+
+---
+
+### 🟢 Squadra Crescita & Dati
+| Agente | Ruolo | Input | Output |
+|--------|-------|-------|--------|
+| **Matteo** | Economia, KPI, analytics del progetto | Simona, Riccardo, dati Beehiiv/Supabase/Vercel | Coordinatore, Alessia |
+| **Alessia** | Growth & conversione (campagne, funnel) | Federica (CTA), Matteo (dati), Coordinatore | Davide, Coordinatore |
+
+> Matteo alimenta Alessia con i dati sugli argomenti e le CTA che convertono meglio.
+> Matteo fa *management accounting* (KPI, costi/ricavi del progetto). **Non** fa contabilità fiscale.
+
+---
+
+### 🔵 Squadra Tecnica
+| Agente | Ruolo | Input | Output |
+|--------|-------|-------|--------|
 | **Riccardo** | Sicurezza & disaster recovery | Coordinatore, Simona | Coordinatore, Davide, Matteo |
 | **Simona** | Scalabilità tecnica | Matteo (KPI), Coordinatore | Matteo, Riccardo, Coordinatore |
-| **Matteo** | Economia & analytics | Simona, Riccardo, dati Beehiiv/Supabase/Vercel | Coordinatore, Alessia |
-| **Elena** | Supervisore | Output di qualsiasi agente | Coordinatore, utente |
+| **Davide** | Developer Next.js / deploy | Alessia (specifiche), upgrade approvati | Coordinatore, Elena |
+
+> Riccardo + Simona auditano **in parallelo** → Davide implementa solo ciò che il Coordinatore approva.
+> Elena verifica ogni deploy di Davide prima di segnalare all'utente.
 
 ---
 
-## Briefing mattutino (ore 8:00, ogni giorno)
+### ⭐ Supervisione trasversale
+| Agente | Ruolo |
+|--------|-------|
+| **Elena** | Presidia flussi, qualità e voce Beautyx su tutte e tre le squadre. Sola lettura. |
 
-Il briefing mattutino è il punto di controllo quotidiano. Il coordinatore raccoglie gli aggiornamenti dai cluster e li presenta all'utente in un documento strutturato.
+Elena interviene:
+- Dopo ogni bozza di Federica (prima di passare a Coordinatore/Alessia)
+- Dopo ogni deploy di Davide
+- Su richiesta del Coordinatore per qualsiasi output
 
-### Struttura del briefing
-
-```
-📰 CONTENUTO
-- Lorenzo: sintesi feedback lettori della settimana + proposte ricevute
-- Giulia: 3-5 argomenti popolari disponibili (con priorità)
-- Marco: 2-3 argomenti innovativi disponibili (con scheda)
-
-📊 ECONOMIA & KPI (Matteo)
-- Iscritti newsletter: totale + variazione 24h
-- Open rate e click rate ultimo invio
-- Conversioni newsletter → trial SaaS
-- MRR e abbonamenti attivi
-- Alert su anomalie (se presenti)
-
-🔒 INFRASTRUTTURA (Riccardo + Simona)
-- Stato sicurezza: tutto ok / anomalie
-- Scaling: tutto ok / segnalazioni
-
-🚀 PRODOTTO (Davide + Alessia)
-- Deploy recenti e stato
-- Feature in lavorazione
-
-✅ SELEZIONE ARGOMENTI NEWSLETTER
-[L'utente seleziona 1-2 argomenti tra quelli proposti da Giulia e Marco]
-```
-
-### Come attivare il briefing
-
-In una sessione Cowork o Claude Code, scrivi:
-
-> "Prepara il briefing mattutino Beautyx"
-
-Il coordinatore invoca ciascun agente per raccogliere gli aggiornamenti, compila il documento e lo presenta per la selezione degli argomenti newsletter.
+Segnala sempre in forma: **[cosa ha verificato] / [cosa funziona] / [anomalie] / [raccomandazione]**
 
 ---
 
-## Flusso newsletter (1-2 per settimana)
+## Briefing mattutino
 
-**Cadenza consigliata:** martedì e venerdì (oppure solo martedì per iniziare).
+Attivazione: *"Prepara il briefing mattutino Beautyx"*
+
+Il Coordinatore lancia in parallelo:
+- **Giulia** → 3-5 argomenti popolari con priorità
+- **Marco** → 2-3 argomenti innovativi con scheda
+- **Lorenzo** → sintesi feedback lettori + proposte
+- **Matteo** → KPI delle ultime 24h e alert
+- **Riccardo + Simona** → stato infrastruttura (se lunedì o su richiesta)
+
+Poi compila il documento briefing e lo presenta per la selezione degli argomenti newsletter.
+
+---
+
+## Flusso newsletter
 
 ```
-1. BRIEFING (ore 8:00)
-   Giulia + Marco → propongono argomenti
-   Lorenzo → segnala richieste lettori
+1. BRIEFING
+   Giulia + Marco + Lorenzo → IN PARALLELO → propongono argomenti
    Utente → seleziona 1-2 argomenti
 
-2. PRODUZIONE (stesso giorno o giorno successivo)
-   Argomento popolare → Federica riceve scheda Giulia → scrive newsletter
-   Argomento innovativo → Federica riceve scheda Marco → scrive newsletter
-   [Giulia e Marco possono lavorare in parallelo su argomenti diversi]
+2. PRODUZIONE
+   Federica → scrive (riceve scheda Giulia o Marco)
 
-3. OTTIMIZZAZIONE
-   Federica → passa bozza ad Alessia per revisione CTA e subject line
+3. REVISIONE
+   Elena → revisiona voce e qualità
+   Alessia → ottimizza CTA e subject line
 
 4. APPROVAZIONE
-   Coordinatore → presenta bozza finale all'utente per approvazione
+   Coordinatore → presenta bozza all'utente
 
 5. PUBBLICAZIONE
-   Utente → pubblica su Beehiiv (la pubblicazione resta sempre all'utente)
+   Utente → pubblica su Beehiiv (sempre)
 ```
 
 ---
 
-## Flusso infrastruttura & economia
+## Flusso infrastruttura
 
 ```
-Simona rileva rischio scaling
+Riccardo + Simona → IN PARALLELO → auditano (sicurezza + scalabilità)
        ↓
-Matteo valuta costo/beneficio → scheda con raccomandazione
+Matteo valuta costo/beneficio → raccomandazione
        ↓
 Coordinatore presenta all'utente → decisione
        ↓
 Davide implementa (se approvato)
        ↓
 Elena verifica post-deploy
-
-Riccardo: presidio continuo sicurezza/backup
-       ↓ (report lunedì mattina nel briefing)
-Matteo: valuta costo misure di sicurezza se onerose
 ```
 
 ---
 
-## Supervisione continua (Elena)
+## Collaudo
 
-Elena presidia il team su due fronti:
+### Test singoli
 
-1. **Errori di flusso:** handoff mal agganciati, output nel formato sbagliato, passaggi saltati.
-2. **Drift:** allontanamento dall'obiettivo, dal tono Beautyx o dalle istruzioni esplicite dell'utente.
+| Agente | Micro-compito | Esito atteso |
+|--------|---------------|--------------|
+| Giulia | "Trova 3 argomenti popolari per questa settimana" | Lista con motivazione e priorità |
+| Marco | "Trova 1 argomento innovativo internazionale sul wellness" | Scheda: titolo, sintesi, fonte, potenziale Italia |
+| Lorenzo | "Categorizza: 'Vorrei un articolo sulle recensioni negative Google'" | Categorizzazione + routing a Giulia |
+| Federica | "Scrivi l'hook di apertura per una newsletter sulla fidelizzazione" | Hook tono Beautyx, max 3 righe |
+| Alessia | "Revisiona questa CTA: 'Scopri come Beautyx può aiutarti'" | CTA migliorata + motivazione |
+| Davide | "Crea una pagina /test con solo 'Hello Beautyx'" | File creato, push, deploy confermato |
+| Riccardo | "Checklist rapida stato backup attuale" | Checklist per componente (DB, codice, env vars) |
+| Simona | "Primo collo di bottiglia tecnico a 500 utenti attivi" | Scheda problema + stima timing + soluzione |
+| Matteo | "Sintesi KPI per il briefing di oggi (dati ipotetici se non disponibili)" | Report 5-8 righe con metriche e trend |
+| Elena | "Supervisiona questa newsletter: [testo di test]" | Report con struttura: verificato / funziona / anomalie / raccomandazione |
 
-Interviene ai punti chiave:
-- Dopo ogni newsletter bozza di Federica (prima di passare ad Alessia)
-- Dopo ogni deploy di Davide
-- Su richiesta del coordinatore per qualsiasi output
+### Test di coordinamento
 
-Segnala sempre al coordinatore con: [cosa ha verificato] / [cosa funziona] / [anomalie] / [raccomandazione].
+Scenario end-to-end ridotto:
+1. Briefing → Giulia e Marco **in parallelo** → propongono argomenti
+2. Selezionare 1 argomento → Federica scrive → Elena revisiona → Alessia ottimizza CTA
+3. Iniettare tono sbagliato nella newsletter → Elena deve segnalarlo
+4. Verificare che Matteo produca la sintesi KPI nel formato corretto
+
+Esito atteso: handoff agganciati, Elena intercetta il drift di tono, parallelismo funziona.
 
 ---
 
 ## Come avviare il team
 
-Il team gira in Cowork (o Claude Code). Il coordinatore è l'agente principale della sessione — quello con cui parla l'utente. Gli specialisti sono in `.claude/agents/` e vengono invocati tramite lo strumento Task/Agent.
+Il team gira in Cowork o Claude Code. Il Coordinatore è l'agente principale della sessione.
 
-**Avvio tipico:**
-- Per il briefing: *"Prepara il briefing mattutino Beautyx"*
-- Per una newsletter: *"Scrivi la newsletter sull'argomento X"* (dopo averlo selezionato nel briefing)
-- Per una nuova pagina app: *"Aggiungi la pagina /newsletter all'app"*
-- Per un audit sicurezza: *"Riccardo, fai un assessment dello stato backup"*
+- Briefing: *"Prepara il briefing mattutino Beautyx"*
+- Newsletter: *"Scrivi la newsletter sull'argomento X"*
+- Sviluppo: *"Aggiungi la funzionalità Y all'app"*
+- Audit sicurezza: *"Riccardo, assessment dello stato backup"*
+- KPI: *"Matteo, come stiamo questa settimana?"*
 
-Gli agenti possono essere invocati singolarmente o in parallelo (es. Giulia + Marco insieme durante il briefing).
-
----
-
-## Collaudo del team
-
-Prima di usare il team sul progetto reale, eseguire questo collaudo:
-
-### Test singoli
-
-| Agente | Micro-compito di test | Esito atteso |
-|--------|----------------------|--------------|
-| Giulia | "Trova 3 argomenti popolari per la newsletter di questa settimana" | Lista 3 argomenti con motivazione e priorità |
-| Marco | "Trova 1 argomento innovativo internazionale sul wellness aziendale" | Scheda con titolo, sintesi, fonte, potenziale Italia |
-| Lorenzo | "Categoria questo feedback: 'Vorrei un articolo su come gestire le recensioni negative su Google'" | Categorizzazione (popolare) + routing a Giulia |
-| Federica | "Scrivi l'hook di apertura per una newsletter sulla fidelizzazione clienti" | Hook in tono Beautyx, max 3 righe |
-| Alessia | "Revisionala CTA: 'Scopri come Beautyx può aiutarti'" | CTA migliorata + motivazione |
-| Davide | "Crea una pagina /test-deploy con solo 'Hello Beautyx'" | File creato, push su GitHub, deploy confermato |
-| Riccardo | "Fai una checklist rapida dello stato backup attuale" | Checklist con stato per ogni componente (DB, codice, env vars) |
-| Simona | "Identifica il primo collo di bottiglia tecnico al raggiungimento di 500 utenti attivi" | Scheda problema + stima timing + soluzione |
-| Matteo | "Produci la sintesi KPI per il briefing di oggi (usa dati ipotetioci se non disponibili)" | Report 5-8 righe con metriche e trend |
-| Elena | "Supervisiona questa newsletter: [testo di test]" | Report supervisione con struttura definita |
-
-### Test di coordinamento
-
-Scenario ridotto end-to-end:
-1. Avviare il briefing → Giulia e Marco propongono argomenti in parallelo
-2. Selezionare 1 argomento popolare → Federica scrive → Alessia ottimizza CTA
-3. Iniettare deliberatamente un tono sbagliato nella newsletter (troppo formale) → Elena deve segnalarlo
-4. Verificare che Matteo produca la sintesi KPI nel formato corretto per il briefing
-
-Esito atteso: handoff agganciati, Elena intercetta il drift di tono, Matteo produce la sintesi nel formato atteso.
+Gli specialisti sono in `.claude/agents/` e vengono invocati tramite lo strumento Task/Agent — singolarmente o in parallelo.

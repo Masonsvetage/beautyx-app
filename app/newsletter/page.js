@@ -8,22 +8,22 @@ const argomenti = [
   {
     emoji: '💰',
     titolo: 'I soldi',
-    descrizione: 'Prezzi, margini, costi nascosti, modelli di revenue. Tutto quello che determina se a fine mese ti rimane qualcosa — o no.',
+    descrizione: "L'AI scansiona dati di pricing, margini e modelli di revenue da centinaia di centri reali. Ogni settimana estraiamo i pattern che funzionano — e quelli che fanno perdere soldi senza che te ne accorga.",
   },
   {
     emoji: '👥',
     titolo: 'Le persone',
-    descrizione: 'Clienti, personale, fidelizzazione, conflitti. Il lato umano del centro è spesso quello che fa la differenza tra un posto che funziona e uno che logora.',
+    descrizione: "Clienti che spariscono, personale che logora, conflitti che drenano. L'AI monitora i pattern ricorrenti di chi ce la fa e di chi no — così impari prima come gestire il lato umano che spesso fa tutta la differenza.",
   },
   {
     emoji: '⚙️',
     titolo: 'Il metodo',
-    descrizione: 'Come rendere il centro a tua immagine e somiglianza — e come usare il metodo dei 4 elementi SvetAge per riequilibrare gli eccessi e lavorare in armonia con chi sei davvero.',
+    descrizione: "Come rendere il centro a tua immagine e somiglianza con il metodo dei 4 elementi SvetAge. L'AI ci aiuta a identificare dove il metodo funziona davvero — e dove invece si crea squilibrio senza che lo si veda.",
   },
   {
     emoji: '🌍',
     titolo: 'Il mercato',
-    descrizione: 'Cosa succede nel settore, cosa fanno i centri all\'estero, dove sta andando l\'estetica. Guardare fuori per capire dove sei.',
+    descrizione: "L'AI scansiona trend internazionali, centri all'estero, innovazioni del settore. Quello che arriverà in Italia tra 6-12 mesi — lo vedi prima e hai tempo per adattarti.",
   },
 ]
 
@@ -240,7 +240,7 @@ export default function NewsletterPage() {
             {[
               { emoji: '⏱', title: 'Risparmi tempo', desc: 'Solo quello che puoi applicare lunedì mattina. Niente teoria da convegno.' },
               { emoji: '💰', title: 'Guadagni di più', desc: 'I numeri, i prezzi, i margini. Come fare in modo che il centro renda davvero.' },
-              { emoji: '📚', title: 'Gli errori degli altri li paghi gratis', desc: 'Chi è partita prima di te ha già sbagliato. Ogni settimana impari da quello che è costato caro a qualcun altro — senza pagarne il prezzo.' },
+              { emoji: '📚', title: 'Gli errori degli altri li paghi gratis', desc: "L'AI di Beautyx va a caccia ogni settimana di errori reali commessi da centri estetici in Italia e all'estero. Li analizziamo insieme e sviluppiamo la soluzione migliore — tu impari gratis da quello che agli altri è costato caro." },
               { emoji: '👑', title: 'Lavori da imprenditrice', desc: 'Non da dipendente di te stessa. Sistemi per smettere di correre senza avanzare.' },
             ].map(b => (
               <div key={b.title}>
@@ -260,6 +260,56 @@ export default function NewsletterPage() {
           }}>
             ✨ Ogni settimana peschiamo da queste aree, così non ti perdi nulla. ✨
           </p>
+        </section>
+
+        {/* ── COME FUNZIONA ── */}
+        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '0 32px 64px' }}>
+          <div style={{ borderTop: '1px solid #e5e0d8', paddingTop: '52px' }}>
+            <p style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.13em',
+              textTransform: 'uppercase',
+              color: '#bbb',
+              marginBottom: '32px',
+              textAlign: 'center',
+            }}>
+              Come funziona
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '36px' }}>
+              {[
+                {
+                  emoji: '🤖',
+                  step: '01',
+                  title: "L'AI monitora",
+                  desc: "Ogni settimana scansiona centinaia di fonti: centri reali, dati di settore, casi internazionali. Cerca errori, pattern, opportunità — senza sosta.",
+                },
+                {
+                  emoji: '🔍',
+                  step: '02',
+                  title: 'Analizziamo insieme',
+                  desc: "Selezioniamo quello che conta davvero per il tuo centro. Lo smontiamo, lo spieghiamo e sviluppiamo insieme la soluzione migliore.",
+                },
+                {
+                  emoji: '📬',
+                  step: '03',
+                  title: 'Tu applichi',
+                  desc: "Ogni martedì trovi in casella solo ciò che puoi usare subito. Niente ricerca, niente filtri, niente perdite di tempo.",
+                },
+              ].map(s => (
+                <div key={s.step} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  <div style={{ fontSize: '26px', flexShrink: 0, marginTop: '2px' }}>{s.emoji}</div>
+                  <div>
+                    <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#EC4899', marginBottom: '5px' }}>
+                      STEP {s.step}
+                    </p>
+                    <h3 style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a0f', marginBottom: '7px' }}>{s.title}</h3>
+                    <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.7 }}>{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* ── DARK SECTION — Argomenti ── */}
