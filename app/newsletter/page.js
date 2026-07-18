@@ -7,23 +7,23 @@ import Image from 'next/image'
 const argomenti = [
   {
     emoji: '💰',
-    titolo: 'I numeri che contano davvero',
-    descrizione: 'Non il fatturato lordo. I tre indicatori che ti dicono se stai guadagnando o solo lavorando.',
+    titolo: 'I soldi',
+    descrizione: 'Prezzi, margini, costi nascosti, modelli di revenue. Tutto quello che determina se a fine mese ti rimane qualcosa — o no.',
   },
   {
     emoji: '👥',
-    titolo: 'Il personale che non rende',
-    descrizione: 'Come capire chi sta frenando il centro — e cosa fare davvero, senza conflitti inutili.',
+    titolo: 'Le persone',
+    descrizione: 'Clienti, personale, fidelizzazione, conflitti. Il lato umano del centro è spesso quello che fa la differenza tra un posto che funziona e uno che logora.',
   },
   {
-    emoji: '📅',
-    titolo: "L'agenda piena non è il tuo obiettivo",
-    descrizione: 'Perché lavorare meno ore può farti guadagnare di più. I numeri che non ti aspetti.',
+    emoji: '⚙️',
+    titolo: 'Il metodo',
+    descrizione: 'Come rendere il centro a tua immagine e somiglianza — e come usare il metodo dei 4 elementi SvetAge per riequilibrare gli eccessi e lavorare in armonia con chi sei davvero.',
   },
   {
-    emoji: '🔄',
-    titolo: 'Il modello abbonamento',
-    descrizione: 'Come costruire entrate fisse mensili senza stravolgere i tuoi servizi.',
+    emoji: '🌍',
+    titolo: 'Il mercato',
+    descrizione: 'Cosa succede nel settore, cosa fanno i centri all\'estero, dove sta andando l\'estetica. Guardare fuori per capire dove sei.',
   },
 ]
 
