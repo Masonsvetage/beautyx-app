@@ -6,34 +6,24 @@ import Image from 'next/image'
 
 const argomenti = [
   {
-    emoji: '👥',
-    titolo: 'Il personale che non rende',
-    descrizione: 'Come capire quali collaboratori stanno frenando il tuo centro — e cosa fare davvero.',
+    emoji: '💰',
+    titolo: 'I numeri che contano davvero',
+    descrizione: 'Non il fatturato lordo. I tre indicatori che ti dicono se stai guadagnando o solo lavorando.',
   },
   {
-    emoji: '💰',
-    titolo: 'Vendere prodotti senza sembrare una venditrice',
-    descrizione: 'Il metodo che trasforma il consiglio in acquisto, senza pressione e senza imbarazzo.',
+    emoji: '👥',
+    titolo: 'Il personale che non rende',
+    descrizione: 'Come capire chi sta frenando il centro — e cosa fare davvero, senza conflitti inutili.',
   },
   {
     emoji: '📅',
     titolo: "L'agenda piena non è il tuo obiettivo",
-    descrizione: 'Perché lavorare meno ore può farti guadagnare di più — i numeri che non ti aspetti.',
+    descrizione: 'Perché lavorare meno ore può farti guadagnare di più. I numeri che non ti aspetti.',
   },
   {
     emoji: '🔄',
-    titolo: 'Il modello abbonamento per i centri estetici',
-    descrizione: 'Come costruire entrate fisse mensili anche senza cambiare i tuoi servizi.',
-  },
-  {
-    emoji: '📊',
-    titolo: 'I numeri che ogni titolare dovrebbe guardare ogni settimana',
-    descrizione: 'Non il fatturato. Non i clienti. I tre indicatori che ti dicono davvero come stai andando.',
-  },
-  {
-    emoji: '🌍',
-    titolo: "Cosa fanno i centri estetici all'estero che qui non facciamo ancora",
-    descrizione: 'Trend internazionali beauty & wellness che stanno arrivando in Italia — e come prepararsi.',
+    titolo: 'Il modello abbonamento',
+    descrizione: 'Come costruire entrate fisse mensili senza stravolgere i tuoi servizi.',
   },
 ]
 
@@ -47,16 +37,13 @@ export default function NewsletterPage() {
     e.preventDefault()
     setStatus('loading')
     setErrorMsg('')
-
     try {
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, website }),
       })
-
       const data = await res.json()
-
       if (data.success) {
         setStatus('success')
         setEmail('')
@@ -71,259 +58,355 @@ export default function NewsletterPage() {
   }
 
   return (
-    <div style={{ background: '#080c2a', minHeight: '100vh', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Inter:wght@400;500;600;700&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      `}</style>
 
-      {/* Top nav */}
-      <header style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={36} height={36} style={{ borderRadius: '4px' }} />
-          <span style={{ fontWeight: 700, color: '#fff', fontSize: '16px' }}>Beautyx</span>
-        </Link>
-        <Link
-          href="/login"
-          style={{ fontSize: '13px', color: '#94a3b8', textDecoration: 'none' }}
-        >
-          Hai già un account?{' '}
-          <span style={{ color: '#EC4899', fontWeight: 600 }}>Accedi</span>
-        </Link>
-      </header>
+      <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif", color: '#1a1a0f' }}>
 
-      {/* Matrix header banner */}
-      <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', lineHeight: 0 }}>
-        <Image
-          src="/header_beautyx_matrix.png"
-          alt="Beautyx — L'AI che fa crescere il tuo centro"
-          width={1200}
-          height={440}
-          style={{ width: '100%', height: 'auto', display: 'block' }}
-          priority
-        />
-      </div>
+        {/* ── NAV ── */}
+        <header style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={32} height={32} style={{ borderRadius: '4px' }} />
+            <span style={{ fontWeight: 700, color: '#1a1a0f', fontSize: '16px' }}>Beautyx</span>
+          </Link>
+          <a
+            href="#iscriviti"
+            style={{
+              background: '#1a1a0f',
+              color: '#fff',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontWeight: 700,
+              fontSize: '14px',
+              textDecoration: 'none',
+              letterSpacing: '0.01em',
+            }}
+          >
+            Iscriviti gratis →
+          </a>
+        </header>
 
-      {/* Hero text + form */}
-      <section style={{ maxWidth: '720px', margin: '0 auto', padding: '56px 24px 48px', textAlign: 'center' }}>
-        <span style={{
-          display: 'inline-block',
-          background: 'rgba(236,72,153,0.15)',
-          border: '1px solid rgba(236,72,153,0.4)',
-          color: '#EC4899',
-          fontSize: '11px',
-          fontWeight: 700,
-          padding: '4px 14px',
-          borderRadius: '999px',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          marginBottom: '24px',
-        }}>
-          Newsletter gratuita · Ogni settimana
-        </span>
+        {/* ── HERO ── */}
+        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '56px 32px 0' }}>
 
-        <h1 style={{ fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 800, lineHeight: 1.2, marginBottom: '20px', color: '#fff' }}>
-          Il centro estetico che vuoi<br />
-          <span style={{ color: '#EC4899' }}>si costruisce con le giuste informazioni</span>
-        </h1>
-
-        <p style={{ fontSize: '17px', color: '#94a3b8', lineHeight: 1.7, marginBottom: '36px' }}>
-          Ogni settimana un argomento concreto sulla gestione del tuo centro: personale, prezzi, clienti, numeri.
-          Niente teoria, niente fronzoli. Solo quello che puoi applicare subito.
-        </p>
-
-        {status === 'success' ? (
-          <div style={{
-            background: 'rgba(16,185,129,0.1)',
-            border: '1px solid rgba(16,185,129,0.3)',
-            borderRadius: '16px',
-            padding: '32px',
-            maxWidth: '440px',
-            margin: '0 auto',
+          {/* Soprattitolo */}
+          <p style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.13em',
+            textTransform: 'uppercase',
+            color: '#999',
+            marginBottom: '28px',
           }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}>🎉</div>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#6ee7b7', marginBottom: '8px' }}>Sei dentro!</h3>
-            <p style={{ fontSize: '14px', color: '#a7f3d0' }}>
-              Controlla la tua email — ti abbiamo inviato un messaggio di benvenuto.
-              La prima newsletter arriva martedì.
+            Il lato dell&apos;estetica che nessuna scuola insegna.
+          </p>
+
+          {/* Headline 3 righe */}
+          <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", lineHeight: 1.05, marginBottom: '30px' }}>
+            <span style={{ display: 'block', fontSize: 'clamp(42px, 7vw, 82px)', fontWeight: 900, color: '#1a1a0f' }}>
+              Smetti di lavorare
+            </span>
+            <span style={{ display: 'block', fontSize: 'clamp(42px, 7vw, 82px)', fontWeight: 700, fontStyle: 'italic', color: '#EC4899' }}>
+              di più.
+            </span>
+            <span style={{ display: 'block', fontSize: 'clamp(42px, 7vw, 82px)', fontWeight: 900, color: '#1a1a0f' }}>
+              Inizia a guadagnare{' '}
+              <span style={{ background: '#FFE44D', padding: '2px 6px', borderRadius: '3px' }}>meglio.</span>
+            </span>
+          </h1>
+
+          {/* Sottotitolo italic */}
+          <p style={{
+            fontSize: '19px',
+            fontStyle: 'italic',
+            fontFamily: "'Playfair Display', Georgia, serif",
+            color: '#555',
+            lineHeight: 1.65,
+            marginBottom: '14px',
+            maxWidth: '640px',
+          }}>
+            Ogni settimana pochi minuti, un sistema diretto senza fronzoli inutili.
+            Roba da usare subito per guardare con serenità al proprio futuro.
+          </p>
+          <p style={{ fontSize: '15px', color: '#777', marginBottom: '36px' }}>
+            Ogni martedì, <strong style={{ color: '#1a1a0f' }}>centinaia di titolari</strong> la aprono col caffè.
+          </p>
+
+          {/* ── FORM ── */}
+          <div id="iscriviti">
+            {status === 'success' ? (
+              <div style={{
+                background: '#fff',
+                border: '2.5px solid #1a1a0f',
+                borderRadius: '16px',
+                padding: '32px',
+                maxWidth: '540px',
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>🎉</div>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '22px', marginBottom: '8px', color: '#1a1a0f' }}>Sei dentro!</h3>
+                <p style={{ color: '#666', fontSize: '15px', lineHeight: 1.65 }}>
+                  Controlla la tua email — ti abbiamo inviato la miniguida gratuita e il messaggio di benvenuto.
+                  La prima newsletter arriva martedì.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ maxWidth: '540px' }}>
+                {/* Honeypot */}
+                <input
+                  type="text"
+                  name="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
+                <div style={{
+                  display: 'flex',
+                  border: '2.5px solid #1a1a0f',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  background: '#fff',
+                }}>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="la-tua@email.it"
+                    required
+                    style={{
+                      flex: 1,
+                      padding: '16px 20px',
+                      border: 'none',
+                      background: 'transparent',
+                      fontSize: '16px',
+                      outline: 'none',
+                      color: '#1a1a0f',
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    style={{
+                      padding: '16px 24px',
+                      background: '#EC4899',
+                      color: '#fff',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+                      fontSize: '15px',
+                      whiteSpace: 'nowrap',
+                      opacity: status === 'loading' ? 0.6 : 1,
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {status === 'loading' ? 'Iscrizione...' : 'Sì, mi iscrivo →'}
+                  </button>
+                </div>
+                {status === 'error' && (
+                  <p style={{ marginTop: '8px', color: '#c00', fontSize: '13px' }}>{errorMsg}</p>
+                )}
+                <p style={{ marginTop: '10px', fontSize: '12px', color: '#aaa' }}>
+                  Accetto la{' '}
+                  <Link href="/privacy" style={{ color: '#aaa', textDecoration: 'underline' }}>Privacy Policy</Link>
+                  {' '}e il trattamento dati. Cancellabile in un click.
+                </p>
+              </form>
+            )}
+          </div>
+
+          {/* 3 micro-check */}
+          <div style={{ display: 'flex', gap: '28px', marginTop: '18px', flexWrap: 'wrap' }}>
+            {['✓ Gratis, per sempre', '✓ Ti cancelli in 1 click', '✓ 5 minuti a settimana'].map(t => (
+              <span key={t} style={{ fontSize: '13px', color: '#888' }}>{t}</span>
+            ))}
+          </div>
+        </section>
+
+        {/* ── SEPARATOR ── */}
+        <div style={{ maxWidth: '860px', margin: '60px auto 0', padding: '0 32px' }}>
+          <hr style={{ border: 'none', borderTop: '1px solid #ddd' }} />
+        </div>
+
+        {/* ── 3 BENEFITS ── */}
+        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '48px 32px 60px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '36px' }}>
+            {[
+              { emoji: '⏱', title: 'Risparmi tempo', desc: 'Solo quello che puoi applicare lunedì mattina. Niente teoria da convegno.' },
+              { emoji: '💰', title: 'Guadagni di più', desc: 'I numeri, i prezzi, i margini. Come fare in modo che il centro renda davvero.' },
+              { emoji: '👑', title: 'Lavori da imprenditrice', desc: 'Non da dipendente di te stessa. Sistemi per smettere di correre senza avanzare.' },
+            ].map(b => (
+              <div key={b.title}>
+                <div style={{ fontSize: '26px', marginBottom: '10px' }}>{b.emoji}</div>
+                <h3 style={{ fontWeight: 700, fontSize: '15px', marginBottom: '8px', color: '#1a1a0f' }}>{b.title}</h3>
+                <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.65 }}>{b.desc}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{
+            textAlign: 'center',
+            marginTop: '44px',
+            fontSize: '14px',
+            fontStyle: 'italic',
+            color: '#bbb',
+            fontFamily: "'Playfair Display', serif",
+          }}>
+            ✨ Ogni settimana peschiamo da queste aree, così non ti perdi nulla. ✨
+          </p>
+        </section>
+
+        {/* ── DARK SECTION — Argomenti ── */}
+        <section style={{ background: '#1a1a0f', padding: '64px 32px' }}>
+          <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+            <h2 style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: '28px',
+              fontWeight: 700,
+              color: '#fff',
+              marginBottom: '40px',
+              textAlign: 'center',
+            }}>
+              Cosa trovi ogni martedì
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+              {argomenti.map((a, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '14px',
+                    padding: '28px',
+                  }}
+                >
+                  <div style={{ fontSize: '26px', marginBottom: '10px' }}>{a.emoji}</div>
+                  <h3 style={{ fontWeight: 700, fontSize: '14px', color: '#f1f1f1', marginBottom: '8px', lineHeight: 1.4 }}>{a.titolo}</h3>
+                  <p style={{ fontSize: '13px', color: '#777', lineHeight: 1.65 }}>{a.descrizione}</p>
+                </div>
+              ))}
+            </div>
+            <p style={{
+              textAlign: 'center',
+              marginTop: '36px',
+              fontSize: '13px',
+              fontStyle: 'italic',
+              color: '#444',
+              fontFamily: "'Playfair Display', serif",
+            }}>
+              ← il cuore della newsletter
             </p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} style={{ maxWidth: '480px', margin: '0 auto' }}>
-            {/* Honeypot */}
-            <input
-              type="text"
-              name="website"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-            />
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="la-tua-email@centro.it"
-                required
-                style={{
-                  flex: '1 1 220px',
-                  padding: '13px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#fff',
-                  fontSize: '14px',
-                  outline: 'none',
-                }}
-              />
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                style={{
-                  padding: '13px 24px',
-                  background: 'linear-gradient(135deg, #EC4899, #a855f7)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  borderRadius: '10px',
-                  border: 'none',
-                  cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                  opacity: status === 'loading' ? 0.6 : 1,
-                }}
-              >
-                {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
-              </button>
-            </div>
-            {status === 'error' && (
-              <p style={{ marginTop: '10px', color: '#f87171', fontSize: '13px' }}>{errorMsg}</p>
-            )}
-            <p style={{ marginTop: '10px', fontSize: '12px', color: '#475569' }}>
-              Niente spam. Disiscriviti quando vuoi con un click.
-            </p>
-          </form>
-        )}
-      </section>
+        </section>
 
-      {/* Argomenti trattati */}
-      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '16px 24px 56px' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
-          Di cosa parla la newsletter
-        </h2>
-        <p style={{ textAlign: 'center', color: '#64748b', fontSize: '14px', marginBottom: '36px' }}>
-          Argomenti che abbiamo già trattato — e altri in arrivo
-        </p>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '16px',
-        }}>
-          {argomenti.map((a, i) => (
-            <div
-              key={i}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
+        {/* ── BRAND SECTION ── */}
+        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '72px 32px' }}>
+          <div style={{ display: 'flex', gap: '48px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ flexShrink: 0 }}>
+              <div style={{
+                border: '3px solid #EC4899',
                 borderRadius: '16px',
-                padding: '24px',
-                transition: 'border-color 0.2s',
-              }}
-            >
-              <div style={{ fontSize: '28px', marginBottom: '12px' }}>{a.emoji}</div>
-              <h3 style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '14px', marginBottom: '8px', lineHeight: 1.4 }}>{a.titolo}</h3>
-              <p style={{ color: '#64748b', fontSize: '13px', lineHeight: 1.6 }}>{a.descrizione}</p>
+                width: '120px',
+                height: '120px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#fff',
+              }}>
+                <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={80} height={80} />
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+            <div>
+              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '8px' }}>
+                Creata da
+              </p>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '34px', fontWeight: 700, color: '#1a1a0f', marginBottom: '12px' }}>
+                Beautyx
+              </h3>
+              <p style={{ fontSize: '15px', color: '#777', lineHeight: 1.75, maxWidth: '460px' }}>
+                La piattaforma AI per i centri estetici italiani. Ogni settimana trasformiamo quello che i centri che guadagnano davvero fanno in modo diverso — condensato in 5 minuti da portare subito in cabina.
+              </p>
+            </div>
+          </div>
+        </section>
 
-      {/* Social proof */}
-      <section style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 56px', textAlign: 'center' }}>
-        <div style={{
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(236,72,153,0.2)',
-          borderRadius: '20px',
-          padding: '36px 32px',
-        }}>
-          <p style={{ color: '#cbd5e1', fontSize: '16px', fontStyle: 'italic', lineHeight: 1.7, marginBottom: '16px' }}>
-            &ldquo;Finalmente una newsletter che parla di gestione vera — non di prodotti o tendenze nail art.
-            Ogni numero ha almeno una cosa che riesco ad applicare subito nel mio centro.&rdquo;
+        {/* ── FINAL CTA ── */}
+        <section style={{ background: '#1a1a0f', padding: '72px 32px', textAlign: 'center' }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <h2 style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 'clamp(26px, 5vw, 44px)',
+              fontWeight: 900,
+              color: '#fff',
+              marginBottom: '24px',
+              lineHeight: 1.2,
+            }}>
+              Pronta a guardare il tuo centro<br />
+              <span style={{ color: '#EC4899', fontStyle: 'italic' }}>con occhi diversi?</span>
+            </h2>
+            {status !== 'success' && (
+              <form onSubmit={handleSubmit} style={{ maxWidth: '480px', margin: '0 auto' }}>
+                <input
+                  type="text"
+                  name="website"
+                  value={website}
+                  onChange={e => setWebsite(e.target.value)}
+                  style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
+                <div style={{ display: 'flex', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="la-tua@email.it"
+                    required
+                    style={{ flex: 1, padding: '16px 20px', border: 'none', background: 'transparent', fontSize: '16px', outline: 'none', color: '#1a1a0f' }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    style={{
+                      padding: '16px 24px',
+                      background: '#EC4899',
+                      color: '#fff',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+                      fontSize: '15px',
+                      whiteSpace: 'nowrap',
+                      opacity: status === 'loading' ? 0.6 : 1,
+                    }}
+                  >
+                    {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
+                  </button>
+                </div>
+                <p style={{ marginTop: '10px', fontSize: '12px', color: '#555' }}>
+                  Gratis. Disiscriviti in 1 click.
+                </p>
+              </form>
+            )}
+          </div>
+        </section>
+
+        {/* ── FOOTER ── */}
+        <footer style={{ background: '#111', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px', textAlign: 'center' }}>
+          <p style={{ fontSize: '12px', color: '#555' }}>
+            © 2025 Beautyx ·{' '}
+            <Link href="/privacy" style={{ color: '#666', textDecoration: 'none' }}>Privacy</Link>
+            {' · '}
+            <Link href="/login" style={{ color: '#666', textDecoration: 'none' }}>Accedi al gestionale</Link>
           </p>
-          <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Chiara R.</p>
-          <p style={{ fontSize: '12px', color: '#475569' }}>Titolare di centro estetico, Milano</p>
-        </div>
-      </section>
+        </footer>
 
-      {/* CTA finale */}
-      <section style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 80px', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>
-          Pronta a gestire il tuo centro in modo diverso?
-        </h2>
-        <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '28px' }}>
-          Iscriviti gratis. Nessuna carta di credito, nessun impegno.
-        </p>
-        {status !== 'success' && (
-          <form onSubmit={handleSubmit} style={{ maxWidth: '480px', margin: '0 auto' }}>
-            <input
-              type="text"
-              name="website"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-            />
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="la-tua-email@centro.it"
-                required
-                style={{
-                  flex: '1 1 220px',
-                  padding: '13px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#fff',
-                  fontSize: '14px',
-                  outline: 'none',
-                }}
-              />
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                style={{
-                  padding: '13px 24px',
-                  background: 'linear-gradient(135deg, #EC4899, #a855f7)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  borderRadius: '10px',
-                  border: 'none',
-                  cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                  opacity: status === 'loading' ? 0.6 : 1,
-                }}
-              >
-                {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
-              </button>
-            </div>
-          </form>
-        )}
-      </section>
-
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '24px', textAlign: 'center' }}>
-        <p style={{ fontSize: '12px', color: '#334155' }}>
-          © 2025 Beautyx ·{' '}
-          <Link href="/privacy" style={{ color: '#475569', textDecoration: 'none' }}>Privacy</Link>
-          {' · '}
-          <Link href="/login" style={{ color: '#475569', textDecoration: 'none' }}>Accedi al gestionale</Link>
-        </p>
-      </footer>
-
-    </div>
+      </div>
+    </>
   )
 }
