@@ -102,7 +102,7 @@ export default function MiniguidaPage() {
         <section style={{
           maxWidth: '620px',
           margin: '0 auto',
-          padding: '36px 24px 0',
+          padding: '20px 24px 0',
           textAlign: 'center',
         }}>
 
@@ -121,7 +121,7 @@ export default function MiniguidaPage() {
             borderRadius: '100px',
             marginBottom: '28px',
           }}>
-            Miniguida gratuita — Metodo SvetAge
+            Miniguida gratuita · Beautyx
           </div>
 
           {/* Headline 3 righe */}
@@ -283,10 +283,16 @@ export default function MiniguidaPage() {
               <span key={t} style={{ fontSize: '12px', color: '#999' }}>{t}</span>
             ))}
           </div>
+
+          {/* Privacy note */}
+          <p style={{ marginTop: '12px', fontSize: '11px', color: '#bbb', lineHeight: 1.65 }}>
+            Iscrivendoti accetti il trattamento dei tuoi dati per ricevere la newsletter Beautyx. Usiamo Beehiiv e Supabase per gestire invii e contenuti. I tuoi dati non vengono mai venduti a terzi.{' '}
+            <Link href="/privacy" style={{ color: '#aaa', textDecoration: 'underline' }}>Privacy policy</Link>.
+          </p>
         </section>
 
         {/* ── SEPARATORE ── */}
-        <div style={{ maxWidth: '560px', margin: '52px auto 0', padding: '0 24px' }}>
+        <div style={{ maxWidth: '560px', margin: '16px auto 0', padding: '0 24px' }}>
           <hr style={{ border: 'none', borderTop: '1px solid #ddd' }} />
         </div>
 

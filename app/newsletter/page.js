@@ -306,6 +306,10 @@ export default function NewsletterPage() {
                   Ricevi subito la miniguida in email, poi la newsletter due volte a settimana.{' '}
                   Puoi disiscriverti quando vuoi.
                 </p>
+                <p style={{ marginTop: '10px', fontSize: '11px', color: '#3d4f60', lineHeight: 1.65 }}>
+                  Iscrivendoti accetti il trattamento dei tuoi dati per ricevere la newsletter Beautyx. Usiamo Beehiiv e Supabase per gestire invii e contenuti. I tuoi dati non vengono mai venduti a terzi.{' '}
+                  <Link href="/privacy" style={{ color: '#55667a', textDecoration: 'underline' }}>Privacy policy</Link>.
+                </p>
               </form>
             )}
           </div>
