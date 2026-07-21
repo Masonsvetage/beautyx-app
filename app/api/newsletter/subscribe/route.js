@@ -52,7 +52,7 @@ export async function POST(request) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           email,
-          reactivate_existing: false,
+          reactivate_existing: true,
           send_welcome_email: true,
           double_opt_override: "on",
           utm_source: 'beautyx-app',

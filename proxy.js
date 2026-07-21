@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 // Route pubbliche (accessibili senza autenticazione)
-const publicRoutes = ['/', '/login', '/signup', '/reset-password', '/api/public', '/newsletter']
+const publicRoutes = ['/', '/login', '/signup', '/reset-password', '/api/public', '/newsletter', '/miniguida']
 
 // Route per ruolo specifico
 const adminRoutes = ['/admin']
