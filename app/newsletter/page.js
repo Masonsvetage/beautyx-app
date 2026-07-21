@@ -4,26 +4,25 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-const argomenti = [
+const faqs = [
   {
-    emoji: '💰',
-    titolo: 'I soldi',
-    descrizione: "L'AI scansiona dati di pricing, margini e modelli di revenue da centinaia di centri reali. Ogni settimana estraiamo i pattern che funzionano — e quelli che fanno perdere soldi senza che te ne accorga.",
+    domanda: 'Quanto spesso arriva la newsletter?',
+    risposta: 'Due volte a settimana. Di mattina, così hai qualcosa di utile prima di aprire il centro.',
   },
   {
-    emoji: '👥',
-    titolo: 'Le persone',
-    descrizione: "Clienti che spariscono, personale che logora, conflitti che drenano. L'AI monitora i pattern ricorrenti di chi ce la fa e di chi no — così impari prima come gestire il lato umano che spesso fa tutta la differenza.",
+    domanda: "C'è davvero un consulente umano? Non è tutto automatico?",
+    risposta:
+      "Sì, davvero. L'AI lavora ogni giorno per raccogliere e selezionare le informazioni — è il motore. Il consulente è una persona reale che una volta al mese ti scrive direttamente. I due livelli lavorano insieme, non si escludono.",
   },
   {
-    emoji: '⚙️',
-    titolo: 'Il metodo',
-    descrizione: "Come rendere il centro a tua immagine e somiglianza con il metodo dei 4 elementi SvetAge. L'AI ci aiuta a identificare dove il metodo funziona davvero — e dove invece si crea squilibrio senza che lo si veda.",
+    domanda: 'Ho già un commercialista. Non mi serve altro, no?',
+    risposta:
+      "Il commercialista ti protegge dal fisco — ed è fondamentale. Ma i prezzi giusti, l'agenda che non si svuota, la cliente che non torna: non è il suo campo. Non perché non sia bravo, ma perché è un altro mestiere. Beautyx lavora lì.",
   },
   {
-    emoji: '🌍',
-    titolo: 'Il mercato',
-    descrizione: "L'AI scansiona trend internazionali, centri all'estero, innovazioni del settore. Quello che arriverà in Italia tra 6-12 mesi — lo vedi prima e hai tempo per adattarti.",
+    domanda: "Ho già pochissimo tempo. Un'altra newsletter è l'ultima cosa di cui ho bisogno.",
+    risposta:
+      'Ogni numero si legge in dieci minuti. Se nella prima settimana non ti porta niente di utile, ti disiscrivi senza sensi di colpa.',
   },
 ]
 
@@ -62,6 +61,7 @@ export default function NewsletterPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Inter:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
       `}</style>
 
       <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif", color: '#1a1a0f' }}>
@@ -73,7 +73,7 @@ export default function NewsletterPage() {
             <span style={{ fontWeight: 700, color: '#1a1a0f', fontSize: '16px' }}>Beautyx</span>
           </Link>
           <a
-            href="#iscriviti"
+            href="#form-section"
             style={{
               background: '#1a1a0f',
               color: '#fff',
@@ -89,72 +89,161 @@ export default function NewsletterPage() {
           </a>
         </header>
 
-        {/* ── HERO ── */}
-        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '56px 32px 0' }}>
-
-          {/* Soprattitolo */}
-          <p style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '0.13em',
-            textTransform: 'uppercase',
-            color: '#999',
+        {/* ── SEZIONE 1: HERO ── */}
+        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '56px 32px 64px' }}>
+          <h1 style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 'clamp(32px, 5.5vw, 64px)',
+            fontWeight: 900,
+            lineHeight: 1.1,
+            color: '#1a1a0f',
             marginBottom: '28px',
+            maxWidth: '760px',
           }}>
-            Il lato dell&apos;estetica che nessuna scuola insegna.
-          </p>
-
-          {/* Headline 3 righe */}
-          <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", lineHeight: 1.05, marginBottom: '30px' }}>
-            <span style={{ display: 'block', fontSize: 'clamp(42px, 7vw, 82px)', fontWeight: 900, color: '#1a1a0f' }}>
-              Smetti di lavorare
-            </span>
-            <span style={{ display: 'block', fontSize: 'clamp(42px, 7vw, 82px)', fontWeight: 700, fontStyle: 'italic', color: '#EC4899' }}>
-              di più.
-            </span>
-            <span style={{ display: 'block', fontSize: 'clamp(42px, 7vw, 82px)', fontWeight: 900, color: '#1a1a0f' }}>
-              Inizia a guadagnare{' '}
-              <span style={{ background: '#FFE44D', padding: '2px 6px', borderRadius: '3px' }}>meglio.</span>
-            </span>
+            Non sai cosa sta funzionando adesso nei centri estetici italiani.{' '}
+            <span style={{ fontStyle: 'italic', color: '#EC4899' }}>Noi sì.</span>
           </h1>
 
-          {/* Sottotitolo italic */}
           <p style={{
-            fontSize: '19px',
-            fontStyle: 'italic',
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 'clamp(16px, 2vw, 19px)',
             color: '#555',
-            lineHeight: 1.65,
-            marginBottom: '14px',
-            maxWidth: '640px',
+            lineHeight: 1.75,
+            marginBottom: '36px',
+            maxWidth: '680px',
           }}>
-            Ogni settimana pochi minuti, un sistema diretto senza fronzoli inutili.
-            Roba da usare subito per guardare con serenità al proprio futuro.
-          </p>
-          <p style={{ fontSize: '15px', color: '#777', marginBottom: '36px' }}>
-            Ogni martedì, <strong style={{ color: '#1a1a0f' }}>centinaia di titolari</strong> la aprono col caffè.
+            Beautyx è la newsletter bi-settimanale che ti porta quello che funziona davvero — non le teorie, non le tendenze TikTok, non i consigli che valgono per tutti e quindi non valgono per nessuno. Il mercato estetico italiano, monitorato ogni giorno, filtrato e sintetizzato per chi ha un centro da gestire.
           </p>
 
-          {/* ── FORM ── */}
-          <div id="iscriviti">
+          <a
+            href="#form-section"
+            style={{
+              display: 'inline-block',
+              background: '#EC4899',
+              color: '#fff',
+              padding: '16px 32px',
+              borderRadius: '10px',
+              fontWeight: 700,
+              fontSize: '16px',
+              textDecoration: 'none',
+              letterSpacing: '0.01em',
+              marginBottom: '14px',
+            }}
+          >
+            Iscriviti gratis →
+          </a>
+
+          <p style={{ fontSize: '13px', color: '#999' }}>
+            Immediato: la miniguida gratuita arriva nella tua email oggi stesso.
+          </p>
+        </section>
+
+        {/* ── SEZIONE 2: IL DIFFERENZIATORE ── */}
+        <section style={{ background: '#1a1a0f', padding: '72px 32px' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto' }}>
+            <h2 style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(24px, 3.5vw, 38px)',
+              fontWeight: 700,
+              color: '#fff',
+              marginBottom: '36px',
+              lineHeight: 1.2,
+            }}>
+              Come facciamo a sapere cosa funziona davvero?
+            </h2>
+
+            <div style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#b0b0b0', lineHeight: 1.85 }}>
+              <p style={{ marginBottom: '22px' }}>
+                La maggior parte delle newsletter sull&apos;estetica è scritta da una persona. Con le sue opinioni, le sue esperienze, i suoi angoli ciechi. Noi abbiamo scelto un approccio diverso — e lo diciamo chiaramente, perché pensiamo che la trasparenza sia già un vantaggio competitivo.
+              </p>
+              <p style={{ marginBottom: '22px' }}>
+                Un team di agenti AI lavora ogni giorno per scansionare il mercato estetico italiano: cosa stanno provando i centri, cosa si muove sul fronte della fidelizzazione, del pricing, dell&apos;offerta servizi. In parallelo, monitora le tendenze internazionali — così arrivi dove conta prima della tua concorrenza locale.
+              </p>
+              <p style={{ marginBottom: '22px' }}>
+                Tutto quello che raccolgono viene filtrato, selezionato e scritto in modo che tu possa leggerlo in dieci minuti mentre aspetti tra un cliente e l&apos;altro.
+              </p>
+              <p style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontStyle: 'italic',
+                fontSize: 'clamp(16px, 2vw, 20px)',
+                color: '#EC4899',
+                borderLeft: '3px solid #EC4899',
+                paddingLeft: '20px',
+                lineHeight: 1.6,
+              }}>
+                Non è l&apos;AI che prenota gli appuntamenti al posto tuo. È l&apos;AI che trova quello che funziona nel tuo tipo di mercato — e te lo mette davanti.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SEZIONE 3: COSA SUCCEDE QUANDO TI ISCRIVI ── */}
+        <section style={{ background: '#faf7f2', padding: '72px 32px' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto' }}>
+            <h2 style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(24px, 3.5vw, 38px)',
+              fontWeight: 700,
+              color: '#1a1a0f',
+              marginBottom: '36px',
+              lineHeight: 1.2,
+            }}>
+              Cosa succede quando ti iscrivi
+            </h2>
+
+            <div style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
+              <p style={{ marginBottom: '22px' }}>
+                Prima di tutto: nella tua casella arriva subito la miniguida <em>&ldquo;10 errori che (quasi) tutte facciamo&rdquo;</em>. Non dopo qualche giorno, non alla prossima settimana — subito.
+              </p>
+              <p style={{ marginBottom: '22px' }}>
+                Poi inizia la newsletter. Due volte a settimana, quello che conta sapere in questo periodo: non tutto, non il meglio del meglio, ma quello che è rilevante per il tuo centro <em>adesso</em>. Quello che le tue colleghe in altri centri stanno già provando. Quello che arriva dall&apos;estero e vale la pena guardare. Quello che potresti fare diversamente la settimana prossima.
+              </p>
+              <p>
+                Una volta al mese, invece, arriva qualcosa di diverso: una email diretta dal consulente del settore — una persona reale, non un bot, non un template automatico. Parla di prezzi, agenda, della cliente che non torna — di tutte quelle decisioni quotidiane che non sono da commercialista, ma che pesano ogni settimana sul tuo centro. È uno scambio pensato per farti riflettere su qualcosa di specifico rispetto al tuo lavoro. Nessun sales pitch, nessun recap. Solo una prospettiva esterna. Ed è compreso nell&apos;iscrizione gratuita.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SEZIONE 4: FORM DI ISCRIZIONE ── */}
+        <section id="form-section" style={{ background: '#0d1b2a', padding: '72px 32px' }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+            <h2 style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(26px, 4vw, 42px)',
+              fontWeight: 900,
+              color: '#fff',
+              marginBottom: '12px',
+              lineHeight: 1.15,
+            }}>
+              Inizia adesso — è gratis
+            </h2>
+
+            <p style={{ fontSize: '15px', color: '#8899aa', marginBottom: '32px' }}>
+              Niente spam. Niente corsi da comprare. Solo quello che serve.
+            </p>
+
+            {/* [X iscritti] — placeholder social proof, da visualizzare solo dopo conferma numero reale */}
+            {/* <p style={{ fontSize: '13px', color: '#8899aa', marginBottom: '24px' }}>Già [X iscritti] titolari si aggiornano ogni settimana con Beautyx.</p> */}
+
             {status === 'success' ? (
               <div style={{
-                background: '#fff',
-                border: '2.5px solid #1a1a0f',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1.5px solid rgba(255,255,255,0.12)',
                 borderRadius: '16px',
-                padding: '32px',
-                maxWidth: '540px',
+                padding: '36px 28px',
                 textAlign: 'center',
               }}>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>🎉</div>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '22px', marginBottom: '8px', color: '#1a1a0f' }}>Sei dentro!</h3>
-                <p style={{ color: '#666', fontSize: '15px', lineHeight: 1.65 }}>
-                  Controlla la tua email — ti abbiamo inviato la miniguida gratuita e il messaggio di benvenuto.
-                  La prima newsletter arriva martedì.
+                <div style={{ fontSize: '36px', marginBottom: '14px' }}>✓</div>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '22px', marginBottom: '10px', color: '#fff' }}>
+                  Sei dentro!
+                </h3>
+                <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7 }}>
+                  Controlla la tua email — la miniguida gratuita è già in arrivo.
+                  La newsletter inizia subito, due volte a settimana.
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} style={{ maxWidth: '540px' }}>
+              <form onSubmit={handleSubmit} style={{ maxWidth: '520px', margin: '0 auto' }}>
                 {/* Honeypot */}
                 <input
                   type="text"
@@ -168,10 +257,8 @@ export default function NewsletterPage() {
                 />
                 <div style={{
                   display: 'flex',
-                  border: '2.5px solid #1a1a0f',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  background: '#fff',
+                  flexDirection: 'column',
+                  gap: '12px',
                 }}>
                   <input
                     type="email"
@@ -180,14 +267,15 @@ export default function NewsletterPage() {
                     placeholder="la-tua@email.it"
                     required
                     style={{
-                      flex: 1,
                       padding: '16px 20px',
-                      border: 'none',
-                      background: 'transparent',
+                      border: '1.5px solid rgba(255,255,255,0.15)',
+                      borderRadius: '10px',
+                      background: 'rgba(255,255,255,0.06)',
                       fontSize: '16px',
                       outline: 'none',
-                      color: '#1a1a0f',
+                      color: '#fff',
                       fontFamily: "'Inter', sans-serif",
+                      width: '100%',
                     }}
                   />
                   <button
@@ -199,278 +287,105 @@ export default function NewsletterPage() {
                       color: '#fff',
                       fontWeight: 700,
                       border: 'none',
+                      borderRadius: '10px',
                       cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-                      fontSize: '15px',
-                      whiteSpace: 'nowrap',
+                      fontSize: '16px',
                       opacity: status === 'loading' ? 0.6 : 1,
                       fontFamily: "'Inter', sans-serif",
+                      width: '100%',
+                      letterSpacing: '0.01em',
                     }}
                   >
-                    {status === 'loading' ? 'Iscrizione...' : 'Sì, mi iscrivo →'}
+                    {status === 'loading' ? 'Iscrizione in corso...' : 'Iscriviti e scarica la miniguida →'}
                   </button>
                 </div>
                 {status === 'error' && (
-                  <p style={{ marginTop: '8px', color: '#c00', fontSize: '13px' }}>{errorMsg}</p>
+                  <p style={{ marginTop: '10px', color: '#ff6b6b', fontSize: '13px' }}>{errorMsg}</p>
                 )}
-                <p style={{ marginTop: '10px', fontSize: '12px', color: '#aaa' }}>
-                  Accetto la{' '}
-                  <Link href="/privacy" style={{ color: '#aaa', textDecoration: 'underline' }}>Privacy Policy</Link>
-                  {' '}e il trattamento dati. Cancellabile in un click.
+                <p style={{ marginTop: '14px', fontSize: '13px', color: '#55667a', lineHeight: 1.6 }}>
+                  Ricevi subito la miniguida in email, poi la newsletter due volte a settimana.{' '}
+                  Puoi disiscriverti quando vuoi.
                 </p>
               </form>
             )}
           </div>
-
-          {/* 3 micro-check */}
-          <div style={{ display: 'flex', gap: '28px', marginTop: '18px', flexWrap: 'wrap' }}>
-            {['✓ Gratis, per sempre', '✓ Ti cancelli in 1 click', '✓ 5 minuti a settimana'].map(t => (
-              <span key={t} style={{ fontSize: '13px', color: '#888' }}>{t}</span>
-            ))}
-          </div>
         </section>
 
-        {/* ── SEPARATOR ── */}
-        <div style={{ maxWidth: '860px', margin: '60px auto 0', padding: '0 32px' }}>
-          <hr style={{ border: 'none', borderTop: '1px solid #ddd' }} />
-        </div>
-
-        {/* ── 3 BENEFITS ── */}
-        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '48px 32px 60px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '28px' }}>
-            {[
-              { emoji: '⏱', title: 'Risparmi tempo', desc: 'Solo quello che puoi applicare lunedì mattina. Niente teoria da convegno.' },
-              { emoji: '💰', title: 'Guadagni di più', desc: 'I numeri, i prezzi, i margini. Come fare in modo che il centro renda davvero.' },
-              { emoji: '📚', title: 'Gli errori degli altri li paghi gratis', desc: "L'AI di Beautyx va a caccia ogni settimana di errori reali commessi da centri estetici in Italia e all'estero. Li analizziamo insieme e sviluppiamo la soluzione migliore — tu impari gratis da quello che agli altri è costato caro." },
-              { emoji: '👑', title: 'Lavori da imprenditrice', desc: 'Non da dipendente di te stessa. Sistemi per smettere di correre senza avanzare.' },
-            ].map(b => (
-              <div key={b.title}>
-                <div style={{ fontSize: '26px', marginBottom: '10px' }}>{b.emoji}</div>
-                <h3 style={{ fontWeight: 700, fontSize: '15px', marginBottom: '8px', color: '#1a1a0f' }}>{b.title}</h3>
-                <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.65 }}>{b.desc}</p>
-              </div>
-            ))}
-          </div>
-          <p style={{
-            textAlign: 'center',
-            marginTop: '44px',
-            fontSize: '14px',
-            fontStyle: 'italic',
-            color: '#bbb',
-            fontFamily: "'Playfair Display', serif",
-          }}>
-            ✨ Ogni settimana peschiamo da queste aree, così non ti perdi nulla. ✨
-          </p>
-        </section>
-
-        {/* ── COME FUNZIONA ── */}
-        <section style={{ maxWidth: '860px', margin: '0 auto', padding: '0 32px 64px' }}>
-          <div style={{ borderTop: '1px solid #e5e0d8', paddingTop: '52px' }}>
-            <p style={{
-              fontSize: '11px',
-              fontWeight: 700,
-              letterSpacing: '0.13em',
-              textTransform: 'uppercase',
-              color: '#bbb',
-              marginBottom: '32px',
-              textAlign: 'center',
-            }}>
-              Come funziona
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '36px' }}>
-              {[
-                {
-                  emoji: '🤖',
-                  step: '01',
-                  title: "L'AI monitora",
-                  desc: "Ogni settimana scansiona centinaia di fonti: centri reali, dati di settore, casi internazionali. Cerca errori, pattern, opportunità — senza sosta.",
-                },
-                {
-                  emoji: '🔍',
-                  step: '02',
-                  title: 'Analizziamo insieme',
-                  desc: "Selezioniamo quello che conta davvero per il tuo centro. Lo smontiamo, lo spieghiamo e sviluppiamo insieme la soluzione migliore.",
-                },
-                {
-                  emoji: '📬',
-                  step: '03',
-                  title: 'Tu applichi',
-                  desc: "Ogni martedì trovi in casella solo ciò che puoi usare subito. Niente ricerca, niente filtri, niente perdite di tempo.",
-                },
-              ].map(s => (
-                <div key={s.step} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                  <div style={{ fontSize: '26px', flexShrink: 0, marginTop: '2px' }}>{s.emoji}</div>
-                  <div>
-                    <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#EC4899', marginBottom: '5px' }}>
-                      STEP {s.step}
-                    </p>
-                    <h3 style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a0f', marginBottom: '7px' }}>{s.title}</h3>
-                    <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.7 }}>{s.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── DARK SECTION — Argomenti ── */}
-        <section style={{ background: '#1a1a0f', padding: '64px 32px' }}>
-          <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+        {/* ── SEZIONE 5: FAQ ── */}
+        <section style={{ background: '#f5f1ea', padding: '72px 32px' }}>
+          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
             <h2 style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: '28px',
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(24px, 3.5vw, 36px)',
               fontWeight: 700,
-              color: '#fff',
-              marginBottom: '40px',
-              textAlign: 'center',
+              color: '#1a1a0f',
+              marginBottom: '48px',
+              lineHeight: 1.2,
             }}>
-              Cosa trovi ogni martedì
+              Hai domande? Ci siamo già passate.
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-              {argomenti.map((a, i) => (
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {faqs.map((faq, i) => (
                 <div
                   key={i}
                   style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '14px',
-                    padding: '28px',
+                    borderTop: '1px solid #ddd',
+                    paddingTop: '28px',
                   }}
                 >
-                  <div style={{ fontSize: '26px', marginBottom: '10px' }}>{a.emoji}</div>
-                  <h3 style={{ fontWeight: 700, fontSize: '14px', color: '#f1f1f1', marginBottom: '8px', lineHeight: 1.4 }}>{a.titolo}</h3>
-                  <p style={{ fontSize: '13px', color: '#777', lineHeight: 1.65 }}>{a.descrizione}</p>
+                  <h3 style={{
+                    fontWeight: 700,
+                    fontSize: 'clamp(15px, 1.8vw, 17px)',
+                    color: '#1a1a0f',
+                    marginBottom: '12px',
+                    lineHeight: 1.4,
+                  }}>
+                    {faq.domanda}
+                  </h3>
+                  <p style={{
+                    fontSize: 'clamp(14px, 1.6vw, 16px)',
+                    color: '#666',
+                    lineHeight: 1.75,
+                  }}>
+                    {faq.risposta}
+                  </p>
                 </div>
               ))}
             </div>
-            <p style={{
-              textAlign: 'center',
-              marginTop: '36px',
-              fontSize: '13px',
-              fontStyle: 'italic',
-              color: '#444',
-              fontFamily: "'Playfair Display', serif",
-            }}>
-              ← il cuore della newsletter
-            </p>
           </div>
         </section>
 
-        {/* ── CHI È BEAUTYX ── */}
-        <section style={{ background: '#faf7f2', padding: '80px 32px' }}>
-          <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-
-            {/* Logo + label */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '36px' }}>
-              <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={40} height={40} style={{ borderRadius: '8px' }} />
-              <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.13em', textTransform: 'uppercase', color: '#bbb' }}>
-                Ma cos&apos;è esattamente Beautyx?
-              </p>
-            </div>
-
-            {/* Headline */}
-            <h2 style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: 'clamp(28px, 4vw, 42px)',
-              fontWeight: 900,
-              color: '#1a1a0f',
-              lineHeight: 1.2,
-              marginBottom: '32px',
-            }}>
-              Un team di agenti AI<br />
-              <span style={{ fontStyle: 'italic', color: '#EC4899' }}>con un cuore umano.</span>
-            </h2>
-
-            {/* Corpo */}
-            <div style={{ fontSize: '17px', color: '#555', lineHeight: 1.85 }}>
-              <p style={{ marginBottom: '22px' }}>
-                Non l&apos;ennesima newsletter scritta da qualcuno che ha letto troppi libri di business. Beautyx è qualcosa di diverso: un progetto che ridisegna il modo di lavorare nel mondo dell&apos;estetica. Una strategia gestionale spiegata in modo semplice, personalizzata su chi sei tu e su come funziona davvero il tuo centro — non su come funziona in teoria.
-              </p>
-              <p style={{ marginBottom: '22px' }}>
-                Dietro ogni numero ci sono agenti AI che lavorano in parallelo — analizzano dati, scovano errori, monitorano trend internazionali — e persone che trasformano tutto questo in qualcosa che puoi usare il lunedì mattina. Trovi il metodo. Trovi le novità del settore prima che diventino problemi. E trovi la possibilità di interagire davvero: raccontare la tua difficoltà concreta — quella vera, quella che non racconti in pubblico — e costruire insieme la soluzione migliore.
-              </p>
-              <p style={{ marginBottom: '32px' }}>
-                Iscrivendoti, non ottieni solo una newsletter. Ottieni un team — AI e umano — con un obiettivo solo. Perché qui nessuno finge che il lavoro sia &quot;solo lavoro&quot;: sappiamo benissimo che quando le cose non girano al centro, non restano al centro. Si portano a casa, si portano a letto, si portano ovunque.
-              </p>
-
-              {/* Frase chiave */}
-              <div style={{
-                borderLeft: '3px solid #EC4899',
-                paddingLeft: '24px',
-                marginBottom: '8px',
-              }}>
-                <p style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontStyle: 'italic',
-                  fontSize: '20px',
-                  color: '#1a1a0f',
-                  lineHeight: 1.6,
-                }}>
-                  Beautyx esiste per fare in modo che questo succeda il meno possibile. Il tuo successo, nella sua forma più vera, si chiama così: <strong style={{ fontStyle: 'normal' }}>serenità</strong>.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        {/* ── FINAL CTA ── */}
-        <section style={{ background: '#1a1a0f', padding: '72px 32px', textAlign: 'center' }}>
+        {/* ── SEZIONE 6: CHIUSURA ── */}
+        <section style={{ background: '#1a1a0f', padding: '80px 32px', textAlign: 'center' }}>
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <h2 style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: 'clamp(26px, 5vw, 44px)',
-              fontWeight: 900,
+            <p style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(22px, 3.5vw, 34px)',
+              fontWeight: 700,
+              fontStyle: 'italic',
               color: '#fff',
-              marginBottom: '24px',
-              lineHeight: 1.2,
+              lineHeight: 1.35,
+              marginBottom: '36px',
             }}>
-              Pronta a guardare il tuo centro<br />
-              <span style={{ color: '#EC4899', fontStyle: 'italic' }}>con occhi diversi?</span>
-            </h2>
-            {status !== 'success' && (
-              <form onSubmit={handleSubmit} style={{ maxWidth: '480px', margin: '0 auto' }}>
-                <input
-                  type="text"
-                  name="website"
-                  value={website}
-                  onChange={e => setWebsite(e.target.value)}
-                  style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
-                  tabIndex={-1}
-                  autoComplete="off"
-                  aria-hidden="true"
-                />
-                <div style={{ display: 'flex', border: '2px solid rgba(255,255,255,0.2)', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="la-tua@email.it"
-                    required
-                    style={{ flex: 1, padding: '16px 20px', border: 'none', background: 'transparent', fontSize: '16px', outline: 'none', color: '#1a1a0f' }}
-                  />
-                  <button
-                    type="submit"
-                    disabled={status === 'loading'}
-                    style={{
-                      padding: '16px 24px',
-                      background: '#EC4899',
-                      color: '#fff',
-                      fontWeight: 700,
-                      border: 'none',
-                      cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-                      fontSize: '15px',
-                      whiteSpace: 'nowrap',
-                      opacity: status === 'loading' ? 0.6 : 1,
-                    }}
-                  >
-                    {status === 'loading' ? 'Iscrizione...' : 'Iscriviti gratis →'}
-                  </button>
-                </div>
-                <p style={{ marginTop: '10px', fontSize: '12px', color: '#555' }}>
-                  Gratis. Disiscriviti in 1 click.
-                </p>
-              </form>
-            )}
+              Se gestisci un centro estetico e vuoi smettere di navigare a vista — il posto è qui.
+            </p>
+            <a
+              href="#form-section"
+              style={{
+                display: 'inline-block',
+                background: '#EC4899',
+                color: '#fff',
+                padding: '18px 40px',
+                borderRadius: '10px',
+                fontWeight: 700,
+                fontSize: '16px',
+                textDecoration: 'none',
+                letterSpacing: '0.01em',
+              }}
+            >
+              Iscriviti gratis →
+            </a>
           </div>
         </section>
 
