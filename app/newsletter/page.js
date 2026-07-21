@@ -12,7 +12,7 @@ const faqs = [
   {
     domanda: "C'è davvero un consulente umano? Non è tutto automatico?",
     risposta:
-      "Sì, davvero. L'AI lavora ogni giorno per raccogliere e selezionare le informazioni — è il motore. Il consulente è una persona reale che una volta al mese ti scrive direttamente. I due livelli lavorano insieme, non si escludono.",
+      "Sì, davvero. L'AI lavora ogni giorno per raccogliere e filtrare le informazioni — è il motore. Il consulente è una persona reale a cui puoi fare una domanda al mese e ricevere una risposta personalizzata: non una risposta generica, una risposta sul tuo centro. I due livelli lavorano insieme, non si escludono.",
   },
   {
     domanda: 'Ho già un commercialista. Non mi serve altro, no?',
@@ -198,7 +198,7 @@ export default function NewsletterPage() {
                 Poi inizia la newsletter. Due volte a settimana, quello che conta sapere in questo periodo: non tutto, non il meglio del meglio, ma quello che è rilevante per il tuo centro <em>adesso</em>. Quello che le tue colleghe in altri centri stanno già provando. Quello che arriva dall&apos;estero e vale la pena guardare. Quello che potresti fare diversamente la settimana prossima.
               </p>
               <p>
-                Una volta al mese, invece, arriva qualcosa di diverso: una email diretta dal consulente del settore — una persona reale, non un bot, non un template automatico. Parla di prezzi, agenda, della cliente che non torna — di tutte quelle decisioni quotidiane che non sono da commercialista, ma che pesano ogni settimana sul tuo centro. È uno scambio pensato per farti riflettere su qualcosa di specifico rispetto al tuo lavoro. Nessun sales pitch, nessun recap. Solo una prospettiva esterna. Ed è compreso nell&apos;iscrizione gratuita.
+                Una volta al mese, però, hai qualcosa che non trovi da nessun&apos;altra parte: puoi scrivere direttamente a un consulente del settore — una persona reale, non un bot, non un template — e ricevere una risposta pensata per te. Non per i centri estetici in generale: per il tuo centro, con le domande che hai tu. Prezzi, agenda, la cliente che non torna, quel servizio che non si vende mai come vorresti — una di quelle cose che pesano ogni settimana e che non sai bene a chi chiedere. Una domanda al mese, compresa nell&apos;iscrizione gratuita.
               </p>
             </div>
           </div>
