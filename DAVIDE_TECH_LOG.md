@@ -84,7 +84,7 @@ Davide legge questo file all'inizio di ogni sessione tecnica. Non si riparte mai
 
 ## Task tecnici pendenti (aggiornato 24/07/2026)
 
-1. ~~**Middleware redirect** — `/` → `/newsletter` per utenti non autenticati~~ ✓ IMPLEMENTATO 24/07/2026 — `middleware.js` nella root, matcher `['/']`
+1. ~~**Middleware redirect** — `/` → `/newsletter` per utenti non autenticati~~ ✓ IMPLEMENTATO 24/07/2026 — middleware unificato: `proxy.js` gestisce tutta la logica auth + redirect `/`, `middleware.js` lo re-esporta come `{ proxy as middleware, config }`
 2. **Homepage stats** — nascondere sezione metriche quando `centri_attivi === 0`
 3. **Rate limiting Upstash** — sostituire rate limiting in-memory (inefficace su Vercel serverless) con Redis Upstash
 4. **Error monitoring** — aggiungere Sentry per visibilità errori in produzione

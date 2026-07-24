@@ -47,8 +47,12 @@ export async function proxy(req) {
     if (pathname.startsWith('/reset-password/update')) {
       return supabaseResponse
     }
-    // La landing '/' è accessibile a tutti - non redirige l'utente loggato
+    // La landing '/': se non autenticato → /newsletter; se autenticato resta in homepage
     if (pathname === '/') {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        return NextResponse.redirect(new URL('/newsletter', req.url))
+      }
       return supabaseResponse
     }
     // Login/signup: se già loggato vai alla dashboard
