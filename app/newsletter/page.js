@@ -233,12 +233,12 @@ export default function NewsletterPage() {
                 {
                   num: '02',
                   titolo: 'Martedì e venerdì mattina: la newsletter',
-                  desc: 'Un tema di gestione, spiegato bene. Quello che potresti provare già questa settimana — non in generale, adesso.',
+                  desc: 'Un tema di gestione, spiegato bene: quello che puoi provare già questa settimana.',
                 },
                 {
                   num: '03',
                   titolo: 'Una volta al mese: il consulente',
-                  desc: "Scrivi una domanda sul tuo centro. Una persona reale ti risponde — sul tuo centro specifico, non sui centri in generale. Compresa nell'iscrizione gratuita.",
+                  desc: "Scrivi una domanda sul tuo centro. Una persona reale ti risponde, pensando al tuo caso specifico. Compresa nell'iscrizione gratuita.",
                 },
               ].map((item) => (
                 <div key={item.num} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
