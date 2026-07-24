@@ -110,12 +110,12 @@ export default function NewsletterPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Inter:wght@400;500;600;700&display=swap');
+        
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         .bx-art-card { transition: transform 0.18s ease, box-shadow 0.18s ease; cursor: pointer; }
         .bx-art-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
-        .bx-article h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; color: #1a1a0f; margin: 28px 0 10px; line-height: 1.3; }
+        .bx-article h3 { font-family: var(--font-playfair), Georgia, serif; font-size: 20px; color: #1a1a0f; margin: 28px 0 10px; line-height: 1.3; }
         .bx-article p { font-size: 16px; color: #333; line-height: 1.8; margin-bottom: 16px; }
         .bx-article ul { margin: 0 0 16px 22px; }
         .bx-article li { font-size: 16px; color: #333; line-height: 1.7; margin-bottom: 8px; }
@@ -128,7 +128,7 @@ export default function NewsletterPage() {
         }
       `}</style>
 
-      <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif", color: '#1a1a0f' }}>
+      <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
 
         {/* ── NAV ── */}
         <header style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
@@ -161,7 +161,7 @@ export default function NewsletterPage() {
                 Newsletter gratuita · Beautyx
               </div>
 
-              <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(34px, 5vw, 62px)', fontWeight: 900, lineHeight: 1.08, color: '#fff', marginBottom: '28px' }}>
+              <h1 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(34px, 5vw, 62px)', fontWeight: 900, lineHeight: 1.08, color: '#fff', marginBottom: '28px' }}>
                 Il tuo centro<br />lo sai fare.<br />
                 <span style={{ fontStyle: 'italic', color: '#EC4899' }}>Gestirlo bene<br />è un&apos;altra storia.</span>
               </h1>
@@ -212,7 +212,7 @@ export default function NewsletterPage() {
               <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '16px' }}>
                 Il punto
               </p>
-              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.15, marginBottom: '24px' }}>
+              <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.15, marginBottom: '24px' }}>
                 Non è una rivista.<br />È uno strumento di lavoro.
               </h2>
               <div style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
@@ -222,7 +222,7 @@ export default function NewsletterPage() {
                 <p style={{ marginBottom: '18px' }}>
                   Ogni numero ha un tema solo. Un problema reale di chi gestisce un centro estetico, analizzato con dati concreti, spiegato senza giri di parole. Alla fine: una cosa da provare — non &ldquo;considera di valutare&rdquo;, una cosa precisa, questa settimana.
                 </p>
-                <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic', fontSize: '18px', color: '#EC4899', borderLeft: '3px solid #EC4899', paddingLeft: '18px', lineHeight: 1.6 }}>
+                <p style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontStyle: 'italic', fontSize: '18px', color: '#EC4899', borderLeft: '3px solid #EC4899', paddingLeft: '18px', lineHeight: 1.6 }}>
                   Non informazione. Consulenza — due volte a settimana, gratis.
                 </p>
               </div>
@@ -233,7 +233,7 @@ export default function NewsletterPage() {
         {/* ── COSA OTTIENI ── */}
         <section style={{ background: '#f5f1ea', padding: '80px 32px' }}>
           <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-            <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 38px)', fontWeight: 900, color: '#1a1a0f', marginBottom: '48px', lineHeight: 1.2 }}>
+            <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 38px)', fontWeight: 900, color: '#1a1a0f', marginBottom: '48px', lineHeight: 1.2 }}>
               Cosa succede quando ti iscrivi
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
@@ -255,11 +255,11 @@ export default function NewsletterPage() {
                 },
               ].map((item) => (
                 <div key={item.num} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-                  <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '13px', fontWeight: 700, color: '#EC4899', flexShrink: 0, minWidth: '28px', marginTop: '4px' }}>
+                  <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '13px', fontWeight: 700, color: '#EC4899', flexShrink: 0, minWidth: '28px', marginTop: '4px' }}>
                     {item.num}
                   </span>
                   <div>
-                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '19px', fontWeight: 700, color: '#1a1a0f', marginBottom: '8px', lineHeight: 1.3 }}>
+                    <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: '19px', fontWeight: 700, color: '#1a1a0f', marginBottom: '8px', lineHeight: 1.3 }}>
                       {item.titolo}
                     </h3>
                     <p style={{ fontSize: 'clamp(14px, 1.6vw, 16px)', color: '#666', lineHeight: 1.75 }}>{item.desc}</p>
@@ -273,7 +273,7 @@ export default function NewsletterPage() {
         {/* ── NEWSLETTER GIÀ USCITE ── */}
         <section style={{ background: '#faf7f2', padding: '80px 32px' }}>
           <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
-            <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', marginBottom: '12px', lineHeight: 1.2 }}>
+            <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', marginBottom: '12px', lineHeight: 1.2 }}>
               Intanto, leggi cosa ti sei persa
             </h2>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#666', lineHeight: 1.7, marginBottom: '40px', maxWidth: '560px' }}>
@@ -287,14 +287,14 @@ export default function NewsletterPage() {
                     key={a.id}
                     className="bx-art-card"
                     onClick={() => setActiveArticle(a)}
-                    style={{ textAlign: 'left', background: '#fff', border: '1px solid #e7e0d5', borderRadius: '14px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', fontFamily: "'Inter', sans-serif", cursor: 'pointer' }}
+                    style={{ textAlign: 'left', background: '#fff', border: '1px solid #e7e0d5', borderRadius: '14px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', fontFamily: "var(--font-inter), sans-serif", cursor: 'pointer' }}
                   >
                     {a.categoria && (
                       <span style={{ alignSelf: 'flex-start', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: colore, background: `${colore}18`, padding: '4px 10px', borderRadius: '999px' }}>
                         {a.categoria}
                       </span>
                     )}
-                    <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '17px', fontWeight: 700, color: '#1a1a0f', lineHeight: 1.35 }}>
+                    <h3 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: '17px', fontWeight: 700, color: '#1a1a0f', lineHeight: 1.35 }}>
                       {a.titolo}
                     </h3>
                     {a.excerpt && (
@@ -311,7 +311,7 @@ export default function NewsletterPage() {
         {/* ── FORM ── */}
         <section id="form-section" style={{ background: '#0d1b2a', padding: '80px 32px' }}>
           <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-            <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: '#fff', marginBottom: '12px', lineHeight: 1.1 }}>
+            <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 900, color: '#fff', marginBottom: '12px', lineHeight: 1.1 }}>
               Fai una cosa.
             </h2>
             <p style={{ fontSize: '17px', color: '#8899aa', marginBottom: '36px', lineHeight: 1.65 }}>
@@ -321,7 +321,7 @@ export default function NewsletterPage() {
             {status === 'success' ? (
               <div style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '36px 28px', textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', marginBottom: '14px' }}>✓</div>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '22px', marginBottom: '10px', color: '#fff' }}>Sei dentro!</h3>
+                <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: '22px', marginBottom: '10px', color: '#fff' }}>Sei dentro!</h3>
                 <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7 }}>
                   Controlla la tua email — la miniguida è già in arrivo.
                 </p>
@@ -333,135 +333,4 @@ export default function NewsletterPage() {
                   onChange={(e) => setWebsite(e.target.value)}
                   style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
                   tabIndex={-1} autoComplete="off" aria-hidden="true"
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <input
-                    type="email" value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="la-tua@email.it" required
-                    style={{ padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.15)', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', fontSize: '16px', outline: 'none', color: '#fff', fontFamily: "'Inter', sans-serif", width: '100%' }}
-                  />
-                  <button
-                    type="submit" disabled={status === 'loading'}
-                    style={{ padding: '16px 24px', background: '#EC4899', color: '#fff', fontWeight: 700, border: 'none', borderRadius: '10px', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontSize: '16px', opacity: status === 'loading' ? 0.6 : 1, fontFamily: "'Inter', sans-serif", width: '100%' }}
-                  >
-                    {status === 'loading' ? 'Iscrizione in corso...' : 'Iscriviti e scarica la miniguida →'}
-                  </button>
-                </div>
-                {status === 'error' && (
-                  <p style={{ marginTop: '10px', color: '#ff6b6b', fontSize: '13px' }}>{errorMsg}</p>
-                )}
-                <p style={{ marginTop: '14px', fontSize: '13px', color: '#55667a', lineHeight: 1.6 }}>
-                  Ricevi subito la miniguida, poi la newsletter martedì e venerdì. Puoi disiscriverti quando vuoi.
-                </p>
-                <p style={{ marginTop: '10px', fontSize: '11px', color: '#3d4f60', lineHeight: 1.65 }}>
-                  Iscrivendoti accetti il trattamento dei tuoi dati per ricevere la newsletter Beautyx. Usiamo Beehiiv e Supabase. I tuoi dati non vengono mai venduti a terzi.{' '}
-                  <Link href="/privacy" style={{ color: '#55667a', textDecoration: 'underline' }}>Privacy policy</Link>.
-                </p>
-              </form>
-            )}
-          </div>
-        </section>
-
-        {/* ── FAQ ── */}
-        <section style={{ background: '#f5f1ea', padding: '80px 32px' }}>
-          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-            <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 700, color: '#1a1a0f', marginBottom: '48px', lineHeight: 1.2 }}>
-              Hai domande? Ci siamo già passate.
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              {faqs.map((faq, i) => (
-                <div key={i} style={{ borderTop: '1px solid #ddd', paddingTop: '28px' }}>
-                  <h3 style={{ fontWeight: 700, fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#1a1a0f', marginBottom: '12px', lineHeight: 1.4 }}>
-                    {faq.domanda}
-                  </h3>
-                  <p style={{ fontSize: 'clamp(14px, 1.6vw, 16px)', color: '#666', lineHeight: 1.75 }}>
-                    {faq.risposta}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── CHIUSURA ── */}
-        <section style={{ background: '#1a1a0f', padding: '80px 32px', textAlign: 'center' }}>
-          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(22px, 3.5vw, 36px)', fontWeight: 700, fontStyle: 'italic', color: '#fff', lineHeight: 1.35, marginBottom: '36px' }}>
-              Hai aperto il tuo centro.<br />Adesso è il momento di gestirlo davvero.
-            </p>
-            <a
-              href="#form-section"
-              style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '18px 40px', borderRadius: '10px', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}
-            >
-              Iscriviti gratis →
-            </a>
-          </div>
-        </section>
-
-        {/* ── FOOTER ── */}
-        <footer style={{ background: '#111', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px', textAlign: 'center' }}>
-          <p style={{ fontSize: '12px', color: '#555' }}>
-            © 2025 Beautyx ·{' '}
-            <Link href="/privacy" style={{ color: '#666', textDecoration: 'none' }}>Privacy</Link>
-            {' · '}
-            <Link href="/login" style={{ color: '#666', textDecoration: 'none' }}>Accedi al gestionale</Link>
-          </p>
-        </footer>
-
-        {/* ── MODALE ARTICOLO ── */}
-        {activeArticle && (
-          <div
-            onClick={() => setActiveArticle(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(15,15,10,0.65)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '32px 16px', overflowY: 'auto', zIndex: 1000 }}
-          >
-            <article
-              onClick={(e) => e.stopPropagation()}
-              style={{ position: 'relative', background: '#fff', maxWidth: '720px', width: '100%', borderRadius: '16px', padding: 'clamp(28px, 5vw, 56px)', margin: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.3)' }}
-            >
-              <button
-                onClick={() => setActiveArticle(null)}
-                aria-label="Chiudi"
-                style={{ position: 'absolute', top: '16px', right: '16px', width: '38px', height: '38px', borderRadius: '50%', border: 'none', background: '#f5f1ea', color: '#1a1a0f', fontSize: '22px', lineHeight: 1, cursor: 'pointer' }}
-              >
-                &times;
-              </button>
-
-              {activeArticle.categoria && (
-                <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORI_CATEGORIA[activeArticle.categoria] || '#EC4899', background: `${COLORI_CATEGORIA[activeArticle.categoria] || '#EC4899'}18`, padding: '4px 10px', borderRadius: '999px', marginBottom: '16px' }}>
-                  {activeArticle.categoria}
-                </span>
-              )}
-
-              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(24px, 4vw, 34px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.2, marginBottom: '24px' }}>
-                {activeArticle.titolo}
-              </h2>
-
-              <div
-                className="bx-article"
-                dangerouslySetInnerHTML={{
-                  __html: activeArticle.contenuto ||
-                    `<p>${activeArticle.excerpt}</p><p><em>Iscriviti per leggere il numero completo.</em></p>`,
-                }}
-              />
-
-              <div style={{ marginTop: '40px', paddingTop: '28px', borderTop: '1px solid #e7e0d5', textAlign: 'center' }}>
-                <p style={{ fontSize: '15px', color: '#666', marginBottom: '16px' }}>
-                  Ti è stato utile? Ricevi ogni numero nella tua email.
-                </p>
-                <a
-                  href="#form-section"
-                  onClick={() => setActiveArticle(null)}
-                  style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '14px 28px', borderRadius: '10px', fontWeight: 700, fontSize: '15px', textDecoration: 'none' }}
-                >
-                  Iscriviti gratis →
-                </a>
-              </div>
-            </article>
-          </div>
-        )}
-
-      </div>
-    </>
-  )
-}
+                /

@@ -10,11 +10,11 @@ export default function PrivacyPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Inter:wght@400;500;600;700&display=swap');
+        
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       `}</style>
 
-      <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif", color: '#1a1a0f' }}>
+      <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
 
         {/* NAV */}
         <header style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         <main style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 32px 96px' }}>
 
           <h1 style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "var(--font-playfair), Georgia, serif",
             fontSize: 'clamp(28px, 4vw, 44px)',
             fontWeight: 900,
             lineHeight: 1.15,
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
           <Section titolo="1. Chi siamo">
             Il titolare del trattamento dei dati personali è <strong>Luigi Perri</strong>, consulente e fondatore di Beautyx, con sede in Italia.
             Per qualsiasi questione relativa alla privacy puoi scriverci a{' '}
-            <a href="mailto:luigixri@gmail.com" style={{ color: '#EC4899', textDecoration: 'none' }}>luigixri@gmail.com</a>.
+            <a href="mailto:privacy@beautyx.it" style={{ color: '#EC4899', textDecoration: 'none' }}>privacy@beautyx.it</a>.
           </Section>
 
           <Section titolo="2. Che dati raccogliamo">
@@ -134,7 +134,7 @@ export default function PrivacyPage() {
 
           <Section titolo="7. Come esercitare i tuoi diritti">
             Scrivi a{' '}
-            <a href="mailto:luigixri@gmail.com" style={{ color: '#EC4899', textDecoration: 'none' }}>luigixri@gmail.com</a>{' '}
+            <a href="mailto:privacy@beautyx.it" style={{ color: '#EC4899', textDecoration: 'none' }}>privacy@beautyx.it</a>{' '}
             con oggetto <em>&ldquo;Privacy – richiesta&rdquo;</em>. Risponderemo entro 30 giorni.
           </Section>
 
@@ -166,7 +166,7 @@ function Section({ titolo, children }) {
   return (
     <div style={{ marginBottom: '40px' }}>
       <h2 style={{
-        fontFamily: "'Playfair Display', Georgia, serif",
+        fontFamily: "var(--font-playfair), Georgia, serif",
         fontSize: 'clamp(16px, 2.2vw, 20px)',
         fontWeight: 700,
         color: '#1a1a0f',

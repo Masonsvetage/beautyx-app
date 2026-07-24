@@ -1,10 +1,19 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ClientLayout from "@/components/providers/ClientLayout";
+import CookieNotice from "@/components/common/CookieNotice";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["700", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://beautyx.it'
 
@@ -66,12 +75,13 @@ export default function RootLayout({ children }) {
           <script defer data-domain={plausibleDomain} src="https://plausible.io/js/script.js" />
         )}
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfair.variable} antialiased`}>
         <AuthProvider>
           <ClientLayout>
             {children}
           </ClientLayout>
         </AuthProvider>
+        <CookieNotice />
       </body>
     </html>
   )

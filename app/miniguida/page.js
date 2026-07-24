@@ -61,14 +61,14 @@ export default function MiniguidaPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Inter:wght@400;500;600;700&display=swap');
+        
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       `}</style>
 
       <div style={{
         background: '#f5f1ea',
         minHeight: '100vh',
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: "var(--font-inter), system-ui, sans-serif",
         color: '#1a1a0f',
       }}>
 
@@ -126,7 +126,7 @@ export default function MiniguidaPage() {
 
           {/* Headline 3 righe */}
           <h1 style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "var(--font-playfair), Georgia, serif",
             lineHeight: 1.08,
             marginBottom: '24px',
           }}>
@@ -163,7 +163,7 @@ export default function MiniguidaPage() {
           <p style={{
             fontSize: 'clamp(16px, 4vw, 19px)',
             fontStyle: 'italic',
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "var(--font-playfair), Georgia, serif",
             color: '#666',
             lineHeight: 1.6,
             marginBottom: '32px',
@@ -185,7 +185,7 @@ export default function MiniguidaPage() {
               }}>
                 <div style={{ fontSize: '40px', marginBottom: '14px' }}>🎉</div>
                 <h3 style={{
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: "var(--font-playfair), serif",
                   fontSize: '22px',
                   fontWeight: 700,
                   marginBottom: '10px',
@@ -238,7 +238,7 @@ export default function MiniguidaPage() {
                         fontSize: '16px',
                         outline: 'none',
                         color: '#1a1a0f',
-                        fontFamily: "'Inter', sans-serif",
+                        fontFamily: "var(--font-inter), sans-serif",
                         minWidth: '0',
                       }}
                     />
@@ -256,7 +256,7 @@ export default function MiniguidaPage() {
                         fontSize: '16px',
                         whiteSpace: 'nowrap',
                         opacity: status === 'loading' ? 0.6 : 1,
-                        fontFamily: "'Inter', sans-serif",
+                        fontFamily: "var(--font-inter), sans-serif",
                         letterSpacing: '0.01em',
                       }}
                     >
@@ -326,7 +326,7 @@ export default function MiniguidaPage() {
               >
                 {e.numero && (
                   <span style={{
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "var(--font-playfair), serif",
                     fontSize: '13px',
                     fontWeight: 700,
                     color: '#EC4899',
@@ -342,7 +342,7 @@ export default function MiniguidaPage() {
                 )}
                 <div>
                   <h3 style={{
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "var(--font-playfair), serif",
                     fontWeight: 700,
                     fontSize: '15px',
                     color: e.isTeaser ? '#888' : '#f5f1ea',
@@ -375,7 +375,7 @@ export default function MiniguidaPage() {
             position: 'relative',
           }}>
             <span style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "var(--font-playfair), serif",
               fontSize: '48px',
               color: '#EC4899',
               lineHeight: 1,
@@ -387,7 +387,7 @@ export default function MiniguidaPage() {
               "
             </span>
             <p style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
+              fontFamily: "var(--font-playfair), Georgia, serif",
               fontStyle: 'italic',
               fontSize: '16px',
               color: '#444',
@@ -420,21 +420,4 @@ export default function MiniguidaPage() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* ── FOOTER MINIMAL ── */}
-        <footer style={{
-          borderTop: '1px solid #e0dbd3',
-          padding: '20px 24px',
-          textAlign: 'center',
-        }}>
-          <p style={{ fontSize: '12px', color: '#bbb' }}>
-            © 2025 Beautyx ·{' '}
-            <Link href="/privacy" style={{ color: '#bbb', textDecoration: 'none' }}>Privacy</Link>
-          </p>
-        </footer>
-
-      </div>
-    </>
-  )
-}
+        </
