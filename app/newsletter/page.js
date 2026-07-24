@@ -350,6 +350,26 @@ export default function NewsletterPage() {
           </div>
         </section>
 
+        {/* ── SPUNTO DI RIFLESSIONE ── */}
+        <section style={{ background: '#f5f1ea', padding: '72px 32px' }}>
+          <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+            <p style={{
+              fontFamily: "var(--font-playfair), Georgia, serif",
+              fontStyle: 'italic',
+              fontSize: 'clamp(19px, 2.4vw, 25px)',
+              color: '#1a1a0f',
+              lineHeight: 1.6,
+              borderLeft: '3px solid #EC4899',
+              paddingLeft: '24px',
+              textAlign: 'left',
+              display: 'inline-block',
+            }}>
+              Ogni anno in Italia aprono circa 7.000 centri estetici. Nello stesso anno, altrettanti chiudono. Pensi davvero che dipenda dal fatto che 7.000 persone non sapessero fare l&apos;estetista? O che il problema fosse un altro — non saper gestire il centro?<br /><br />
+              <strong style={{ fontStyle: 'normal', color: '#EC4899' }}>Tu da che parte vuoi stare?</strong>
+            </p>
+          </div>
+        </section>
+
         {/* ── FAQ ── */}
         <section style={{ background: '#f5f1ea', padding: '80px 32px' }}>
           <div style={{ maxWidth: '720px', margin: '0 auto' }}>
