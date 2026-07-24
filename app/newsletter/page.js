@@ -62,7 +62,7 @@ const faqs = [
   {
     domanda: "Ho già pochissimo tempo. Un'altra newsletter è l'ultima cosa di cui ho bisogno.",
     risposta:
-      'Dieci minuti, due volte a settimana. Se nella prima settimana non trovi niente di utile, ti disiscr ivi senza sensi di colpa. La miniguida te la tieni comunque.',
+      'Dieci minuti, due volte a settimana. Se nella prima settimana non trovi niente di utile, ti disiscrivi senza sensi di colpa. La miniguida te la tieni comunque.',
   },
 ]
 
@@ -167,7 +167,7 @@ export default function NewsletterPage() {
               </h1>
 
               <p style={{ fontSize: 'clamp(16px, 2vw, 19px)', color: '#aaa', lineHeight: 1.75, marginBottom: '36px', maxWidth: '520px' }}>
-                Due volte a settimana, un aspetto della gestione del tuo centro — spiegato in modo che arrivi subito, con qualcosa di concreto da provare. Prezzi, agenda, clienti, dipendenti, margini. Un pezzo alla volta.
+                Due volte a settimana, un aspetto della gestione del tuo centro — spiegato in modo che arrivi subito. Ogni numero ha un tema solo — prezzi, agenda, fidelizzazione, margini — e una cosa concreta da provare subito.
               </p>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -277,7 +277,7 @@ export default function NewsletterPage() {
               Intanto, leggi cosa ti sei persa
             </h2>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#666', lineHeight: 1.7, marginBottom: '40px', maxWidth: '560px' }}>
-              Aprile, leggile — poi decidi se iscriverti.
+              Leggile — poi decidi se iscriverti.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
               {articles.map((a) => {
@@ -315,7 +315,7 @@ export default function NewsletterPage() {
               Fai una cosa.
             </h2>
             <p style={{ fontSize: '17px', color: '#8899aa', marginBottom: '36px', lineHeight: 1.65 }}>
-              Iscriviti gratis, prendi la miniguida, leggiti i primi due numeri. Poi vedi tu.
+              Iscriviti gratis, la miniguida arriva subito, leggiti i primi due numeri. Se non ti serve, ti disiscrivi in un clic — ma la miniguida te la tieni.
             </p>
 
             {status === 'success' ? (

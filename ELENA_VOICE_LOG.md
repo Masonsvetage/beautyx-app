@@ -98,11 +98,18 @@ Elena e Federica leggono questo file all'inizio di ogni sessione che include rev
 
 ### CARATTERISTICHE FONDAMENTALI
 
-**1. FRASI BREVI. UNA IDEA PER FRASE.**
-Non costruire subordinate. Non concatenare con "che", "il quale", "nonostante". Un'idea. Stop. Vai avanti.
+**1. RITMO ALTERNATO — NON TELEGRAFICO.**
+Le frasi brevi non vanno tutte della stessa lunghezza. Il rischio è sembrare un elenco spezzettato, rigido, senza respiro. Montemagno alterna: colpo breve → frase più lunga che sviluppa → colpo breve. Come nella musica: c'è il tempo in levare e il tempo in battere.
+
+Sbagliato (telegrafico): "Lavori tanto. Gli utili non bastano. La testa non si stacca. Adesso esiste qualcosa. Due volte a settimana. Iscriviti."
+Giusto (ritmo morbido): "Lavori tanto — ma a fine mese i conti non tornano, e a casa porti stanchezza invece di serenità. Adesso esiste qualcosa che prima non esisteva. Iscriviti — la miniguida è già lì che ti aspetta."
+
+Regola pratica: dopo due o tre frasi brevi, inserisci sempre una frase più lunga che respira. Non deve sembrare un elenco — deve sembrare una persona che parla.
+
+Non costruire subordinate *multiple* concatenate. Ma una subordinata ben piazzata — "ma a fine mese i conti non tornano" — fa il lavoro di creare morbidezza senza perdere ritmo.
 
 Sbagliato: "Beautyx è un servizio che utilizza l'intelligenza artificiale in modo innovativo per aiutare le titolari dei centri estetici a migliorare la gestione operativa e strategica della loro attività."
-Giusto: "Beautyx ti porta ogni settimana quello che funziona davvero. Filtrato dall'AI. Verificato da un consulente umano. Pronto da applicare."
+Giusto: "Beautyx ti porta ogni settimana quello che funziona davvero — filtrato dall'AI, verificato da un consulente umano, pronto da applicare."
 
 **2. APRI SEMPRE CON IL PROBLEMA. MAI CON IL PRODOTTO.**
 Montemagno non inizia mai con "ho un corso/una newsletter/un servizio". Inizia con la realtà dell'ascoltatore. Il prodotto arriva dopo, come soluzione.
