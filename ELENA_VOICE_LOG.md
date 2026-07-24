@@ -86,6 +86,109 @@ Elena e Federica leggono questo file all'inizio di ogni sessione che include rev
 
 ---
 
+---
+
+## [luglio 2026] — STILE MONTEMAGNO: VOCE DEFINITIVA DI BEAUTYX
+
+**Contesto:** Mason ha richiesto di studiare Marco Montemagno e trasformarne lo stile nel modello permanente di ogni testo Beautyx.
+**Fonte:** analisi fenomenologica + 28 tecniche di persuasione di Montemagno (luglio 2026)
+**Regola:** questo NON è un'ispirazione — è il modello operativo. Federica applica questi principi a ogni testo. Elena verifica che siano rispettati prima di passare il testo a Mason.
+
+---
+
+### CARATTERISTICHE FONDAMENTALI
+
+**1. FRASI BREVI. UNA IDEA PER FRASE.**
+Non costruire subordinate. Non concatenare con "che", "il quale", "nonostante". Un'idea. Stop. Vai avanti.
+
+Sbagliato: "Beautyx è un servizio che utilizza l'intelligenza artificiale in modo innovativo per aiutare le titolari dei centri estetici a migliorare la gestione operativa e strategica della loro attività."
+Giusto: "Beautyx ti porta ogni settimana quello che funziona davvero. Filtrato dall'AI. Verificato da un consulente umano. Pronto da applicare."
+
+**2. APRI SEMPRE CON IL PROBLEMA. MAI CON IL PRODOTTO.**
+Montemagno non inizia mai con "ho un corso/una newsletter/un servizio". Inizia con la realtà dell'ascoltatore. Il prodotto arriva dopo, come soluzione.
+
+Formula di apertura: "Sai qual è il problema vero di chi ha un centro estetico?" / "Ti è mai capitato che..." / "C'è una cosa che nessuno ti dice quando apri un centro estetico."
+
+**3. "TU" DIRETTO. SEMPRE.**
+Non "le titolari di centri estetici". Non "chi gestisce un'attività". Tu. Sempre "tu".
+
+**4. VENDI LO STATO MENTALE, NON IL PRODOTTO.**
+Montemagno non vende corsi — vende la sensazione di capire il mondo meglio degli altri. Beautyx non vende una newsletter — vende serenità, controllo, chiarezza, certezza sul futuro del centro.
+
+Sbagliato: "Iscriviti alla nostra newsletter con consigli pratici di gestione."
+Giusto: "Ogni martedì e venerdì sai già cosa funziona. Non devi cercare. Non devi sperare. Leggi, applichi, vai avanti."
+
+**5. ULTRA-SPECIFICO NEI DETTAGLI.**
+Non "spesso" — "due volte a settimana". Non "veloce" — "dieci minuti". Non "molti centri" — "centri estetici in tutta Italia". Il dettaglio crea credibilità immediata.
+
+**6. ANTICIPAZIONE: CREA ASPETTATIVA PRIMA DI SVELARE.**
+"Adesso ti dico una cosa che cambierà il modo in cui guardi il tuo centro." / "Aspetta, perché quello che succede dopo è la parte importante." Montemagno usa l'anticipo come aggancio.
+
+**7. RECIPROCITÀ IMMEDIATA: DAI PRIMA DI CHIEDERE.**
+La miniguida arriva SUBITO, prima che la persona abbia fatto niente. Non "se ti iscrivi riceverai". Ma "iscriviti — la miniguida è già lì che ti aspetta."
+
+**8. AMMETTI I LIMITI PICCOLI PER GUADAGNARE CREDIBILITÀ.**
+Montemagno non vende la cosa perfetta. "Non risolve tutto. Ma risolve le cose che pesano di più." Questo abbassa le difese e fa abbassare la guardia allo scettico.
+
+**9. ENERGIA POSITIVA, TONO QUASI SCANZONATO.**
+Anche quando parli di problemi seri (lavoro, stress, conti che non tornano) non essere drammatico. Tocca il problema, annuisci, poi subito vai alla soluzione. Non indugiare nel dolore.
+
+**10. COMUNANZA: SEI DALLA STESSA PARTE.**
+Non sei il guru che spiega dall'alto. Sei la persona che ha trovato qualcosa e lo racconta a un'amica. "Anche tu lo sai che..." / "Lo sappiamo entrambe che..."
+
+---
+
+### STRUTTURA FISSA DI OGNI TESTO
+
+```
+PROBLEMA SENTITO (1-2 frasi, realtà dell'ascoltatore — non del prodotto)
+↓
+RICONOSCIMENTO (1 frase — "lo so, ci siamo passate tutte")
+↓
+SOLUZIONE NUOVA (1-2 frasi — cosa esiste adesso che prima non c'era)
+↓
+MECCANISMO SEMPLICE (1-2 frasi — come funziona concretamente)
+↓
+BENEFICIO IMMEDIATO (1 frase — cosa ottieni subito, gratis)
+↓
+UNA SOLA CTA (chiara, diretta)
+```
+
+---
+
+### FORMULE PRONTE
+
+Aperture:
+- "Sai qual è il problema vero di chi ha un centro estetico?"
+- "Ti è mai capitato di finire la giornata stanca morta e chiederti se vale ancora la pena?"
+- "C'è una cosa che nessuno ti dice quando apri un centro estetico."
+- "Hai tutto: le mani, il talento, i clienti. Ma la testa non si stacca mai."
+
+Transizioni soluzione:
+- "Adesso esiste qualcosa che prima non esisteva."
+- "Il meccanismo è semplice: [descrizione concreta]"
+- "Non devi studiare niente. Non devi cambiare niente. Devi solo leggere."
+
+Chiusure con beneficio:
+- "Leggi, applichi, raccogli i risultati."
+- "Gratis. Subito. Senza impegno."
+- "La miniguida è già lì che ti aspetta. Iscriviti."
+
+---
+
+### COSA NON FARE — ERRORI DA ELIMINARE
+
+- ❌ Iniziare con "Beautyx è..." o "La nostra newsletter..."
+- ❌ Aggettivi vuoti: "innovativo", "rivoluzionario", "all'avanguardia", "unico"
+- ❌ Indugiare sul problema — toccalo e vai avanti
+- ❌ Liste di benefici — racconta il beneficio come storia, non come elenco
+- ❌ Passivo — sempre attivo, soggetto esplicito
+- ❌ Frasi subordinate lunghe e concatenate
+- ❌ Entusiasmo finto ("Incredibile!", "Fantastico!") — l'energia deve essere genuina
+- ❌ Tre CTA diverse — una sola per pezzo
+
+---
+
 ## NOTE STRUTTURALI PER FEDERICA
 
 - Non nominare mai SvetAge nei testi pubblici
@@ -95,4 +198,4 @@ Elena e Federica leggono questo file all'inizio di ogni sessione che include rev
 - CTA unica per pezzo — non tre call to action diverse
 - Miniguida = benvenuto iscrizione, non prodotto standalone
 - Consulente = persona reale (Luigi Perri) sempre abbinato all'AI
-- Modelli: Montemagno, SpiegameloFacile — consulenza pratica, non rivista
+- **Stile di riferimento primario: MONTEMAGNO** (vedi sezione sopra) — applicarlo a ogni singolo testo, senza eccezioni
