@@ -148,8 +148,8 @@ export default function NewsletterPage() {
         <section style={{ background: '#1a1a0f', position: 'relative', overflow: 'hidden' }}>
           <div style={{
             position: 'absolute', inset: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&q=80)',
-            backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.2,
+            backgroundImage: 'url(/images/hero-titolare-bw.jpg)',
+            backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.25,
           }} />
 
           <div
@@ -162,7 +162,7 @@ export default function NewsletterPage() {
               </div>
 
               <h1 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(34px, 5vw, 62px)', fontWeight: 900, lineHeight: 1.08, color: '#fff', marginBottom: '28px' }}>
-                Il tuo centro<br />lo sai fare.<br />
+                Il tuo lavoro<br />lo sai fare.<br />
                 <span style={{ fontStyle: 'italic', color: '#EC4899' }}>Gestirlo bene<br />è un&apos;altra storia.</span>
               </h1>
 
