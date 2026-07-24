@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -234,7 +235,15 @@ function ArticleModal({ news, onClose }) {
 }
 
 export default function LandingPage() {
-  const { user, isAdmin, isHpa } = useAuth()
+  const { user, isAdmin, isHpa, loading } = useAuth()
+  const router = useRouter()
+
+  // Redirect visitatori non autenticati alla newsletter pubblica
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/newsletter')
+    }
+  }, [loading, user, router])
   const [stats, setStats] = useState(null)
   const [news, setNews] = useState([])
   const [reviews, setReviews] = useState([])
