@@ -420,4 +420,21 @@ export default function MiniguidaPage() {
               </div>
             </div>
           </div>
-        </
+        </section>
+
+        {/* ── FOOTER MINIMAL ── */}
+        <footer style={{
+          borderTop: '1px solid #e0dbd3',
+          padding: '20px 24px',
+          textAlign: 'center',
+        }}>
+          <p style={{ fontSize: '12px', color: '#bbb' }}>
+            © 2025 Beautyx ·{' '}
+            <Link href="/privacy" style={{ color: '#bbb', textDecoration: 'none' }}>Privacy</Link>
+          </p>
+        </footer>
+
+      </div>
+    </>
+  )
+}
