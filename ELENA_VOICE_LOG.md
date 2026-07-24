@@ -108,7 +108,16 @@ Regola pratica: dopo due o tre frasi brevi, inserisci sempre una frase più lung
 
 Non costruire subordinate *multiple* concatenate. Ma una subordinata ben piazzata — "ma a fine mese i conti non tornano" — fa il lavoro di creare morbidezza senza perdere ritmo.
 
-Sbagliato: "Beautyx è un servizio che utilizza l'intelligenza artificiale in modo innovativo per aiutare le titolari dei centri estetici a migliorare la gestione operativa e strategica della loro attività."
+**1bis. ATTENZIONE: LISTE TRAVESTITE DA PROSA (miss di revisione, luglio 2026).**
+Un difetto che è passato due volte la revisione di Elena senza essere notato: una frase con 3+ elementi separati da virgole o trattini (es. "prezzi, agenda, fidelizzazione, margini") *legge* come un elenco puntato anche se è scritta come prosa. Rompe il ritmo parlato di Montemagno — sembra un piano editoriale, non una persona che parla.
+Sbagliato: "Ogni numero ha un tema solo — prezzi, agenda, fidelizzazione, margini — e una cosa concreta da provare subito."
+Giusto: "Due volte a settimana, una cosa sola. Non un elenco di consigli — un problema vero del tuo centro, sviscerato con i numeri alla mano: prezzi, agenda, fidelizzazione, margini. Alla fine, una mossa precisa da provare questa settimana. Non "valutare". Provare."
+Regola pratica: se una frase enumera 3+ cose, o (a) le sciogli in una frase più lunga con un aggancio narrativo prima, o (b) chiudi subito dopo con un colpo breve che stacca dal tono da elenco ("Non valutare. Provare."). Elena deve controllare esplicitamente questo pattern in ogni revisione futura, non solo tono generale.
+
+**1ter. IL CONTRASTO "NON X, MA Y" SI USA CON IL CONTAGOCCE (correzione Mason, luglio 2026).**
+La figura retorica "non questo ma quello" ("non la settimana prossima, oggi" / "non in generale, adesso" / "non sui centri in generale") è uno strumento tipico di Montemagno — ma è UNO strumento, non tutto lo stile. Usarlo in ogni singola frase o in ogni punto di un elenco (come è successo nella sezione "Cosa succede quando ti iscrivi", dove compariva in tutti e 3 i punti) lo svuota: invece di colpire, stanca. Diventa un tic riconoscibile e fastidioso.
+Regola pratica: al massimo **una volta per sezione/blocco**, nel punto dove serve davvero per un contrasto forte — mai ripetuto punto dopo punto, mai due volte nello stesso paragrafo breve. Se in una sezione con più punti/step il contrasto serve in tutti, cambialo di forma (non ripetere lo stampo "non X, Y") o toglilo da alcuni punti e lascialo solo dove pesa di più.
+Elena deve segnalare esplicitamente se questo pattern compare più di una volta ravvicinata nello stesso blocco di testo, prima che il testo arrivi a Mason.
 Giusto: "Beautyx ti porta ogni settimana quello che funziona davvero — filtrato dall'AI, verificato da un consulente umano, pronto da applicare."
 
 **2. APRI SEMPRE CON IL PROBLEMA. MAI CON IL PRODOTTO.**

@@ -123,7 +123,6 @@ export default function NewsletterPage() {
         .bx-article strong { color: #1a1a0f; }
         @media (max-width: 700px) {
           .hero-split { flex-direction: column !important; }
-          .hero-img-panel { display: none !important; }
           .differenziatore-grid { flex-direction: column !important; }
         }
       `}</style>
@@ -156,7 +155,7 @@ export default function NewsletterPage() {
             className="hero-split"
             style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: '80px 32px 96px', display: 'flex', alignItems: 'center', gap: '60px' }}
           >
-            <div style={{ flex: '1 1 500px' }}>
+            <div style={{ maxWidth: '640px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(236,72,153,0.15)', border: '1px solid rgba(236,72,153,0.3)', color: '#EC4899', fontWeight: 700, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '100px', marginBottom: '32px' }}>
                 Newsletter gratuita · Beautyx
               </div>
@@ -167,7 +166,7 @@ export default function NewsletterPage() {
               </h1>
 
               <p style={{ fontSize: 'clamp(16px, 2vw, 19px)', color: '#aaa', lineHeight: 1.75, marginBottom: '36px', maxWidth: '520px' }}>
-                Due volte a settimana, un aspetto della gestione del tuo centro — spiegato in modo che arrivi subito. Ogni numero ha un tema solo — prezzi, agenda, fidelizzazione, margini — e una cosa concreta da provare subito.
+                Non un altro elenco di consigli da corso online. Due volte a settimana ti aiutiamo a vedere cosa funziona per come lavori tu — perché il tuo centro non cresce copiando una formula, cresce quando la gestione va nella stessa direzione di chi sei. Niente da studiare. Solo da riconoscere.
               </p>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -178,18 +177,6 @@ export default function NewsletterPage() {
               </div>
             </div>
 
-            <div
-              className="hero-img-panel"
-              style={{ flex: '0 0 340px', height: '440px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=680&q=80"
-                alt="Titolare di centro estetico"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,26,15,0.7) 0%, transparent 55%)' }} />
-            </div>
           </div>
         </section>
 
