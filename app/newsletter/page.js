@@ -189,7 +189,7 @@ export default function NewsletterPage() {
             <div style={{ flex: '0 0 340px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=680&q=80"
+                src="/images/punto-gestione.jpg"
                 alt="Gestione centro estetico"
                 style={{ width: '100%', borderRadius: '12px', objectFit: 'cover', height: '380px', display: 'block' }}
               />
