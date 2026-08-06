@@ -217,6 +217,21 @@ export default function NewsletterPage() {
           </div>
         </section>
 
+        {/* ── AI PER IL VALORE ── */}
+        <section style={{ background: '#fff', padding: '80px 32px', borderTop: '1px solid #f0ece3' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '16px' }}>
+              Un&apos;AI diversa, per un problema diverso
+            </p>
+            <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.15, marginBottom: '24px' }}>
+              L&apos;AI per gestire agenda e telefono esiste già. Quella per far guadagnare di più il tuo centro, no — finora.
+            </h2>
+            <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
+              Non ti stiamo raccontando l&apos;ennesimo assistente virtuale che prende prenotazioni: quello, giustamente, lo offrono già in tanti. Beautyx usa l&apos;intelligenza artificiale per un obiettivo diverso — insieme a un consulente umano vero, ti aiuta a leggere i numeri del tuo centro e a decidere cosa fare per farlo guadagnare di più, non solo per farlo funzionare senza intoppi. È un approccio che, per come lo abbiamo costruito, non esiste ancora nel settore estetico. Siamo i primi ad averci pensato e ad averlo reso una realtà a tua disposizione.
+            </p>
+          </div>
+        </section>
+
         {/* ── COSA OTTIENI ── */}
         <section style={{ background: '#f5f1ea', padding: '80px 32px' }}>
           <div style={{ maxWidth: '760px', margin: '0 auto' }}>
