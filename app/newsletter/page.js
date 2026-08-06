@@ -4,44 +4,21 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-// Fallback statico — mostra sempre le newsletter anche se l'API non risponde
-const FALLBACK_ARTICOLI = [
-  {
-    id: '1',
-    titolo: 'Da estetista a imprenditrice: la differenza che nessuno ti ha mai spiegato',
-    excerpt: 'Hai una passione bellissima. Ma ti stanchi, e i soldi non bastano mai. Ti spiego perché.',
-    categoria: 'Gestione',
-    contenuto: null,
-  },
-  {
-    id: '2',
-    titolo: 'Vendita prodotti a casa: il contrario di quello che pensano (quasi) tutti',
-    excerpt: '"Le clienti non vogliono comprare." Sei sicura di questo?',
-    categoria: 'Vendita',
-    contenuto: null,
-  },
-  {
-    id: '3',
-    titolo: 'Il buco in agenda che ti sta svuotando il conto',
-    excerpt: 'I no-show non sono sfortuna. Sono un problema di sistema — e si risolve.',
-    categoria: 'Agenda',
-    contenuto: null,
-  },
-  {
-    id: '4',
-    titolo: "L'assistente che prenota mentre tu dormi",
-    excerpt: 'Nel resto del mondo le estetiste hanno smesso di rispondere al telefono. Ecco come.',
-    categoria: 'Innovazione',
-    contenuto: null,
-  },
+// Tassonomia tag per l'archivio "Newsletter già uscite" (/api/public/newsletter-archive).
+// Tassonomia definitiva Alessia (8 categorie) — i valori salvati nel DB devono
+// combaciare esattamente con "label" qui sotto per far funzionare il filtro.
+const TAG_TASSONOMIA = [
+  { label: 'Mindset & identità', colore: '#14B8A6' },
+  { label: 'Numeri & margini', colore: '#EC4899' },
+  { label: 'Agenda & tempo', colore: '#F59E0B' },
+  { label: 'Clienti & relazione', colore: '#8B5CF6' },
+  { label: 'Marketing & posizionamento', colore: '#10B981' },
+  { label: 'Vendita & pacchetti', colore: '#EF4444' },
+  { label: 'Squadra & delega', colore: '#3B82F6' },
+  { label: 'Normative & strumenti', colore: '#6366F1' },
 ]
-
-const COLORI_CATEGORIA = {
-  Gestione: '#EC4899',
-  Vendita: '#8B5CF6',
-  Agenda: '#F59E0B',
-  Innovazione: '#10B981',
-}
+const COLORE_TAG_DEFAULT = '#EC4899'
+const coloreTag = (tag) => TAG_TASSONOMIA.find((t) => t.label === tag)?.colore || COLORE_TAG_DEFAULT
 
 const faqs = [
   {
@@ -71,17 +48,27 @@ export default function NewsletterPage() {
   const [website, setWebsite] = useState('')
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const [articles, setArticles] = useState(FALLBACK_ARTICOLI)
+  const [articoliState, setArticoliState] = useState({ status: 'loading', items: [] })
+  const [tagAttivo, setTagAttivo] = useState(null)
   const [activeArticle, setActiveArticle] = useState(null)
 
   useEffect(() => {
-    fetch('/api/public/news?limit=12')
+    fetch('/api/public/newsletter-archive?limit=12')
       .then((r) => r.json())
       .then((d) => {
-        if (Array.isArray(d.news) && d.news.length > 0) setArticles(d.news)
+        const items = Array.isArray(d.articoli) ? d.articoli : []
+        setArticoliState({ status: items.length > 0 ? 'ready' : 'empty', items })
       })
-      .catch(() => {})
+      .catch(() => setArticoliState({ status: 'empty', items: [] }))
   }, [])
+
+  const articoliFiltrati = tagAttivo
+    ? articoliState.items.filter((a) => Array.isArray(a.tags) && a.tags.includes(tagAttivo))
+    : articoliState.items
+
+  const tagPresenti = TAG_TASSONOMIA.filter((t) =>
+    articoliState.items.some((a) => Array.isArray(a.tags) && a.tags.includes(t.label))
+  )
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -166,14 +153,14 @@ export default function NewsletterPage() {
               </h1>
 
               <p style={{ fontSize: 'clamp(16px, 2vw, 19px)', color: '#aaa', lineHeight: 1.75, marginBottom: '36px', maxWidth: '520px' }}>
-                Non un altro elenco di consigli da corso online. Due volte a settimana ti aiutiamo a vedere cosa funziona per come lavori tu — perché il tuo centro non cresce copiando una formula, cresce quando la gestione va nella stessa direzione di chi sei. Niente da studiare. Solo da riconoscere.
+                Agenda piena da mattina a sera. A fine mese il conto che non torna mai come dovrebbe. Una stanchezza che il sonno perso non spiega. Se il centro lo mandi avanti da anni, sai già di cosa sto parlando — e scommetto che pensi sia colpa tua. Non lo è: nessuno ti ha mai insegnato a leggere i problemi di gestione che quasi tutte le titolari come te si portano dietro. Due volte a settimana, in dieci minuti, te li mostriamo noi. Il tuo centro non cresce copiando una formula: cresce quando la gestione va nella stessa direzione di chi sei. Niente da studiare. Solo da riconoscere.
               </p>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                 <a href="#form-section" style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '16px 32px', borderRadius: '10px', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}>
                   Iscriviti gratis →
                 </a>
-                <p style={{ fontSize: '13px', color: '#666' }}>La miniguida arriva nella tua email oggi.</p>
+                <p style={{ fontSize: '13px', color: '#666' }}>La miniguida oggi in email. Più: una domanda al mese a un consulente vero, gratis.</p>
               </div>
             </div>
 
@@ -204,31 +191,16 @@ export default function NewsletterPage() {
               </h2>
               <div style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
                 <p style={{ marginBottom: '18px' }}>
-                  Le newsletter sul settore ti raccontano le tendenze. Bene — le tendenze servono. Ma noi ci fermiamo un passo dopo: <em>cosa significa quella tendenza per la gestione del tuo centro?</em>
+                  Le newsletter di settore ti raccontano le tendenze. Bene — le tendenze servono. Ma noi ci fermiamo un passo dopo: <em>cosa significa quella tendenza per la gestione del tuo centro?</em>
                 </p>
                 <p style={{ marginBottom: '18px' }}>
-                  Ogni numero ha un tema solo. Un problema reale di chi gestisce un centro estetico, analizzato con dati concreti, spiegato senza giri di parole. Alla fine: una cosa da provare — non &ldquo;considera di valutare&rdquo;, una cosa precisa, questa settimana.
+                  Ecco come funziona, senza fronzoli: un&apos;intelligenza artificiale seleziona — tra tutto quello che si scrive sulla gestione di un centro estetico — gli argomenti che contano davvero per chi lo manda avanti da anni, non per chi lo sta aprendo adesso. Poi quel materiale passa nelle mani di un consulente umano vero, che lo trasforma in qualcosa che puoi usare per il tuo centro, questa settimana. Non tendenze da ammirare: un tema solo, un problema reale, spiegato senza giri di parole, e una cosa precisa da provare — non &ldquo;considera di valutare&rdquo;, una cosa precisa.
                 </p>
                 <p style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontStyle: 'italic', fontSize: '18px', color: '#EC4899', borderLeft: '3px solid #EC4899', paddingLeft: '18px', lineHeight: 1.6 }}>
-                  Non informazione. Consulenza — due volte a settimana, gratis.
+                  Non informazione. Consulenza — due volte a settimana, gratis. E una volta al mese, quella consulenza ha anche una faccia, e risponde solo a te.
                 </p>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ── AI PER IL VALORE ── */}
-        <section style={{ background: '#fff', padding: '80px 32px', borderTop: '1px solid #f0ece3' }}>
-          <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '16px' }}>
-              Un&apos;AI diversa, per un problema diverso
-            </p>
-            <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.15, marginBottom: '24px' }}>
-              L&apos;AI per gestire agenda e telefono esiste già. Quella per far guadagnare di più il tuo centro, no — finora.
-            </h2>
-            <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
-              Non ti stiamo raccontando l&apos;ennesimo assistente virtuale che prende prenotazioni: quello, giustamente, lo offrono già in tanti. Beautyx usa l&apos;intelligenza artificiale per un obiettivo diverso — insieme a un consulente umano vero, ti aiuta a leggere i numeri del tuo centro e a decidere cosa fare per farlo guadagnare di più, non solo per farlo funzionare senza intoppi. È un approccio che, per come lo abbiamo costruito, non esiste ancora nel settore estetico. Siamo i primi ad averci pensato e ad averlo reso una realtà a tua disposizione.
-            </p>
           </div>
         </section>
 
@@ -253,7 +225,7 @@ export default function NewsletterPage() {
                 {
                   num: '03',
                   titolo: 'Una volta al mese: il consulente',
-                  desc: "Scrivi una domanda sul tuo centro. Una persona reale ti risponde, pensando al tuo caso specifico. Compresa nell'iscrizione gratuita.",
+                  desc: "Scrivi la domanda che ti tieni per te da mesi — quella specifica, sul tuo centro. Una persona reale ti risponde pensando al tuo caso, non ai centri estetici in generale. Compresa nell'iscrizione gratuita.",
                 },
               ].map((item) => (
                 <div key={item.num} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
@@ -278,35 +250,78 @@ export default function NewsletterPage() {
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', marginBottom: '12px', lineHeight: 1.2 }}>
               Intanto, leggi cosa ti sei persa
             </h2>
-            <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#666', lineHeight: 1.7, marginBottom: '40px', maxWidth: '560px' }}>
-              Aprile, leggile — poi decidi se iscriverti.
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
-              {articles.map((a) => {
-                const colore = COLORI_CATEGORIA[a.categoria] || '#EC4899'
-                return (
-                  <button
-                    key={a.id}
-                    className="bx-art-card"
-                    onClick={() => setActiveArticle(a)}
-                    style={{ textAlign: 'left', background: '#fff', border: '1px solid #e7e0d5', borderRadius: '14px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', fontFamily: "var(--font-inter), sans-serif", cursor: 'pointer' }}
-                  >
-                    {a.categoria && (
-                      <span style={{ alignSelf: 'flex-start', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: colore, background: `${colore}18`, padding: '4px 10px', borderRadius: '999px' }}>
-                        {a.categoria}
-                      </span>
-                    )}
-                    <h3 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: '17px', fontWeight: 700, color: '#1a1a0f', lineHeight: 1.35 }}>
-                      {a.titolo}
-                    </h3>
-                    {a.excerpt && (
-                      <p style={{ fontSize: '14px', color: '#666', lineHeight: 1.6 }}>{a.excerpt}</p>
-                    )}
-                    <span style={{ marginTop: 'auto', fontSize: '14px', fontWeight: 700, color: '#1a1a0f' }}>Leggi →</span>
-                  </button>
-                )
-              })}
-            </div>
+
+            {articoliState.status === 'empty' && (
+              <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#666', lineHeight: 1.7, maxWidth: '560px' }}>
+                I primi numeri arrivano a breve — iscriviti per non perderli.
+              </p>
+            )}
+
+            {articoliState.status === 'ready' && (
+              <>
+                <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#666', lineHeight: 1.7, marginBottom: '28px', maxWidth: '560px' }}>
+                  Leggile — poi decidi se iscriverti.
+                </p>
+
+                {tagPresenti.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
+                    <button
+                      onClick={() => setTagAttivo(null)}
+                      style={{
+                        fontSize: '12px', fontWeight: 700, letterSpacing: '0.03em', padding: '6px 14px', borderRadius: '999px', cursor: 'pointer',
+                        border: tagAttivo === null ? '1.5px solid #1a1a0f' : '1.5px solid #e7e0d5',
+                        background: tagAttivo === null ? '#1a1a0f' : '#fff',
+                        color: tagAttivo === null ? '#fff' : '#1a1a0f',
+                      }}
+                    >
+                      Tutti
+                    </button>
+                    {tagPresenti.map((t) => (
+                      <button
+                        key={t.label}
+                        onClick={() => setTagAttivo(t.label)}
+                        style={{
+                          fontSize: '12px', fontWeight: 700, letterSpacing: '0.03em', padding: '6px 14px', borderRadius: '999px', cursor: 'pointer',
+                          border: tagAttivo === t.label ? `1.5px solid ${t.colore}` : '1.5px solid #e7e0d5',
+                          background: tagAttivo === t.label ? `${t.colore}18` : '#fff',
+                          color: tagAttivo === t.label ? t.colore : '#1a1a0f',
+                        }}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+                  {articoliFiltrati.map((a) => (
+                    <button
+                      key={a.id}
+                      className="bx-art-card"
+                      onClick={() => setActiveArticle(a)}
+                      style={{ textAlign: 'left', background: '#fff', border: '1px solid #e7e0d5', borderRadius: '14px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', fontFamily: "var(--font-inter), sans-serif", cursor: 'pointer' }}
+                    >
+                      {Array.isArray(a.tags) && a.tags.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          {a.tags.slice(0, 2).map((tag) => (
+                            <span key={tag} style={{ alignSelf: 'flex-start', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: coloreTag(tag), background: `${coloreTag(tag)}18`, padding: '4px 10px', borderRadius: '999px' }}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <h3 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: '17px', fontWeight: 700, color: '#1a1a0f', lineHeight: 1.35 }}>
+                        {a.titolo}
+                      </h3>
+                      {a.estratto && (
+                        <p style={{ fontSize: '14px', color: '#666', lineHeight: 1.6 }}>{a.estratto}</p>
+                      )}
+                      <span style={{ marginTop: 'auto', fontSize: '14px', fontWeight: 700, color: '#1a1a0f' }}>Leggi →</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -426,8 +441,6 @@ export default function NewsletterPage() {
           <p style={{ fontSize: '12px', color: '#555' }}>
             © 2025 Beautyx ·{' '}
             <Link href="/privacy" style={{ color: '#666', textDecoration: 'none' }}>Privacy</Link>
-            {' · '}
-            <Link href="/login" style={{ color: '#666', textDecoration: 'none' }}>Accedi al gestionale</Link>
           </p>
         </footer>
 
@@ -449,10 +462,14 @@ export default function NewsletterPage() {
                 &times;
               </button>
 
-              {activeArticle.categoria && (
-                <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORI_CATEGORIA[activeArticle.categoria] || '#EC4899', background: `${COLORI_CATEGORIA[activeArticle.categoria] || '#EC4899'}18`, padding: '4px 10px', borderRadius: '999px', marginBottom: '16px' }}>
-                  {activeArticle.categoria}
-                </span>
+              {Array.isArray(activeArticle.tags) && activeArticle.tags.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
+                  {activeArticle.tags.map((tag) => (
+                    <span key={tag} style={{ display: 'inline-block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: coloreTag(tag), background: `${coloreTag(tag)}18`, padding: '4px 10px', borderRadius: '999px' }}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               )}
 
               <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 4vw, 34px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.2, marginBottom: '24px' }}>
@@ -463,7 +480,7 @@ export default function NewsletterPage() {
                 className="bx-article"
                 dangerouslySetInnerHTML={{
                   __html: activeArticle.contenuto ||
-                    `<p>${activeArticle.excerpt}</p><p><em>Iscriviti per leggere il numero completo.</em></p>`,
+                    `<p>${activeArticle.estratto || ''}</p><p><em>Iscriviti per leggere il numero completo.</em></p>`,
                 }}
               />
 
