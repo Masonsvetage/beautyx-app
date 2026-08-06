@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 
 const STORAGE_PREFIX = 'beautyx-guida-esercizio-'
+const CHANGE_EVENT = 'beautyx-workbook-change'
+
+// Numero minimo di caratteri (dopo trim) perche' un esercizio conti come "compilato"
+// e sblocchi il capitolo successivo. Vedi Chapter.js e ChapterNav.js.
+export const MIN_UNLOCK_CHARS = 15
 
 export function workbookKey(numero) {
   return `${STORAGE_PREFIX}${numero}`
@@ -32,6 +37,8 @@ export function useWorkbookAnswer(numero) {
       try {
         window.localStorage.setItem(workbookKey(numero), next)
         setSaved(true)
+        // Notifica altri componenti (es. ChapterNav) che lo stato di sblocco puo' essere cambiato.
+        window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { numero, value: next } }))
       } catch {
         // ignora — niente persistenza possibile in questo browser
       }
@@ -53,4 +60,26 @@ export function readAllWorkbookAnswers(numeri) {
     }
   })
   return out
+}
+
+// Hook condiviso: tiene traccia in tempo reale di tutte le risposte del workbook,
+// aggiornandosi quando useWorkbookAnswer salva un nuovo valore in un altro capitolo.
+// Usato da GuidaContent per calcolare quali capitoli sono sbloccati nel ChapterNav.
+export function useAllWorkbookAnswers(numeri) {
+  const key = numeri.join(',')
+  const [risposte, setRisposte] = useState({})
+
+  useEffect(() => {
+    setRisposte(readAllWorkbookAnswers(numeri))
+    const onChange = (e) => {
+      const { numero, value } = e.detail || {}
+      if (numero === undefined) return
+      setRisposte((prev) => ({ ...prev, [numero]: value }))
+    }
+    window.addEventListener(CHANGE_EVENT, onChange)
+    return () => window.removeEventListener(CHANGE_EVENT, onChange)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+
+  return risposte
 }

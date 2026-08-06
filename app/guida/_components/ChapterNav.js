@@ -2,20 +2,29 @@
 
 import { useState } from 'react'
 
-// Menu sticky per saltare a un capitolo. Mostra i numeri 1-10 + Quiz.
-export default function ChapterNav({ numeri, activeId, onNavigate }) {
+// Menu sticky per saltare a un capitolo. Mostra Quiz (in apertura) + numeri 1-10.
+// unlockedNumbers: Set<number> dei capitoli raggiungibili — un capitolo N>1 e'
+// sbloccato solo se l'esercizio del capitolo N-1 e' stato compilato (vedi
+// GuidaContent.js + useWorkbookAnswer.useAllWorkbookAnswers). Il quiz e' sempre
+// raggiungibile, il Capitolo 1 e' sempre sbloccato.
+export default function ChapterNav({ numeri, activeId, unlockedNumbers, onNavigate }) {
   const [open, setOpen] = useState(false)
 
   const items = [
-    ...numeri.map((n) => ({ id: `capitolo-${n}`, label: String(n).padStart(2, '0') })),
-    { id: 'quiz-finale', label: 'Quiz' },
+    { id: 'quiz', label: 'Quiz', locked: false },
+    ...numeri.map((n) => ({
+      id: `capitolo-${n}`,
+      label: String(n).padStart(2, '0'),
+      locked: n > 1 && unlockedNumbers ? !unlockedNumbers.has(n) : false,
+    })),
   ]
 
-  const handleClick = (id) => {
+  const handleClick = (item) => {
+    if (item.locked) return
     setOpen(false)
-    const el = document.getElementById(id)
+    const el = document.getElementById(item.id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    onNavigate?.(id)
+    onNavigate?.(item.id)
   }
 
   return (
@@ -30,13 +39,18 @@ export default function ChapterNav({ numeri, activeId, onNavigate }) {
           {items.map((item) => (
             <button
               key={item.id}
-              onClick={() => handleClick(item.id)}
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${
-                activeId === item.id
+              onClick={() => handleClick(item)}
+              disabled={item.locked}
+              title={item.locked ? 'Completa prima l’esercizio del capitolo precedente' : undefined}
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1 ${
+                item.locked
+                  ? 'text-[#c2b896] cursor-not-allowed'
+                  : activeId === item.id
                   ? 'bg-[#c9a34a] text-[#1a1a0f]'
                   : 'text-[#8a6d1f] hover:bg-[#eadfc4]'
               }`}
             >
+              {item.locked && <span aria-hidden="true">🔒</span>}
               {item.label}
             </button>
           ))}
@@ -55,11 +69,17 @@ export default function ChapterNav({ numeri, activeId, onNavigate }) {
               {items.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleClick(item.id)}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-semibold ${
-                    activeId === item.id ? 'bg-[#c9a34a] text-[#1a1a0f]' : 'text-[#8a6d1f]'
+                  onClick={() => handleClick(item)}
+                  disabled={item.locked}
+                  className={`px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 ${
+                    item.locked
+                      ? 'text-[#c2b896] cursor-not-allowed'
+                      : activeId === item.id
+                      ? 'bg-[#c9a34a] text-[#1a1a0f]'
+                      : 'text-[#8a6d1f]'
                   }`}
                 >
+                  {item.locked && <span aria-hidden="true">🔒</span>}
                   {item.label}
                 </button>
               ))}

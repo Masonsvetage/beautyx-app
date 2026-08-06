@@ -10,12 +10,26 @@ import Chapter from './Chapter'
 import Quiz from './Quiz'
 import WorkbookSummary from './WorkbookSummary'
 import { useActiveSection } from './useActiveSection'
+import { useAllWorkbookAnswers, MIN_UNLOCK_CHARS } from './useWorkbookAnswer'
 
-const CHAPTER_IDS = capitoli.map((c) => `capitolo-${c.numero}`)
-const ALL_NAV_IDS = [...CHAPTER_IDS, 'quiz-finale']
+const CHAPTER_NUMBERS = capitoli.map((c) => c.numero)
+const CHAPTER_IDS = CHAPTER_NUMBERS.map((n) => `capitolo-${n}`)
+const ALL_NAV_IDS = ['quiz', ...CHAPTER_IDS]
 
 export default function GuidaContent() {
   const activeId = useActiveSection(ALL_NAV_IDS)
+  const risposteWorkbook = useAllWorkbookAnswers(CHAPTER_NUMBERS)
+
+  // Un capitolo N>1 e' raggiungibile dal ChapterNav solo se l'esercizio del
+  // capitolo N-1 e' stato compilato — coerente con il blocco di progressione
+  // richiesto in Chapter.js (vedi useWorkbookAnswer.MIN_UNLOCK_CHARS).
+  const unlockedNumbers = new Set(
+    CHAPTER_NUMBERS.filter((n) => {
+      if (n === 1) return true
+      const prev = (risposteWorkbook[n - 1] || '').trim()
+      return prev.length > MIN_UNLOCK_CHARS
+    })
+  )
 
   return (
     <div
@@ -40,27 +54,26 @@ export default function GuidaContent() {
             className="text-4xl sm:text-6xl font-black text-[#f5f1ea] leading-[1.05] mb-6"
             style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
           >
-            I 10 errori che tradiscono
+            Il tuo centro ti somiglia
             <br />
-            <span className="italic text-[#e8c874]">il tuo centro</span>
+            <span className="italic text-[#e8c874]">(che tu lo voglia o no)</span>
           </h1>
           <p className="text-[#cfc6b0] text-lg max-w-xl mx-auto leading-relaxed mb-10">
-            Scorri, leggi, scrivi le tue risposte capitolo per capitolo. Alla fine un breve quiz
-            ti dice quale di questi errori ti riguarda di più oggi.
+            10 cazzate che facciamo (quasi) tutte — e come smettere
           </p>
         </RevealBlock>
 
         <RevealBlock delay={120}>
           <a
-            href="#capitolo-1"
+            href="#quiz"
             className="inline-flex items-center gap-2 px-8 py-4 bg-[#c9a34a] hover:bg-[#e8c874] text-[#1a1a0f] rounded-xl text-base font-bold transition-colors"
           >
-            Inizia a leggere ↓
+            Inizia ↓
           </a>
         </RevealBlock>
       </header>
 
-      <ChapterNav numeri={capitoli.map((c) => c.numero)} activeId={activeId} />
+      <ChapterNav numeri={CHAPTER_NUMBERS} activeId={activeId} unlockedNumbers={unlockedNumbers} />
 
       {/* ── PREMESSA ── */}
       <section className="max-w-2xl mx-auto px-6 py-20">
@@ -97,13 +110,23 @@ export default function GuidaContent() {
         </div>
       </section>
 
+      {/* ── QUIZ DIAGNOSTICO — subito prima dei capitoli ── */}
+      <section id="quiz" className="scroll-mt-24 bg-white border-y border-[#e3d9c2] py-20">
+        <RevealBlock className="text-center mb-4">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-[#faf3df] text-[#a97e1f] text-xs font-bold uppercase tracking-widest mb-4">
+            Quiz diagnostico
+          </span>
+        </RevealBlock>
+        <Quiz />
+      </section>
+
       {/* ── I 10 CAPITOLI — scrollytelling ── */}
       {capitoli.map((capitolo) => (
-        <Chapter key={capitolo.numero} capitolo={capitolo} />
+        <Chapter key={capitolo.numero} capitolo={capitolo} totaleCapitoli={CHAPTER_NUMBERS.length} />
       ))}
 
       {/* ── CONCLUSIONE ── */}
-      <section className="max-w-2xl mx-auto px-6 py-20">
+      <section id="conclusione" className="scroll-mt-24 max-w-2xl mx-auto px-6 py-20">
         <RevealBlock>
           <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-4 text-center">Conclusione</p>
         </RevealBlock>
@@ -114,25 +137,6 @@ export default function GuidaContent() {
             </RevealBlock>
           ))}
         </div>
-      </section>
-
-      {/* ── QUIZ DIAGNOSTICO FINALE ── */}
-      <section id="quiz-finale" className="scroll-mt-24 bg-white border-y border-[#e3d9c2] py-20">
-        <RevealBlock className="text-center mb-4">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-[#faf3df] text-[#a97e1f] text-xs font-bold uppercase tracking-widest mb-4">
-            Quiz diagnostico
-          </span>
-          <h2
-            className="text-2xl sm:text-3xl font-bold text-center mb-3 px-6"
-            style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
-          >
-            Quale errore ti riguarda di più?
-          </h2>
-          <p className="text-center text-[#6b6555] max-w-md mx-auto mb-12 px-6">
-            Otto domande veloci, una risposta sincera per volta. Nessuna preparazione richiesta.
-          </p>
-        </RevealBlock>
-        <Quiz />
       </section>
 
       {/* ── RIEPILOGO WORKBOOK ── */}
@@ -147,4 +151,3 @@ export default function GuidaContent() {
     </div>
   )
 }
-

@@ -1,35 +1,49 @@
 'use client'
 
 import { useState } from 'react'
-import { quizDomande, capitoli } from '@/lib/data/dieci-errori'
+import { quizDomande, quizIntro, capitoli } from '@/lib/data/dieci-errori'
 
 const QUIZ_STORAGE_KEY = 'beautyx-guida-quiz-risposte'
 
-// Calcola il punteggio: somma le occorrenze per numero di errore tra le risposte date.
-// Nessuna mappatura al metodo SvetAge qui — solo conteggio semplice sui 10 errori.
-function calcolaRisultato(risposte) {
+// Calcola il suggerimento di lettura: somma le occorrenze per numero di errore tra
+// le risposte date (ogni opzione puo' puntare a 0, 1 o 2 errori contemporaneamente).
+// Restituisce i 2-3 errori con punteggio piu' alto (a parita' di punteggio sulla
+// soglia, li mostra tutti) — non un verdetto assoluto, solo uno spunto di lettura,
+// coerente con l'approccio maieutico del brand.
+function calcolaSuggerimento(risposte) {
   const punteggi = {}
-  Object.values(risposte).forEach((errore) => {
-    punteggi[errore] = (punteggi[errore] || 0) + 1
+  Object.values(risposte).forEach((erroriArr) => {
+    ;(erroriArr || []).forEach((e) => {
+      punteggi[e] = (punteggi[e] || 0) + 1
+    })
   })
-  const max = Math.max(0, ...Object.values(punteggi))
-  const vincitori = Object.entries(punteggi)
-    .filter(([, v]) => v === max)
-    .map(([numero]) => Number(numero))
-  return { punteggi, vincitori, max }
+  const ordinati = Object.entries(punteggi)
+    .map(([numero, punti]) => ({ numero: Number(numero), punti }))
+    .filter((o) => o.punti > 0)
+    .sort((a, b) => b.punti - a.punti)
+
+  if (ordinati.length === 0) return []
+
+  const soglia = ordinati[Math.min(2, ordinati.length - 1)].punti
+  return ordinati.filter((o) => o.punti >= soglia).map((o) => o.numero)
 }
 
 export default function Quiz() {
-  const [step, setStep] = useState(0) // indice domanda corrente
-  const [risposte, setRisposte] = useState({}) // { domandaId: numeroErrore }
-  const [showResult, setShowResult] = useState(false)
+  const [fase, setFase] = useState('intro') // 'intro' | 'domande' | 'risultato'
+  const [step, setStep] = useState(0)
+  const [risposte, setRisposte] = useState({}) // { domandaId: number[] }
 
   const totale = quizDomande.length
   const domandaCorrente = quizDomande[step]
-  const completato = Object.keys(risposte).length === totale
 
-  const scegli = (domandaId, errore) => {
-    const next = { ...risposte, [domandaId]: errore }
+  const iniziaTest = () => {
+    setFase('domande')
+    setStep(0)
+    setRisposte({})
+  }
+
+  const scegli = (domandaId, erroriArr) => {
+    const next = { ...risposte, [domandaId]: erroriArr }
     setRisposte(next)
     if (step < totale - 1) {
       setTimeout(() => setStep(step + 1), 220)
@@ -39,29 +53,52 @@ export default function Quiz() {
       } catch {
         // localStorage non disponibile, va bene comunque: il risultato resta in memoria
       }
-      setTimeout(() => setShowResult(true), 220)
+      setTimeout(() => setFase('risultato'), 220)
     }
   }
 
   const ricomincia = () => {
     setRisposte({})
     setStep(0)
-    setShowResult(false)
+    setFase('intro')
   }
 
-  if (showResult) {
-    const { vincitori } = calcolaRisultato(risposte)
-    return <RisultatoQuiz numeriErrore={vincitori} onRestart={ricomincia} />
+  if (fase === 'intro') {
+    return (
+      <div className="max-w-xl mx-auto px-6 text-center">
+        <h2
+          className="text-2xl sm:text-3xl font-bold text-[#1a1a0f] mb-5 leading-snug"
+          style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
+        >
+          {quizIntro.titolo}
+        </h2>
+        <p className="text-[#4a4636] text-[1.02rem] leading-[1.85] mb-8">
+          {quizIntro.paragrafo}
+        </p>
+        <button
+          onClick={iniziaTest}
+          className="inline-flex items-center gap-2 px-8 py-4 bg-[#c9a34a] hover:bg-[#e8c874] text-[#1a1a0f] rounded-xl text-base font-bold transition-colors"
+        >
+          {quizIntro.cta}
+        </button>
+        <p className="text-xs text-[#a29c8a] mt-4">16 domande veloci · circa 2 minuti · nessuna risposta sbagliata</p>
+      </div>
+    )
+  }
+
+  if (fase === 'risultato') {
+    const suggeriti = calcolaSuggerimento(risposte)
+    return <SuggerimentoQuiz numeriErrore={suggeriti} onRestart={ricomincia} />
   }
 
   return (
     <div className="max-w-2xl mx-auto px-6">
       {/* Barra avanzamento domande */}
-      <div className="flex items-center gap-1.5 mb-8">
+      <div className="flex items-center gap-1 mb-8 flex-wrap">
         {quizDomande.map((_, i) => (
           <div
             key={i}
-            className={`h-1.5 flex-1 rounded-full transition-colors ${
+            className={`h-1.5 flex-1 min-w-[10px] rounded-full transition-colors ${
               i < step ? 'bg-[#c9a34a]' : i === step ? 'bg-[#e8c874]' : 'bg-[#e3d9c2]'
             }`}
           />
@@ -72,7 +109,7 @@ export default function Quiz() {
         Domanda {step + 1} di {totale}
       </p>
       <h3
-        className="text-2xl sm:text-3xl font-bold text-[#1a1a0f] mb-8 leading-snug"
+        className="text-xl sm:text-2xl font-bold text-[#1a1a0f] mb-8 leading-snug"
         style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
       >
         {domandaCorrente.domanda}
@@ -80,11 +117,11 @@ export default function Quiz() {
 
       <div className="space-y-3">
         {domandaCorrente.opzioni.map((opt, i) => {
-          const selected = risposte[domandaCorrente.id] === opt.errore
+          const selected = risposte[domandaCorrente.id] === opt.errori
           return (
             <button
               key={i}
-              onClick={() => scegli(domandaCorrente.id, opt.errore)}
+              onClick={() => scegli(domandaCorrente.id, opt.errori)}
               className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all text-[#2a2a1f] ${
                 selected
                   ? 'border-[#c9a34a] bg-[#faf3df]'
@@ -109,8 +146,8 @@ export default function Quiz() {
   )
 }
 
-function RisultatoQuiz({ numeriErrore, onRestart }) {
-  const risultati = numeriErrore
+function SuggerimentoQuiz({ numeriErrore, onRestart }) {
+  const suggeriti = numeriErrore
     .map((n) => capitoli.find((c) => c.numero === n))
     .filter(Boolean)
 
@@ -119,49 +156,65 @@ function RisultatoQuiz({ numeriErrore, onRestart }) {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  const scrollToFirstChapter = () => {
+    const el = document.getElementById('capitolo-1')
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-6 text-center">
       <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-3">
-        Il tuo risultato
+        Il tuo spunto di lettura
       </p>
       <h3
-        className="text-2xl sm:text-3xl font-bold text-[#1a1a0f] mb-6 leading-snug"
+        className="text-2xl sm:text-3xl font-bold text-[#1a1a0f] mb-4 leading-snug"
         style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
       >
-        {risultati.length > 1
-          ? 'Questi sono gli errori che ti riguardano di più oggi'
-          : "Questo è l'errore che ti riguarda di più oggi"}
+        {suggeriti.length > 0
+          ? 'Parti probabilmente da qui'
+          : 'Nessun campanello acceso in particolare'}
       </h3>
-
-      <div className="space-y-4 text-left mb-8">
-        {risultati.map((c) => (
-          <div key={c.numero} className="bg-white border-2 border-[#c9a34a] rounded-2xl p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-1">
-              Errore {String(c.numero).padStart(2, '0')}
-            </p>
-            <h4 className="text-lg font-bold text-[#1a1a0f] mb-3" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
-              {c.titolo}
-            </h4>
-            <button
-              onClick={() => scrollToChapter(c.numero)}
-              className="text-sm font-semibold text-[#a97e1f] hover:underline"
-            >
-              Rileggi questo capitolo ↑
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <p className="text-sm text-[#6b6555] mb-6 leading-relaxed">
-        Ricorda: non è un giudizio, è uno specchio. Riconoscerlo è già il primo passo per cambiarlo.
+      <p className="text-sm text-[#6b6555] mb-8 leading-relaxed max-w-md mx-auto">
+        {suggeriti.length > 0
+          ? 'Non è un verdetto, è solo uno specchio parziale: da come rispondi oggi, questi sono i capitoli che probabilmente ti riguardano di più. Ma vale la pena leggerli tutti — sono dieci porte sulla stessa stanza.'
+          : 'Dalle tue risposte non emerge un errore in particolare — ottimo segno, ma leggi comunque i dieci capitoli con calma: quasi sempre qualcosa ti somiglia più di quanto pensi.'}
       </p>
 
-      <button
-        onClick={onRestart}
-        className="text-sm text-[#8a6d1f] hover:underline"
-      >
-        Rifai il quiz
-      </button>
+      {suggeriti.length > 0 && (
+        <div className="space-y-4 text-left mb-8">
+          {suggeriti.map((c) => (
+            <div key={c.numero} className="bg-white border-2 border-[#c9a34a] rounded-2xl p-6">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-1">
+                Errore {String(c.numero).padStart(2, '0')}
+              </p>
+              <h4 className="text-lg font-bold text-[#1a1a0f] mb-3" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
+                {c.titolo}
+              </h4>
+              <button
+                onClick={() => scrollToChapter(c.numero)}
+                className="text-sm font-semibold text-[#a97e1f] hover:underline"
+              >
+                Leggi questo capitolo ↓
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button
+          onClick={scrollToFirstChapter}
+          className="inline-flex items-center gap-2 px-8 py-4 bg-[#c9a34a] hover:bg-[#e8c874] text-[#1a1a0f] rounded-xl text-base font-bold transition-colors"
+        >
+          Inizia dal Capitolo 1 ↓
+        </button>
+        <button
+          onClick={onRestart}
+          className="text-sm text-[#8a6d1f] hover:underline"
+        >
+          Rifai il test
+        </button>
+      </div>
     </div>
   )
 }

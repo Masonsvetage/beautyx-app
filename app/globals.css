@@ -25,6 +25,18 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Guida "10 errori" — capolettera (drop cap) del primo paragrafo di narrazione */
+.guida-drop-cap::first-letter {
+  font-family: var(--font-playfair), Georgia, serif;
+  float: left;
+  font-size: 3.6rem;
+  line-height: 0.82;
+  padding-right: 0.4rem;
+  padding-top: 0.35rem;
+  font-weight: 700;
+  color: #c9a34a;
+}
+
 /* Responsive utilities */
 @media (max-width: 640px) {
   /* Prevent horizontal scroll on mobile */
