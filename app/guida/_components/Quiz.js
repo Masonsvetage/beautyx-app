@@ -5,15 +5,38 @@ import { quizDomande, quizIntro, capitoli } from '@/lib/data/dieci-errori'
 
 const QUIZ_STORAGE_KEY = 'beautyx-guida-quiz-risposte'
 
+// ── Shuffle Fisher-Yates ────────────────────────────────────────────────────
+// Mescola un array di INDICI (mai l'array di dati originale), cosi' la
+// mappatura opzione -> errori resta sempre intatta anche dopo il rimescolo.
+// E' il fix tecnico esplicito al problema "la seconda opzione e' sempre
+// quella giusta" segnalato da Mason sulla v2.
+function shuffleIndici(n) {
+  const idx = Array.from({ length: n }, (_, i) => i)
+  for (let i = idx.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[idx[i], idx[j]] = [idx[j], idx[i]]
+  }
+  return idx
+}
+
+// Nuova mappa di shuffle per ogni domanda: rigenerata a ogni nuova sessione
+// (mount del componente) e a ogni "rifai il test", cosi' l'ordine delle
+// opzioni cambia davvero a ogni render/sessione, non solo alla prima visita.
+function generaMappaShuffle() {
+  return quizDomande.map((d) => shuffleIndici(d.opzioni.length))
+}
+
 // Calcola il suggerimento di lettura: somma le occorrenze per numero di errore tra
 // le risposte date (ogni opzione puo' puntare a 0, 1 o 2 errori contemporaneamente).
 // Restituisce i 2-3 errori con punteggio piu' alto (a parita' di punteggio sulla
 // soglia, li mostra tutti) — non un verdetto assoluto, solo uno spunto di lettura,
 // coerente con l'approccio maieutico del brand.
+// Le domande di controllo (tipo 'controllo') non entrano mai qui: le loro
+// risposte hanno sempre errori: [], quindi non alterano la somma.
 function calcolaSuggerimento(risposte) {
   const punteggi = {}
-  Object.values(risposte).forEach((erroriArr) => {
-    ;(erroriArr || []).forEach((e) => {
+  Object.values(risposte).forEach((r) => {
+    ;(r.errori || []).forEach((e) => {
       punteggi[e] = (punteggi[e] || 0) + 1
     })
   })
@@ -28,28 +51,65 @@ function calcolaSuggerimento(risposte) {
   return ordinati.filter((o) => o.punti >= soglia).map((o) => o.numero)
 }
 
+// Calcola i segnali di coerenza (Q16/Q17 vs le domande comportamentali
+// indicate in "controlloDi"). E' un confronto puramente tecnico/editoriale:
+// non influenza mai lo scoring finale (quello viene sempre e solo dalle
+// domande episodiche/scenario/forzata) e non viene mostrato alla lettrice.
+// Logica (istruzioni di Federica): se la domanda di controllo dichiara
+// un'immagine "virtuosa" di se' (es. "decido sempre con i numeri") ma una
+// delle domande comportamentali collegate mostra uno degli errori
+// sorvegliati, la dichiarazione e' "incoerente" — segno che le risposte
+// potrebbero essere "di facciata". Altrimenti e' "coerente" (o "n/d" se la
+// domanda di controllo non ha ricevuto risposta).
+function calcolaCoerenza(risposte) {
+  const segnali = {}
+  quizDomande
+    .filter((d) => d.tipo === 'controllo')
+    .forEach((d) => {
+      const rispostaControllo = risposte[d.id]
+      if (!rispostaControllo) {
+        segnali[d.id] = 'non-risposta'
+        return
+      }
+      const dichiaraVirtuosa = rispostaControllo.dichiarazione === 'virtuosa'
+      const comportamentoMostraErrore = d.controlloDi.some((altroId) => {
+        const r = risposte[altroId]
+        return r && (r.errori || []).some((e) => d.erroriSorvegliati.includes(e))
+      })
+      segnali[d.id] = dichiaraVirtuosa && comportamentoMostraErrore ? 'incoerente' : 'coerente'
+    })
+  return segnali
+}
+
 export default function Quiz() {
   const [fase, setFase] = useState('intro') // 'intro' | 'domande' | 'risultato'
   const [step, setStep] = useState(0)
-  const [risposte, setRisposte] = useState({}) // { domandaId: number[] }
+  const [risposte, setRisposte] = useState({}) // { domandaId: { optIndex, errori, dichiarazione } }
+  const [shuffleMap, setShuffleMap] = useState(generaMappaShuffle)
 
   const totale = quizDomande.length
   const domandaCorrente = quizDomande[step]
+  const ordineOpzioni = shuffleMap[step] || domandaCorrente.opzioni.map((_, i) => i)
 
   const iniziaTest = () => {
+    setShuffleMap(generaMappaShuffle())
     setFase('domande')
     setStep(0)
     setRisposte({})
   }
 
-  const scegli = (domandaId, erroriArr) => {
-    const next = { ...risposte, [domandaId]: erroriArr }
+  const scegli = (domandaId, opt, optIndex) => {
+    const next = {
+      ...risposte,
+      [domandaId]: { optIndex, errori: opt.errori || [], dichiarazione: opt.dichiarazione },
+    }
     setRisposte(next)
     if (step < totale - 1) {
       setTimeout(() => setStep(step + 1), 220)
     } else {
       try {
-        window.localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(next))
+        const coerenza = calcolaCoerenza(next)
+        window.localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify({ risposte: next, coerenza }))
       } catch {
         // localStorage non disponibile, va bene comunque: il risultato resta in memoria
       }
@@ -60,6 +120,7 @@ export default function Quiz() {
   const ricomincia = () => {
     setRisposte({})
     setStep(0)
+    setShuffleMap(generaMappaShuffle())
     setFase('intro')
   }
 
@@ -81,7 +142,7 @@ export default function Quiz() {
         >
           {quizIntro.cta}
         </button>
-        <p className="text-xs text-[#a29c8a] mt-4">16 domande veloci · circa 2 minuti · nessuna risposta sbagliata</p>
+        <p className="text-xs text-[#a29c8a] mt-4">19 domande veloci · circa 3 minuti · nessuna risposta sbagliata</p>
       </div>
     )
   }
@@ -109,19 +170,24 @@ export default function Quiz() {
         Domanda {step + 1} di {totale}
       </p>
       <h3
-        className="text-xl sm:text-2xl font-bold text-[#1a1a0f] mb-8 leading-snug"
+        className="text-xl sm:text-2xl font-bold text-[#1a1a0f] mb-4 leading-snug"
         style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
       >
         {domandaCorrente.domanda}
       </h3>
 
+      {domandaCorrente.tipo === 'forzata' && domandaCorrente.nota && (
+        <p className="text-sm italic text-[#8a6d1f] mb-6">{domandaCorrente.nota}</p>
+      )}
+
       <div className="space-y-3">
-        {domandaCorrente.opzioni.map((opt, i) => {
-          const selected = risposte[domandaCorrente.id] === opt.errori
+        {ordineOpzioni.map((origIdx) => {
+          const opt = domandaCorrente.opzioni[origIdx]
+          const selected = risposte[domandaCorrente.id]?.optIndex === origIdx
           return (
             <button
-              key={i}
-              onClick={() => scegli(domandaCorrente.id, opt.errori)}
+              key={origIdx}
+              onClick={() => scegli(domandaCorrente.id, opt, origIdx)}
               className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all text-[#2a2a1f] ${
                 selected
                   ? 'border-[#c9a34a] bg-[#faf3df]'

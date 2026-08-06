@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { capitoli, premessa, patto, conclusione } from '@/lib/data/dieci-errori'
+import { capitoli, premessa, patto, percorso, conclusione } from '@/lib/data/dieci-errori'
 import ProgressBar from './ProgressBar'
 import ChapterNav from './ChapterNav'
 import RevealBlock from './RevealBlock'
@@ -108,6 +108,26 @@ export default function GuidaContent() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ── COME FUNZIONA QUESTA GUIDA — testo introduttivo (Parte 3, Federica) ── */}
+      <section className="max-w-2xl mx-auto px-6 py-20">
+        <RevealBlock>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-4 text-center">
+            Come funziona da qui in poi
+          </p>
+        </RevealBlock>
+        <RevealBlock delay={60}>
+          <h2
+            className="text-2xl sm:text-3xl font-bold text-center mb-8"
+            style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
+          >
+            {percorso.titolo}
+          </h2>
+        </RevealBlock>
+        <RevealBlock delay={120}>
+          <p className="text-[1.05rem] leading-[1.85] text-[#2a2a1f]"><RichText text={percorso.testo} /></p>
+        </RevealBlock>
       </section>
 
       {/* ── QUIZ DIAGNOSTICO — subito prima dei capitoli ── */}

@@ -42,153 +42,161 @@ export default function Chapter({ capitolo, totaleCapitoli = 10 }) {
         </RevealBlock>
       </div>
 
-      {/* ── NARRAZIONE + IMMAGINE STICKY (due colonne da tablet in su) ── */}
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <RevealBlock>
-          <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-6">
-            Narrazione e il danno
-          </p>
-        </RevealBlock>
+      {/* ── NARRAZIONE + CASO PRATICO — sfondo fisso (sticky), stessa illustrazione ──
+          Pattern: niente background-attachment:fixed (rotto su iOS Safari). Il
+          layer immagine e' position:sticky dentro un contenitore alto (min-h
+          160vh+), il layer di testo lo segue in flusso normale con un
+          margin-top negativo pari a 100vh, cosi' scorre visivamente sopra
+          l'immagine agganciata finche' il contenitore non finisce. */}
+      <div className="relative min-h-[170vh] bg-[#1a1a0f]">
+        {/* Layer immagine agganciato */}
+        <div className="sticky top-0 h-screen w-full overflow-hidden">
+          <Image
+            src={`/guida/errore-${numeroPad}-narrazione.png`}
+            alt={`Illustrazione errore ${numero}: ${titolo}`}
+            fill
+            className="object-contain"
+            sizes="100vw"
+            priority={numero === 1}
+          />
+          {/* Velo uniforme brand (piu' scuro su schermi stretti) */}
+          <div className="absolute inset-0 bg-[#1a1a0f]/40 sm:bg-[#1a1a0f]/35" />
+          {/* Gradiente aggiuntivo: scuro dietro la zona testo (basso), libero di
+              "respirare" verso l'alto dove non c'e' testo */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a0f]/85 via-[#1a1a0f]/40 to-transparent" />
 
-        <div className="grid md:grid-cols-2 md:gap-10 items-start">
-
-          {/* Colonna immagine — sticky solo da md in su */}
-          <div className="mb-10 md:mb-0">
-            <div className="md:sticky md:top-24">
-              <RevealBlock direction="up">
-                <div className="relative rounded-2xl overflow-hidden border border-[#e3d9c2] bg-[#f5f1ea]">
-                  <Image
-                    src={`/guida/errore-${numeroPad}-narrazione.png`}
-                    alt={`Illustrazione errore ${numero}: ${titolo}`}
-                    width={800}
-                    height={450}
-                    className="w-full h-auto"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  {/* Badge N/10 con barra segmenti */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-[#1a1a0f]/80 backdrop-blur-sm pl-3 pr-2.5 py-1.5">
-                    <span className="text-[#e8c874] text-xs font-bold tracking-wide tabular-nums">
-                      {numeroPad} / {String(totaleCapitoli).padStart(2, '0')}
-                    </span>
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: totaleCapitoli }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={`block w-1.5 h-1.5 rounded-full ${i < numero ? 'bg-[#c9a34a]' : 'bg-white/25'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </RevealBlock>
+          {/* Badge numero capitolo — angolo fisso in alto a destra del viewport */}
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2 rounded-full bg-[#1a1a0f]/80 backdrop-blur-sm pl-3 pr-2.5 py-1.5">
+            <span className="text-[#e8c874] text-xs font-bold tracking-wide tabular-nums">
+              {numeroPad} / {String(totaleCapitoli).padStart(2, '0')}
+            </span>
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: totaleCapitoli }).map((_, i) => (
+                <span
+                  key={i}
+                  className={`block w-1.5 h-1.5 rounded-full ${i < numero ? 'bg-[#c9a34a]' : 'bg-white/25'}`}
+                />
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* Colonna testo — scorre normalmente */}
-          <div>
-            <div className="max-w-2xl">
-              <RevealBlock delay={80}>
-                <p className="guida-drop-cap text-[#2a2a1f] text-[1.12rem] leading-[1.95] mb-6">
+        {/* Layer di testo — scorre in flusso normale sopra l'immagine agganciata */}
+        <div className="relative z-10 -mt-[100vh]">
+
+          {/* Narrazione — card chiara ancorata nella meta' inferiore del viewport */}
+          <div className="min-h-screen flex items-end justify-center px-5 sm:px-10 pb-14 sm:pb-20">
+            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/20 bg-[#f5f1ea]/90 backdrop-blur-md p-8 sm:p-12">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-6">
+                Narrazione e il danno
+              </p>
+
+              <RevealBlock>
+                <p className="guida-drop-cap text-[#2a2a1f] text-[1.08rem] leading-[1.9] mb-6">
                   <RichText text={primoParagrafo} />
                 </p>
               </RevealBlock>
 
               {paragrafiCentrali.length > 0 && (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {paragrafiCentrali.map((p, i) => (
                     <RevealBlock key={i} delay={i * 60}>
-                      <p className="text-[#2a2a1f] text-[1.05rem] leading-[1.85]">
+                      <p className="text-[#2a2a1f] text-[1rem] leading-[1.8]">
                         <RichText text={p} />
                       </p>
                     </RevealBlock>
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* Pull-quote — rompe la larghezza della colonna standard */}
-            {citazione && (
-              <RevealBlock delay={140}>
-                <blockquote className="my-10 border-l-4 border-[#c9a34a] pl-6 py-1">
-                  <p
-                    className="text-[1.8rem] sm:text-[2.1rem] leading-[1.2] text-[#8a6d1f]"
-                    style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
-                  >
-                    &ldquo;{citazione}&rdquo;
-                  </p>
-                </blockquote>
-              </RevealBlock>
-            )}
+              {/* Pull-quote */}
+              {citazione && (
+                <RevealBlock delay={140}>
+                  <blockquote className="my-8 border-l-4 border-[#c9a34a] pl-5 py-1">
+                    <p
+                      className="text-[1.5rem] sm:text-[1.8rem] leading-[1.25] text-[#8a6d1f]"
+                      style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
+                    >
+                      &ldquo;{citazione}&rdquo;
+                    </p>
+                  </blockquote>
+                </RevealBlock>
+              )}
 
-            {ultimoParagrafo && (
-              <div className="max-w-2xl">
+              {ultimoParagrafo && (
                 <RevealBlock delay={200}>
-                  <p className="pl-5 border-l-2 border-[#c9a34a]/70 text-[#2a2a1f] text-[1.05rem] leading-[1.85] italic">
+                  <p className="pl-5 border-l-2 border-[#c9a34a]/70 text-[#2a2a1f] text-[1rem] leading-[1.8] italic mt-2">
                     <RichText text={ultimoParagrafo} />
                   </p>
                 </RevealBlock>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── IL CASO PRATICO — cambio di registro edge-to-edge ── */}
-      <div className="bg-[#efe6d2]">
-        <div className="max-w-3xl mx-auto px-6 py-16">
-          <RevealBlock>
-            <span className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-[#dcc9a0]/70">
-              <span className="block w-1.5 h-1.5 rounded-full bg-[#8a6d1f]" />
-              <span className="text-xs font-bold uppercase tracking-widest text-[#5c4a1f]">
-                Il caso pratico
-              </span>
-            </span>
-          </RevealBlock>
-          <div className="space-y-6">
-            {casoPratico.map((p, i) => (
-              <RevealBlock key={i} delay={i * 60}>
-                <p className="text-[#2a2a1f] text-[1.02rem] leading-[1.8]">
-                  <RichText text={p} />
-                </p>
-              </RevealBlock>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── WORKBOOK — istruzioni (scorrono) + pannello esercizio ancorato ── */}
-      <div className="bg-[#1a1a0f]">
-        <div className="max-w-3xl mx-auto px-6 pt-16 pb-8">
-          <RevealBlock>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-2">
-              L&apos;esercizio pratico — da domani
-            </p>
-            <h3 className="text-[#f5f1ea] text-xl sm:text-2xl font-bold mb-6" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
-              {esercizioLabel}
-            </h3>
-          </RevealBlock>
-
-          <RevealBlock delay={60}>
-            <div className="mb-8 rounded-2xl overflow-hidden border border-[#c9a34a]/70 bg-[#242417]">
-              <Image
-                src={`/guida/errore-${numeroPad}-workbook.png`}
-                alt={`Illustrazione esercizio pratico errore ${numero}: ${titolo}`}
-                width={800}
-                height={450}
-                className="w-full h-auto"
-                sizes="(max-width: 768px) 100vw, 768px"
-              />
+              )}
             </div>
-          </RevealBlock>
+          </div>
 
-          <div className="space-y-5">
-            {esercizio.map((p, i) => (
-              <RevealBlock key={i} delay={80 + i * 60}>
-                <p className="text-[#cfc6b0] text-[1rem] leading-[1.8]">
-                  <RichText text={p} />
-                </p>
+          {/* Il caso pratico — stessa storia, stessa illustrazione di sfondo */}
+          <div className="min-h-screen flex items-end justify-center px-5 sm:px-10 pb-14 sm:pb-20">
+            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/20 bg-[#f5f1ea]/90 backdrop-blur-md p-8 sm:p-12">
+              <RevealBlock>
+                <span className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-[#dcc9a0]/70">
+                  <span className="block w-1.5 h-1.5 rounded-full bg-[#8a6d1f]" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#5c4a1f]">
+                    Il caso pratico
+                  </span>
+                </span>
               </RevealBlock>
-            ))}
+              <div className="space-y-5">
+                {casoPratico.map((p, i) => (
+                  <RevealBlock key={i} delay={i * 60}>
+                    <p className="text-[#2a2a1f] text-[0.98rem] leading-[1.8]">
+                      <RichText text={p} />
+                    </p>
+                  </RevealBlock>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── WORKBOOK — sfondo fisso (sticky) con la seconda illustrazione, fino
+          alla barra di risposta ancorata in fondo ── */}
+      <div className="relative min-h-[150vh] bg-[#1a1a0f]">
+        {/* Layer immagine agganciato */}
+        <div className="sticky top-0 h-screen w-full overflow-hidden">
+          <Image
+            src={`/guida/errore-${numeroPad}-workbook.png`}
+            alt={`Illustrazione esercizio pratico errore ${numero}: ${titolo}`}
+            fill
+            className="object-contain"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-[#1a1a0f]/45 sm:bg-[#1a1a0f]/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a0f]/90 via-[#1a1a0f]/50 to-transparent" />
+        </div>
+
+        {/* Layer di testo — card scura, coerente con lo stile della barra risposta */}
+        <div className="relative z-10 -mt-[100vh]">
+          <div className="min-h-screen flex items-end justify-center px-5 sm:px-10 pb-14 sm:pb-20">
+            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/40 bg-[#14140b]/88 backdrop-blur-md p-8 sm:p-12">
+              <RevealBlock>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-2">
+                  L&apos;esercizio pratico — da domani
+                </p>
+                <h3 className="text-[#f5f1ea] text-xl sm:text-2xl font-bold mb-6" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
+                  {esercizioLabel}
+                </h3>
+              </RevealBlock>
+
+              <div className="space-y-5">
+                {esercizio.map((p, i) => (
+                  <RevealBlock key={i} delay={80 + i * 60}>
+                    <p className="text-[#cfc6b0] text-[0.98rem] leading-[1.8]">
+                      <RichText text={p} />
+                    </p>
+                  </RevealBlock>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
