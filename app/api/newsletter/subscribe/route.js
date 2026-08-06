@@ -1,3 +1,11 @@
+import { createClient } from '@supabase/supabase-js'
+import crypto from 'crypto'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
+
 const ipRequests = new Map()
 const RATE_LIMIT = 3
 const RATE_WINDOW_MS = 60 * 60 * 1000
@@ -15,6 +23,38 @@ function isRateLimited(ip) {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+// Genera (o riusa se già esiste) il token di accesso alla guida interattiva /guida.
+// Gating leggero: non deve mai bloccare l'iscrizione newsletter se fallisce.
+async function ensureGuidaAccessToken(email) {
+  try {
+    const normalizedEmail = email.trim().toLowerCase()
+
+    const { data: existing, error: selectError } = await supabase
+      .from('guida_access')
+      .select('token')
+      .eq('email', normalizedEmail)
+      .maybeSingle()
+
+    if (selectError) {
+      console.error('guida_access select error:', selectError)
+      return
+    }
+
+    if (existing) return // token già presente, non duplicare
+
+    const token = crypto.randomBytes(24).toString('hex')
+    const { error: insertError } = await supabase
+      .from('guida_access')
+      .insert({ email: normalizedEmail, token })
+
+    if (insertError) {
+      console.error('guida_access insert error:', insertError)
+    }
+  } catch (err) {
+    console.error('Errore generazione token guida:', err)
+  }
+}
 
 export async function POST(request) {
   try {
@@ -68,6 +108,9 @@ export async function POST(request) {
       console.error('Beehiiv error:', data)
       return Response.json({ error: data.message || 'Errore iscrizione' }, { status: res.status })
     }
+
+    // Iscrizione Beehiiv andata a buon fine: genera/riusa il token di accesso a /guida
+    await ensureGuidaAccessToken(email)
 
     return Response.json({ success: true })
   } catch (err) {
