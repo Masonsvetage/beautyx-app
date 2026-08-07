@@ -112,14 +112,40 @@ export default function NewsletterPage() {
           .hero-split { flex-direction: column !important; }
           .differenziatore-grid { flex-direction: column !important; }
         }
+        .bx-nl-logo { width: 80px; height: 80px; transform: translateY(22px); }
+        @media (max-width: 480px) {
+          .bx-nl-logo { width: 56px; height: 56px; transform: translateY(12px); }
+        }
+        .bx-cosa-item { position: relative; padding-left: 8px; }
+        .bx-cosa-num {
+          position: absolute;
+          top: -6px;
+          left: -6px;
+          font-family: var(--font-playfair), Georgia, serif;
+          font-weight: 900;
+          line-height: 1;
+          color: rgba(236, 72, 153, 0.13);
+          z-index: 0;
+          user-select: none;
+          pointer-events: none;
+          white-space: nowrap;
+        }
+        .bx-cosa-num-1 { font-size: clamp(3.2rem, 9vw, 5.5rem); }
+        .bx-cosa-num-2 { font-size: clamp(2.6rem, 7vw, 4rem); }
+        .bx-cosa-num-3 { font-size: clamp(4rem, 12vw, 7.5rem); }
+        @media (max-width: 480px) {
+          .bx-cosa-num-1 { font-size: clamp(2.4rem, 16vw, 3.4rem); }
+          .bx-cosa-num-2 { font-size: clamp(2rem, 13vw, 2.6rem); }
+          .bx-cosa-num-3 { font-size: clamp(2.8rem, 20vw, 4.6rem); }
+        }
       `}</style>
 
       <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
 
         {/* ── NAV ── */}
-        <header style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
+        <header style={{ padding: '8px 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={32} height={32} style={{ borderRadius: '4px' }} />
+            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={80} height={80} className="bx-nl-logo" style={{ borderRadius: '4px' }} />
             <span style={{ fontWeight: 700, color: '#1a1a0f', fontSize: '16px' }}>Beautyx</span>
           </Link>
           <a
@@ -253,12 +279,12 @@ export default function NewsletterPage() {
                   titolo: 'Una volta al mese: il consulente',
                   desc: "Scrivi la domanda che ti tieni per te da mesi — quella specifica, sul tuo centro. Una persona reale ti risponde pensando proprio al tuo centro, quello vero, con le sue clienti e i suoi numeri. Compresa nell'iscrizione gratuita.",
                 },
-              ].map((item) => (
-                <div key={item.num} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-                  <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '13px', fontWeight: 700, color: '#EC4899', flexShrink: 0, minWidth: '28px', marginTop: '4px' }}>
+              ].map((item, i) => (
+                <div key={item.num} className="bx-cosa-item">
+                  <span aria-hidden="true" className={`bx-cosa-num bx-cosa-num-${i + 1}`}>
                     {item.num}
                   </span>
-                  <div>
+                  <div style={{ position: 'relative', zIndex: 1 }}>
                     <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: '19px', fontWeight: 700, color: '#1a1a0f', marginBottom: '8px', lineHeight: 1.3 }}>
                       {item.titolo}
                     </h3>
@@ -420,7 +446,7 @@ export default function NewsletterPage() {
               textAlign: 'left',
               display: 'inline-block',
             }}>
-              Ogni anno in Italia aprono circa 7.000 centri estetici. Nello stesso anno, altrettanti chiudono. Pensi davvero che dipenda dalla loro bravura come estetiste? O che il problema fosse un altro — la gestione del centro, quella vera?<br /><br />
+              Ogni anno in Italia aprono circa 7.000 centri estetici. Nello stesso anno, altrettanti chiudono. Pensi davvero che dipenda dalla loro bravura come estetiste? O che il problema sia un altro — la gestione del centro, quella vera?<br /><br />
               <strong style={{ fontStyle: 'normal', color: '#EC4899' }}>Tu da che parte vuoi stare?</strong>
             </p>
           </div>
@@ -430,7 +456,7 @@ export default function NewsletterPage() {
         <section style={{ background: '#f5f1ea', padding: '80px 32px' }}>
           <div style={{ maxWidth: '720px', margin: '0 auto' }}>
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 700, color: '#1a1a0f', marginBottom: '48px', lineHeight: 1.2 }}>
-              Hai domande? Ci siamo già passate.
+              I dubbi più comuni, chiariti subito.
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
               {faqs.map((faq, i) => (
