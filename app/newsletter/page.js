@@ -494,6 +494,9 @@ export default function NewsletterPage() {
             © 2025 Beautyx ·{' '}
             <Link href="/privacy" style={{ color: '#666', textDecoration: 'none' }}>Privacy</Link>
           </p>
+          <p style={{ fontSize: '11px', color: '#444', marginTop: '8px' }}>
+            Beautyx è un progetto di Svetage S.r.l. — P.IVA/C.F. 01959270495 · Via Toscana 6/8, 57128 Livorno (LI), Italia · REA LI 216353 · Capitale sociale 10.000 € interamente versato
+          </p>
         </footer>
 
         {/* ── MODALE ARTICOLO ── */}
