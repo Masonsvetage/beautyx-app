@@ -29,17 +29,17 @@ const faqs = [
   {
     domanda: "C'è davvero un consulente umano? Non è tutto automatico?",
     risposta:
-      "Sì, davvero. Una persona reale — non un bot, non un template — a cui puoi fare una domanda al mese sul tuo centro specifico. Non sui centri estetici in generale: sul tuo. È compresa nell'iscrizione gratuita.",
+      "Una persona reale, in carne e ossa, a cui puoi fare una domanda al mese sul tuo centro specifico — quello vero, quello che conosci a memoria. È compresa nell'iscrizione gratuita.",
   },
   {
     domanda: 'Ho già un commercialista. Non mi serve altro, no?',
     risposta:
-      "Il commercialista ti protegge dal fisco — ed è fondamentale. Ma i prezzi giusti, l'agenda che non si svuota, la cliente che non torna: è un altro mestiere. Beautyx lavora lì.",
+      "Il commercialista ti protegge dal fisco — ed è fondamentale. Ma i prezzi giusti, l'agenda sempre piena, la cliente che sceglie di tornare: è un altro mestiere. Beautyx lavora lì.",
   },
   {
     domanda: "Ho già pochissimo tempo. Un'altra newsletter è l'ultima cosa di cui ho bisogno.",
     risposta:
-      'Dieci minuti, due volte a settimana. Se nella prima settimana non trovi niente di utile, ti disiscrivi senza sensi di colpa. La miniguida te la tieni comunque.',
+      'Dieci minuti, due volte a settimana: prova la prima settimana e giudica tu. Ti disiscrivi quando vuoi, in un clic — la miniguida resta comunque tua.',
   },
 ]
 
@@ -153,7 +153,7 @@ export default function NewsletterPage() {
               </h1>
 
               <p style={{ fontSize: 'clamp(16px, 2vw, 19px)', color: '#aaa', lineHeight: 1.75, marginBottom: '36px', maxWidth: '520px' }}>
-                Agenda piena da mattina a sera. A fine mese il conto che non torna mai come dovrebbe. Una stanchezza che il sonno perso non spiega. Se il centro lo mandi avanti da anni, sai già di cosa sto parlando — e scommetto che pensi sia colpa tua. Non lo è: nessuno ti ha mai insegnato a leggere i problemi di gestione che quasi tutte le titolari come te si portano dietro. Due volte a settimana, in dieci minuti, te li mostriamo noi. Il tuo centro non cresce copiando una formula: cresce quando la gestione va nella stessa direzione di chi sei. Niente da studiare. Solo da riconoscere.
+                Agenda piena da mattina a sera. A fine mese il conto che racconta sempre un&apos;altra storia. Una stanchezza che va ben oltre le ore di sonno perse. Se il centro lo mandi avanti da anni, sai già di cosa sto parlando — e scommetto che pensi sia colpa tua. La verità è un&apos;altra: sono i problemi di gestione che quasi tutte le titolari come te si portano dietro, e che oggi, finalmente, qualcuno inizia a spiegarti. Due volte a settimana, in dieci minuti, te li mostriamo noi. Il tuo centro cresce quando la gestione va nella stessa direzione di chi sei — altro che formule fotocopiate. Tutto da riconoscere. Pochissimo da studiare.
               </p>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -164,6 +164,32 @@ export default function NewsletterPage() {
               </div>
             </div>
 
+          </div>
+        </section>
+
+        {/* ── CHI SIAMO ── */}
+        <section style={{ background: '#fff', padding: '80px 32px' }}>
+          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '16px' }}>
+              Chi siamo
+            </p>
+            <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.15, marginBottom: '24px' }}>
+              Un motore che cerca in tutto il mondo. Una persona che sceglie per te.
+            </h2>
+            <div style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
+              <p style={{ marginBottom: '18px' }}>
+                Ogni settimana, da qualche parte nel mondo, qualcuno scrive qualcosa di utile sulla gestione di un centro estetico — un caso studio in Corea, un&apos;intervista a un&apos;imprenditrice in Texas, un report di settore in Germania. Materiale enorme, sparso, per lo più in inglese — il tipo di ricerca che richiederebbe ore che tu, con la vita che fai, preferisci passare in cabina con una cliente. Qui entra in gioco l&apos;intelligenza artificiale di Beautyx: setaccia questo oceano di contenuti giorno dopo giorno e porta a galla ciò che conta davvero per chi gestisce un centro.
+              </p>
+              <p style={{ marginBottom: '18px' }}>
+                Poi arriva la parte umana: un consulente esperto di gestione, in carne e ossa, che prende quella selezione e la passa al setaccio della realtà italiana — cosa ha senso qui, cosa va adattato, cosa si applica davvero a un centro come il tuo. Il risultato arriva nella tua email due volte a settimana, già pronto da usare.
+              </p>
+              <p style={{ marginBottom: '18px' }}>
+                La differenza con il solito guru da social sta tutta in questo doppio passaggio: la macchina fa quello che le macchine sanno fare bene — cercare, spulciare, confrontare su scala globale — e la persona fa quello che una persona sa fare bene: capire il tuo contesto, darti un consiglio vero, metterci la faccia. Due mestieri fatti seriamente, invece di uno improvvisato con photoshop e citazioni motivazionali.
+              </p>
+              <p>
+                Il materiale buono te lo portiamo noi. Capire come farlo funzionare per il tuo centro — con la tua testa, i tuoi numeri, le tue clienti — resta il pezzo più importante. E quello lo fai tu.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -187,17 +213,17 @@ export default function NewsletterPage() {
                 Il punto
               </p>
               <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.15, marginBottom: '24px' }}>
-                Non è una rivista.<br />È uno strumento di lavoro.
+                Si legge come una rivista di settore.<br />Si usa come uno strumento di lavoro.
               </h2>
               <div style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
                 <p style={{ marginBottom: '18px' }}>
-                  Le newsletter di settore ti raccontano le tendenze. Bene — le tendenze servono. Ma noi ci fermiamo un passo dopo: <em>cosa significa quella tendenza per la gestione del tuo centro?</em>
+                  Le newsletter di settore ti raccontano le tendenze. Bene — le tendenze servono. Ma noi andiamo un passo più in profondità: <em>cosa significa quella tendenza per la gestione del tuo centro?</em>
                 </p>
                 <p style={{ marginBottom: '18px' }}>
-                  Ecco come funziona, senza fronzoli: un&apos;intelligenza artificiale seleziona — tra tutto quello che si scrive sulla gestione di un centro estetico — gli argomenti che contano davvero per chi lo manda avanti da anni, non per chi lo sta aprendo adesso. Poi quel materiale passa nelle mani di un consulente umano vero, che lo trasforma in qualcosa che puoi usare per il tuo centro, questa settimana. Non tendenze da ammirare: un tema solo, un problema reale, spiegato senza giri di parole, e una cosa precisa da provare — non &ldquo;considera di valutare&rdquo;, una cosa precisa.
+                  Un tema alla volta, un problema reale, spiegato in modo diretto e chiaro — e una cosa precisa da provare questa settimana: concreta, mirata, pronta all&apos;uso. <em>(Chi sceglie questi temi e come, te l&apos;abbiamo raccontato qui sopra.)</em>
                 </p>
                 <p style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontStyle: 'italic', fontSize: '18px', color: '#EC4899', borderLeft: '3px solid #EC4899', paddingLeft: '18px', lineHeight: 1.6 }}>
-                  Non informazione. Consulenza — due volte a settimana, gratis. E una volta al mese, quella consulenza ha anche una faccia, e risponde solo a te.
+                  È consulenza vera — due volte a settimana, gratis. E una volta al mese, quella consulenza ha anche una faccia, e risponde solo a te.
                 </p>
               </div>
             </div>
@@ -215,7 +241,7 @@ export default function NewsletterPage() {
                 {
                   num: '01',
                   titolo: 'Subito: la miniguida',
-                  desc: '"10 errori che (quasi) tutte fanno nella gestione del centro" — nella tua email oggi. Non la settimana prossima. Oggi.',
+                  desc: '"10 errori che (quasi) tutte fanno nella gestione del centro" — nella tua email oggi. Proprio oggi, appena ti iscrivi.',
                 },
                 {
                   num: '02',
@@ -225,7 +251,7 @@ export default function NewsletterPage() {
                 {
                   num: '03',
                   titolo: 'Una volta al mese: il consulente',
-                  desc: "Scrivi la domanda che ti tieni per te da mesi — quella specifica, sul tuo centro. Una persona reale ti risponde pensando al tuo caso, non ai centri estetici in generale. Compresa nell'iscrizione gratuita.",
+                  desc: "Scrivi la domanda che ti tieni per te da mesi — quella specifica, sul tuo centro. Una persona reale ti risponde pensando proprio al tuo centro, quello vero, con le sue clienti e i suoi numeri. Compresa nell'iscrizione gratuita.",
                 },
               ].map((item) => (
                 <div key={item.num} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
@@ -253,7 +279,7 @@ export default function NewsletterPage() {
 
             {articoliState.status === 'empty' && (
               <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#666', lineHeight: 1.7, maxWidth: '560px' }}>
-                I primi numeri arrivano a breve — iscriviti per non perderli.
+                I primi numeri arrivano a breve — iscriviti per essere tra le prime a leggerli.
               </p>
             )}
 
@@ -394,7 +420,7 @@ export default function NewsletterPage() {
               textAlign: 'left',
               display: 'inline-block',
             }}>
-              Ogni anno in Italia aprono circa 7.000 centri estetici. Nello stesso anno, altrettanti chiudono. Pensi davvero che dipenda dal fatto che 7.000 persone non sapessero fare l&apos;estetista? O che il problema fosse un altro — non saper gestire il centro?<br /><br />
+              Ogni anno in Italia aprono circa 7.000 centri estetici. Nello stesso anno, altrettanti chiudono. Pensi davvero che dipenda dalla loro bravura come estetiste? O che il problema fosse un altro — la gestione del centro, quella vera?<br /><br />
               <strong style={{ fontStyle: 'normal', color: '#EC4899' }}>Tu da che parte vuoi stare?</strong>
             </p>
           </div>
