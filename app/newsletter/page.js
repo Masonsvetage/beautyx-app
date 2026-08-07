@@ -153,7 +153,7 @@ export default function NewsletterPage() {
               </h1>
 
               <p style={{ fontSize: 'clamp(16px, 2vw, 19px)', color: '#aaa', lineHeight: 1.75, marginBottom: '36px', maxWidth: '520px' }}>
-                Agenda piena da mattina a sera. A fine mese il conto che racconta sempre un&apos;altra storia. Una stanchezza che va ben oltre le ore di sonno perse. Se il centro lo mandi avanti da anni, sai già di cosa sto parlando — e scommetto che pensi sia colpa tua. La verità è un&apos;altra: sono i problemi di gestione che quasi tutte le titolari come te si portano dietro, e che oggi, finalmente, qualcuno inizia a spiegarti. Due volte a settimana, in dieci minuti, te li mostriamo noi. Il tuo centro cresce quando la gestione va nella stessa direzione di chi sei — altro che formule fotocopiate. Tutto da riconoscere. Pochissimo da studiare.
+                Ti alzi presto, vai a letto tardi, e in mezzo c&apos;è un centro che sembra reggersi tutto sulle tue spalle: agenda piena, mani sempre impegnate, clienti che aspettano il loro turno. Poi arriva la sera, ti fermi un attimo su quel conto a fine mese — e il numero racconta sempre la stessa storia, quella che fatica a tornare come vorresti. Conosci bene questa stanchezza: va ben oltre le ore di sonno perse, è la sensazione di correre tutto il giorno e restare comunque ferma, un passo indietro rispetto a dove vorresti essere. Ti sei convinta che la colpa sia tua — poca organizzazione, poco polso, poca qualcosa. Ecco la verità, ed è più semplice di quanto pensi: ti hanno insegnato alla perfezione il mestiere delle mani. La gestione, quella vera, è rimasta un capitolo bianco. Oggi però le cose possono prendere un&apos;altra direzione. Un metodo, dieci minuti due volte a settimana, e la gestione comincia a remare insieme a te, con un impegno piccolo e costante — altro che formule fotocopiate: è una visione del tuo lavoro che diventa finalmente tua. E quando il conto torna, cambia molto più del centro: cambia l&apos;umore quando rientri la sera, la testa leggera a cena con chi ami, una vacanza vissuta davvero, con la testa lì e basta. La serenità economica è anche la conferma che sei brava — ma soprattutto è la sicurezza che porti con te ovunque: a casa, in famiglia, anche in vacanza, quando finalmente stacchi.
               </p>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -174,20 +174,20 @@ export default function NewsletterPage() {
               Chi siamo
             </p>
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.15, marginBottom: '24px' }}>
-              Un motore che cerca in tutto il mondo. Una persona che sceglie per te.
+              Quindici anni di centri estetici veri. Il metodo nasce da lì.
             </h2>
             <div style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85 }}>
               <p style={{ marginBottom: '18px' }}>
-                Ogni settimana, da qualche parte nel mondo, qualcuno scrive qualcosa di utile sulla gestione di un centro estetico — un caso studio in Corea, un&apos;intervista a un&apos;imprenditrice in Texas, un report di settore in Germania. Materiale enorme, sparso, per lo più in inglese — il tipo di ricerca che richiederebbe ore che tu, con la vita che fai, preferisci passare in cabina con una cliente. Qui entra in gioco l&apos;intelligenza artificiale di Beautyx: setaccia questo oceano di contenuti giorno dopo giorno e porta a galla ciò che conta davvero per chi gestisce un centro.
+                Prima di scrivere una riga su come si gestisce un centro estetico, i centri estetici li abbiamo gestiti — davvero, con le mani in pasta, per oltre quindici anni. Abbiamo coperto turni, tenuto a bada fornitori, attraversato mesi belli e mesi in cui bisognava stringere i denti, imparato a capire le clienti tanto in cabina quanto nei conti di fine anno. Quello che sappiamo sulla gestione è tutto pratica vissuta, fatta di bancone e cassa, di notti passate a far tornare i numeri.
               </p>
               <p style={{ marginBottom: '18px' }}>
-                Poi arriva la parte umana: un consulente esperto di gestione, in carne e ossa, che prende quella selezione e la passa al setaccio della realtà italiana — cosa ha senso qui, cosa va adattato, cosa si applica davvero a un centro come il tuo. Il risultato arriva nella tua email due volte a settimana, già pronto da usare.
+                Una parte del lavoro, oggi, la fa anche l&apos;intelligenza artificiale di Beautyx: setaccia case history, ricerche di settore e buone pratiche da centri estetici di tutto il mondo, giorno dopo giorno, cose che altrimenti richiederebbero ore che tu preferisci passare in cabina con una cliente. Un aiuto prezioso, un ingrediente scelto con cura. La ricetta, però, resta un&apos;altra cosa: è il metodo.
               </p>
               <p style={{ marginBottom: '18px' }}>
-                La differenza con il solito guru da social sta tutta in questo doppio passaggio: la macchina fa quello che le macchine sanno fare bene — cercare, spulciare, confrontare su scala globale — e la persona fa quello che una persona sa fare bene: capire il tuo contesto, darti un consiglio vero, metterci la faccia. Due mestieri fatti seriamente, invece di uno improvvisato con photoshop e citazioni motivazionali.
+                Il valore vero comincia lì, quando quel materiale passa attraverso il metodo costruito centro dopo centro, anno dopo anno: diventa un&apos;indicazione concreta, misurabile, che puoi applicare da subito nella tua realtà — i tuoi numeri, le tue clienti, il tuo team. È qui che entra l&apos;esperienza di chi la gestione l&apos;ha fatta sul campo, ed è qui che nasce il supporto vero: qualcuno che ti accompagna, passo dopo passo, a costruire competenze di gestione e autonomia che finora nessuno ti aveva insegnato davvero.
               </p>
               <p>
-                Il materiale buono te lo portiamo noi. Capire come farlo funzionare per il tuo centro — con la tua testa, i tuoi numeri, le tue clienti — resta il pezzo più importante. E quello lo fai tu.
+                Quello che arriva nella tua email due volte a settimana è già cucito addosso al tuo mestiere: spiegato, tradotto in pratica, pronto da usare. Il resto — capire come applicarlo esattamente al tuo centro — lo costruiamo insieme, con il supporto di chi la gestione la conosce da dentro. Dietro ogni newsletter Beautyx c&apos;è un metodo pensato per durare, nato da quindici anni di esperienza reale sul campo, con l&apos;intelligenza artificiale che lo affianca facendo da esploratrice nel mondo.
               </p>
             </div>
           </div>
