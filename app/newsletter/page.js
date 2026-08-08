@@ -126,10 +126,9 @@ export default function NewsletterPage() {
           .differenziatore-grid { flex-direction: column !important; }
         }
         .bx-nl-logo { width: 150px; height: 150px; transform: translateY(-13px); filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
-        .bx-nl-page { padding-top: 60px; }
+        .bx-nl-wordmark { font-size: clamp(22px, 4vw, 30px); }
         @media (max-width: 480px) {
           .bx-nl-logo { width: 104px; height: 104px; transform: translateY(-12px); filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
-          .bx-nl-page { padding-top: 36px; }
         }
         .bx-cosa-item { position: relative; padding-left: 8px; }
         .bx-cosa-num {
@@ -158,14 +157,15 @@ export default function NewsletterPage() {
       <div className="bx-nl-page" style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
 
         {/* ── NAV ── */}
-        <header style={{ padding: '8px 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+        {/* Barra header stretta: altezza = altezza reale bottone (38px: padding 12px*2 + font 14px con line-height:1) + 9px sopra + 9px sotto = 56px totali. */}
+        <header style={{ padding: '9px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }}>
             <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={150} height={150} className="bx-nl-logo" style={{ borderRadius: '4px' }} />
-            <span style={{ fontWeight: 700, color: '#1a1a0f', fontSize: '16px' }}>Beautyx</span>
+            <span className="bx-nl-wordmark" style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 700, letterSpacing: '0.02em', color: '#1a1a0f' }}>Beautyx</span>
           </Link>
           <a
             href="#form-section"
-            style={{ background: '#1a1a0f', color: '#fff', padding: '12px 24px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', textDecoration: 'none' }}
+            style={{ background: '#1a1a0f', color: '#fff', padding: '12px 24px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', lineHeight: 1, textDecoration: 'none' }}
           >
             Iscriviti gratis →
           </a>
