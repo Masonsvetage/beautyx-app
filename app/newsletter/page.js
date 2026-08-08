@@ -112,9 +112,11 @@ export default function NewsletterPage() {
           .hero-split { flex-direction: column !important; }
           .differenziatore-grid { flex-direction: column !important; }
         }
-        .bx-nl-logo { width: 80px; height: 80px; transform: translateY(22px); }
+        .bx-nl-logo { width: 150px; height: 150px; transform: translateY(-13px); filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
+        .bx-nl-page { padding-top: 60px; }
         @media (max-width: 480px) {
-          .bx-nl-logo { width: 56px; height: 56px; transform: translateY(12px); }
+          .bx-nl-logo { width: 104px; height: 104px; transform: translateY(-12px); filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
+          .bx-nl-page { padding-top: 36px; }
         }
         .bx-cosa-item { position: relative; padding-left: 8px; }
         .bx-cosa-num {
@@ -140,12 +142,12 @@ export default function NewsletterPage() {
         }
       `}</style>
 
-      <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
+      <div className="bx-nl-page" style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
 
         {/* ── NAV ── */}
         <header style={{ padding: '8px 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={80} height={80} className="bx-nl-logo" style={{ borderRadius: '4px' }} />
+            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={150} height={150} className="bx-nl-logo" style={{ borderRadius: '4px' }} />
             <span style={{ fontWeight: 700, color: '#1a1a0f', fontSize: '16px' }}>Beautyx</span>
           </Link>
           <a

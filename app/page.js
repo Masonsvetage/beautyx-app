@@ -453,6 +453,13 @@ export default function LandingPage() {
   ]
 
   return (
+    <>
+      <style>{`
+        .bx-home-logo { width: 150px; height: 150px; transform: translateY(-13px); border-radius: 4px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+        @media (max-width: 480px) {
+          .bx-home-logo { width: 104px; height: 104px; transform: translateY(-12px); }
+        }
+      `}</style>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
 
       {/* Navbar */}
@@ -460,7 +467,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <img src="/beautyx-avatar.svg" alt="Beautyx" className="w-8 h-8 rounded-full" onError={e => { e.target.style.display='none' }} />
+              <img src="/logo_beautyx-oro.png" alt="Beautyx" className="bx-home-logo" onError={e => { e.target.style.display='none' }} />
               <span className="text-xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Beautyx</span>
             </div>
             <div className="hidden md:flex items-center gap-8 text-sm text-slate-400">
@@ -1074,5 +1081,6 @@ export default function LandingPage() {
       {/* Article modal */}
       {selectedNews && <ArticleModal news={selectedNews} onClose={() => setSelectedNews(null)} />}
     </div>
+    </>
   )
 }
