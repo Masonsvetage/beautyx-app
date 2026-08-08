@@ -20,6 +20,17 @@ const TAG_TASSONOMIA = [
 const COLORE_TAG_DEFAULT = '#EC4899'
 const coloreTag = (tag) => TAG_TASSONOMIA.find((t) => t.label === tag)?.colore || COLORE_TAG_DEFAULT
 
+// Stesso cookie di accesso usato da /guida (vedi app/guida/_components/PersistAccessToken.js
+// e app/guida/page.js): riusiamo il token già persistito per sbloccare qui il testo
+// integrale delle newsletter già uscite, senza creare un secondo sistema di auth.
+const ACCESS_COOKIE = 'guida_access_token'
+
+function readAccessCookie() {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(new RegExp('(?:^|; )' + ACCESS_COOKIE + '=([^;]*)'))
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 const faqs = [
   {
     domanda: 'Quanto spesso arriva la newsletter?',
@@ -48,18 +59,20 @@ export default function NewsletterPage() {
   const [website, setWebsite] = useState('')
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const [articoliState, setArticoliState] = useState({ status: 'loading', items: [] })
+  const [articoliState, setArticoliState] = useState({ status: 'loading', items: [], unlocked: false })
   const [tagAttivo, setTagAttivo] = useState(null)
   const [activeArticle, setActiveArticle] = useState(null)
 
   useEffect(() => {
-    fetch('/api/public/newsletter-archive?limit=12')
+    const token = readAccessCookie()
+    const url = `/api/public/newsletter-archive?limit=12${token ? `&token=${encodeURIComponent(token)}` : ''}`
+    fetch(url)
       .then((r) => r.json())
       .then((d) => {
         const items = Array.isArray(d.articoli) ? d.articoli : []
-        setArticoliState({ status: items.length > 0 ? 'ready' : 'empty', items })
+        setArticoliState({ status: items.length > 0 ? 'ready' : 'empty', items, unlocked: !!d.unlocked })
       })
-      .catch(() => setArticoliState({ status: 'empty', items: [] }))
+      .catch(() => setArticoliState({ status: 'empty', items: [], unlocked: false }))
   }, [])
 
   const articoliFiltrati = tagAttivo
@@ -370,7 +383,14 @@ export default function NewsletterPage() {
                       {a.estratto && (
                         <p style={{ fontSize: '14px', color: '#666', lineHeight: 1.6 }}>{a.estratto}</p>
                       )}
-                      <span style={{ marginTop: 'auto', fontSize: '14px', fontWeight: 700, color: '#1a1a0f' }}>Leggi →</span>
+                      <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a0f' }}>Leggi →</span>
+                        {!articoliState.unlocked && (
+                          <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#EC4899', background: '#EC489918', padding: '4px 10px', borderRadius: '999px' }}>
+                            Solo per chi è dentro
+                          </span>
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -533,26 +553,40 @@ export default function NewsletterPage() {
                 {activeArticle.titolo}
               </h2>
 
-              <div
-                className="bx-article"
-                dangerouslySetInnerHTML={{
-                  __html: activeArticle.contenuto ||
-                    `<p>${activeArticle.estratto || ''}</p><p><em>Iscriviti per leggere il numero completo.</em></p>`,
-                }}
-              />
+              {articoliState.unlocked && activeArticle.contenuto ? (
+                <>
+                  <div
+                    className="bx-article"
+                    dangerouslySetInnerHTML={{ __html: activeArticle.contenuto }}
+                  />
 
-              <div style={{ marginTop: '40px', paddingTop: '28px', borderTop: '1px solid #e7e0d5', textAlign: 'center' }}>
-                <p style={{ fontSize: '15px', color: '#666', marginBottom: '16px' }}>
-                  Ti è stato utile? Ricevi ogni numero nella tua email.
-                </p>
-                <a
-                  href="#form-section"
-                  onClick={() => setActiveArticle(null)}
-                  style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '14px 28px', borderRadius: '10px', fontWeight: 700, fontSize: '15px', textDecoration: 'none' }}
-                >
-                  Iscriviti gratis →
-                </a>
-              </div>
+                  <div style={{ marginTop: '40px', paddingTop: '28px', borderTop: '1px solid #e7e0d5', textAlign: 'center' }}>
+                    <p style={{ fontSize: '15px', color: '#666', marginBottom: '16px' }}>
+                      Ti è stato utile? Ricevi ogni numero nella tua email.
+                    </p>
+                    <a
+                      href="#form-section"
+                      onClick={() => setActiveArticle(null)}
+                      style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '14px 28px', borderRadius: '10px', fontWeight: 700, fontSize: '15px', textDecoration: 'none' }}
+                    >
+                      Iscriviti gratis →
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <div style={{ marginTop: '8px', paddingTop: '24px', borderTop: '1px solid #e7e0d5', textAlign: 'center' }}>
+                  <p style={{ fontSize: '16px', color: '#333', lineHeight: 1.8, marginBottom: '24px' }}>
+                    Il testo intero di ogni numero è il primo regalo per chi si iscrive — il resto arriva dopo, due volte a settimana, dritto in email. Entra anche tu: bastano pochi secondi, e questo numero (e tutti gli altri) è già tuo.
+                  </p>
+                  <a
+                    href="#form-section"
+                    onClick={() => setActiveArticle(null)}
+                    style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '14px 28px', borderRadius: '10px', fontWeight: 700, fontSize: '15px', textDecoration: 'none' }}
+                  >
+                    Voglio leggere tutto →
+                  </a>
+                </div>
+              )}
             </article>
           </div>
         )}
