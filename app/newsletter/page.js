@@ -345,7 +345,7 @@ export default function NewsletterPage() {
             {articoliState.status === 'ready' && (
               <>
                 <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#666', lineHeight: 1.7, marginBottom: '28px', maxWidth: '560px' }}>
-                  Leggile — poi decidi se iscriverti.
+                  Leggi l'assaggio — il resto è per chi è già dentro.
                 </p>
 
                 {tagPresenti.length > 0 && (
