@@ -140,11 +140,11 @@ export default function NewsletterPage() {
            sbagliato per colpa di position:relative sul Link. */
         .bx-nl-logo { left: 0; top: 0; width: 150px; height: 150px; filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
         .bx-nl-brandlink { padding-left: 164px; }
-        .bx-nl-wordmark-img { height: 36px; width: auto; display: block; }
+        .bx-nl-wordmark-img { height: 54px; width: auto; display: block; }
         @media (max-width: 480px) {
           .bx-nl-logo { width: 104px; height: 104px; top: 0; filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
           .bx-nl-brandlink { padding-left: 118px; }
-          .bx-nl-wordmark-img { height: 28px; }
+          .bx-nl-wordmark-img { height: 42px; }
         }
         .bx-cosa-item { position: relative; padding-left: 8px; }
         .bx-cosa-num {

@@ -470,11 +470,11 @@ export default function LandingPage() {
            sull'elemento Link/div che avvolge il logo. */
         .bx-home-logo { left: 0; top: 0; width: 150px; height: 150px; border-radius: 4px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
         .bx-home-brandlink { padding-left: 164px; }
-        .bx-home-wordmark-img { height: 36px; width: auto; display: block; }
+        .bx-home-wordmark-img { height: 54px; width: auto; display: block; }
         @media (max-width: 480px) {
           .bx-home-logo { width: 104px; height: 104px; top: 0; }
           .bx-home-brandlink { padding-left: 118px; }
-          .bx-home-wordmark-img { height: 28px; }
+          .bx-home-wordmark-img { height: 42px; }
         }
       `}</style>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
