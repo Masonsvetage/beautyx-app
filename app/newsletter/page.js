@@ -126,15 +126,25 @@ export default function NewsletterPage() {
           .differenziatore-grid { flex-direction: column !important; }
         }
         /* Logo FUORI FLUSSO: position:absolute (mai relative+transform, sennò l'header
-           si allarga per contenerlo — bug bocciato due volte). left/bottom qui in CSS
+           si allarga per contenerlo — bug bocciato due volte). left/top qui in CSS
            (con variante mobile) cosi' restano responsive; "position:absolute" e' ripetuto
-           anche inline sull'elemento <Image> per avere certezza che vinca sempre. */
-        .bx-nl-logo { left: 0; bottom: -34px; width: 150px; height: 150px; filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
-        .bx-nl-brandlink { position: relative; padding-left: 164px; }
-        .bx-nl-wordmark { font-size: clamp(22px, 4vw, 30px); }
+           anche inline sull'elemento <Image> per avere certezza che vinca sempre.
+           IMPORTANTE: .bx-nl-brandlink NON deve avere position:relative — altrimenti
+           diventa lui il contenitore di riferimento del logo assoluto (alto quanto il
+           wordmark, non quanto l'header) e il logo con top/bottom finisce tagliato dal
+           bordo della pagina. L'unico positioning context deve essere l'<header>
+           (position:relative, altezza fissa 56px). Con top:0 il bordo superiore del logo
+           combacia col bordo superiore dell'header e il logo sporge naturalmente sotto
+           la barra (150px logo - 56px header = 94px di overlap su desktop, 104-56=48px
+           su mobile) — bug bocciato quattro volte, causa reale: positioning context
+           sbagliato per colpa di position:relative sul Link. */
+        .bx-nl-logo { left: 0; top: 0; width: 150px; height: 150px; filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
+        .bx-nl-brandlink { padding-left: 164px; }
+        .bx-nl-wordmark-img { height: 36px; width: auto; display: block; }
         @media (max-width: 480px) {
-          .bx-nl-logo { width: 104px; height: 104px; bottom: -24px; filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
+          .bx-nl-logo { width: 104px; height: 104px; top: 0; filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
           .bx-nl-brandlink { padding-left: 118px; }
+          .bx-nl-wordmark-img { height: 28px; }
         }
         .bx-cosa-item { position: relative; padding-left: 8px; }
         .bx-cosa-num {
@@ -169,7 +179,7 @@ export default function NewsletterPage() {
         <header style={{ padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
           <Link href="/" className="bx-nl-brandlink" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
             <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={150} height={150} className="bx-nl-logo" style={{ position: 'absolute', borderRadius: '4px' }} />
-            <span className="bx-nl-wordmark" style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 700, letterSpacing: '0.02em', color: '#D1AB3A' }}>Beautyx</span>
+            <Image src="/beautyx-wordmark.png" alt="Beautyx" width={220} height={151} className="bx-nl-wordmark-img" />
           </Link>
           <a
             href="#form-section"

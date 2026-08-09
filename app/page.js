@@ -456,15 +456,25 @@ export default function LandingPage() {
     <>
       <style>{`
         /* Logo FUORI FLUSSO: position:absolute (mai relative+transform, sennò la navbar
-           si allarga per contenerlo — bug bocciato due volte). left/bottom qui in CSS
+           si allarga per contenerlo — bug bocciato due volte). left/top qui in CSS
            (con variante mobile) cosi' restano responsive; "position:absolute" e' ripetuto
-           anche inline sull'elemento <img> per avere certezza che vinca sempre. */
-        .bx-home-logo { left: 0; bottom: -34px; width: 150px; height: 150px; border-radius: 4px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+           anche inline sull'elemento <img> per avere certezza che vinca sempre.
+           IMPORTANTE: .bx-home-brandlink NON deve avere position:relative — altrimenti
+           diventa lui il contenitore di riferimento del logo assoluto (alto quanto il
+           wordmark, non quanto la navbar) e il logo finisce tagliato dal bordo della
+           pagina. L'unico positioning context deve essere il div navbar (position:relative
+           già presente inline, altezza fissa h-14/56px). Con top:0 il bordo superiore del
+           logo combacia col bordo superiore della barra e il logo sporge naturalmente
+           sotto (150-56=94px overlap desktop, 104-56=48px mobile) — bug bocciato quattro
+           volte, causa reale: positioning context sbagliato per colpa di position:relative
+           sull'elemento Link/div che avvolge il logo. */
+        .bx-home-logo { left: 0; top: 0; width: 150px; height: 150px; border-radius: 4px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
         .bx-home-brandlink { padding-left: 164px; }
-        .bx-home-wordmark { font-family: var(--font-playfair), Georgia, serif; font-weight: 700; letter-spacing: 0.02em; font-size: clamp(20px, 4vw, 28px); }
+        .bx-home-wordmark-img { height: 36px; width: auto; display: block; }
         @media (max-width: 480px) {
-          .bx-home-logo { width: 104px; height: 104px; bottom: -24px; }
+          .bx-home-logo { width: 104px; height: 104px; top: 0; }
           .bx-home-brandlink { padding-left: 118px; }
+          .bx-home-wordmark-img { height: 28px; }
         }
       `}</style>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
@@ -473,10 +483,10 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
         {/* Barra header stretta: h-14 (56px) = altezza reale bottone CTA (36px: py-2=8px*2 + text-sm line-height 20px) + ~9px sopra + ~9px sotto (Tailwind text-sm = 14px/20px line-height). */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            <div className="relative flex items-center bx-home-brandlink">
+          <div className="relative flex items-center justify-between h-14">
+            <div className="flex items-center bx-home-brandlink">
               <img src="/logo_beautyx-oro.png" alt="Beautyx" className="bx-home-logo" style={{ position: 'absolute' }} onError={e => { e.target.style.display='none' }} />
-              <span className="bx-home-wordmark" style={{ color: '#D1AB3A' }}>Beautyx</span>
+              <img src="/beautyx-wordmark-gold.png" alt="Beautyx" className="bx-home-wordmark-img" />
             </div>
             <div className="hidden md:flex items-center gap-8 text-sm text-slate-400">
               <a href="#funzionalita" className="hover:text-white transition-colors">Funzionalità</a>
