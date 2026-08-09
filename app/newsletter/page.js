@@ -125,10 +125,16 @@ export default function NewsletterPage() {
           .hero-split { flex-direction: column !important; }
           .differenziatore-grid { flex-direction: column !important; }
         }
-        .bx-nl-logo { width: 150px; height: 150px; transform: translateY(-13px); filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
+        /* Logo FUORI FLUSSO: position:absolute (mai relative+transform, sennò l'header
+           si allarga per contenerlo — bug bocciato due volte). left/bottom qui in CSS
+           (con variante mobile) cosi' restano responsive; "position:absolute" e' ripetuto
+           anche inline sull'elemento <Image> per avere certezza che vinca sempre. */
+        .bx-nl-logo { left: 0; bottom: -34px; width: 150px; height: 150px; filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
+        .bx-nl-brandlink { position: relative; padding-left: 164px; }
         .bx-nl-wordmark { font-size: clamp(22px, 4vw, 30px); }
         @media (max-width: 480px) {
-          .bx-nl-logo { width: 104px; height: 104px; transform: translateY(-12px); filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
+          .bx-nl-logo { width: 104px; height: 104px; bottom: -24px; filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
+          .bx-nl-brandlink { padding-left: 118px; }
         }
         .bx-cosa-item { position: relative; padding-left: 8px; }
         .bx-cosa-num {
@@ -157,11 +163,13 @@ export default function NewsletterPage() {
       <div className="bx-nl-page" style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
 
         {/* ── NAV ── */}
-        {/* Barra header stretta: altezza = altezza reale bottone (38px: padding 12px*2 + font 14px con line-height:1) + 9px sopra + 9px sotto = 56px totali. */}
-        <header style={{ padding: '9px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }}>
-            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={150} height={150} className="bx-nl-logo" style={{ borderRadius: '4px' }} />
-            <span className="bx-nl-wordmark" style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 700, letterSpacing: '0.02em', color: '#1a1a0f' }}>Beautyx</span>
+        {/* Barra header stretta: altezza FISSA ed esplicita 56px sul tag <header> stesso
+            (non calcolata dal contenuto/figli). Il logo e' position:absolute (fuori
+            flusso) quindi NON puo' piu' farla crescere, qualunque sia la sua altezza. */}
+        <header style={{ padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
+          <Link href="/" className="bx-nl-brandlink" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={150} height={150} className="bx-nl-logo" style={{ position: 'absolute', borderRadius: '4px' }} />
+            <span className="bx-nl-wordmark" style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 700, letterSpacing: '0.02em', color: '#D1AB3A' }}>Beautyx</span>
           </Link>
           <a
             href="#form-section"
