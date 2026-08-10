@@ -19,7 +19,7 @@ export default function PrivacyPage() {
         {/* NAV */}
         <header style={{ padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={28} height={28} style={{ borderRadius: '4px' }} />
+            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={26} height={28} style={{ borderRadius: '4px' }} />
             <span style={{ fontWeight: 700, color: '#1a1a0f', fontSize: '15px' }}>Beautyx</span>
           </Link>
         </header>

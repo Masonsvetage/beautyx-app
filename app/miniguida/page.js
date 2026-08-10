@@ -84,7 +84,7 @@ export default function MiniguidaPage() {
           <Image
             src="/logo_beautyx-oro.png"
             alt="Beautyx"
-            width={28}
+            width={26}
             height={28}
             style={{ borderRadius: '4px' }}
           />

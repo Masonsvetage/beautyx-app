@@ -468,11 +468,11 @@ export default function LandingPage() {
            sotto (150-56=94px overlap desktop, 104-56=48px mobile) — bug bocciato quattro
            volte, causa reale: positioning context sbagliato per colpa di position:relative
            sull'elemento Link/div che avvolge il logo. */
-        .bx-home-logo { left: 0; top: 0; width: 150px; height: 150px; border-radius: 4px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+        .bx-home-logo { left: 0; top: 0; width: 137px; height: 150px; border-radius: 4px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
         .bx-home-brandlink { padding-left: 164px; }
         .bx-home-wordmark-img { height: 54px; width: auto; display: block; }
         @media (max-width: 480px) {
-          .bx-home-logo { width: 104px; height: 104px; top: 0; }
+          .bx-home-logo { width: 95px; height: 104px; top: 0; }
           .bx-home-brandlink { padding-left: 118px; }
           .bx-home-wordmark-img { height: 42px; }
         }

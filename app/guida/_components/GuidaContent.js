@@ -42,7 +42,7 @@ export default function GuidaContent() {
       <header className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden bg-[#1a1a0f] px-6 text-center pt-6">
         <div className="absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_at_top,_rgba(201,163,74,0.3)_0%,_transparent_60%)]" />
         <div className="relative flex items-center gap-2 mb-8">
-          <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={30} height={30} style={{ borderRadius: 4 }} />
+          <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={27} height={30} style={{ borderRadius: 4 }} />
           <span className="text-[#f5f1ea] font-bold text-base tracking-wide">Beautyx</span>
         </div>
 

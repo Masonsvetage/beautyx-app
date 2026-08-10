@@ -138,11 +138,11 @@ export default function NewsletterPage() {
            la barra (150px logo - 56px header = 94px di overlap su desktop, 104-56=48px
            su mobile) — bug bocciato quattro volte, causa reale: positioning context
            sbagliato per colpa di position:relative sul Link. */
-        .bx-nl-logo { left: 0; top: 0; width: 150px; height: 150px; filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
+        .bx-nl-logo { left: 0; top: 0; width: 137px; height: 150px; filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
         .bx-nl-brandlink { padding-left: 164px; }
         .bx-nl-wordmark-img { height: 54px; width: auto; display: block; }
         @media (max-width: 480px) {
-          .bx-nl-logo { width: 104px; height: 104px; top: 0; filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
+          .bx-nl-logo { width: 95px; height: 104px; top: 0; filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
           .bx-nl-brandlink { padding-left: 118px; }
           .bx-nl-wordmark-img { height: 42px; }
         }
@@ -178,7 +178,7 @@ export default function NewsletterPage() {
             flusso) quindi NON puo' piu' farla crescere, qualunque sia la sua altezza. */}
         <header style={{ padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 20 }}>
           <Link href="/" className="bx-nl-brandlink" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={150} height={150} className="bx-nl-logo" style={{ position: 'absolute', borderRadius: '4px' }} />
+            <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={137} height={150} className="bx-nl-logo" style={{ position: 'absolute', borderRadius: '4px' }} />
             <Image src="/beautyx-wordmark.png" alt="Beautyx" width={220} height={151} className="bx-nl-wordmark-img" />
           </Link>
           <a
