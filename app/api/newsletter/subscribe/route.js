@@ -38,10 +38,10 @@ async function ensureGuidaAccessToken(email) {
 
     if (selectError) {
       console.error('guida_access select error:', selectError)
-      return
+      return null
     }
 
-    if (existing) return // token già presente, non duplicare
+    if (existing) return existing.token // token già presente, non duplicare
 
     const token = crypto.randomBytes(24).toString('hex')
     const { error: insertError } = await supabase
@@ -50,9 +50,13 @@ async function ensureGuidaAccessToken(email) {
 
     if (insertError) {
       console.error('guida_access insert error:', insertError)
+      return null
     }
+
+    return token
   } catch (err) {
     console.error('Errore generazione token guida:', err)
+    return null
   }
 }
 
@@ -110,9 +114,12 @@ export async function POST(request) {
     }
 
     // Iscrizione Beehiiv andata a buon fine: genera/riusa il token di accesso a /guida
-    await ensureGuidaAccessToken(email)
+    const guidaToken = await ensureGuidaAccessToken(email)
 
-    return Response.json({ success: true })
+    // L'iscrizione newsletter non deve MAI fallire per un problema secondario
+    // legato alla guida: se il token non è disponibile, rispondiamo comunque
+    // success:true ma senza guidaToken (il frontend gestisce il fallback).
+    return Response.json(guidaToken ? { success: true, guidaToken } : { success: true })
   } catch (err) {
     console.error('Newsletter subscribe error:', err)
     return Response.json({ error: 'Errore di rete' }, { status: 500 })

@@ -59,6 +59,7 @@ export default function NewsletterPage() {
   const [website, setWebsite] = useState('')
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [guidaToken, setGuidaToken] = useState(null)
   const [articoliState, setArticoliState] = useState({ status: 'loading', items: [], unlocked: false })
   const [tagAttivo, setTagAttivo] = useState(null)
   const [activeArticle, setActiveArticle] = useState(null)
@@ -96,6 +97,7 @@ export default function NewsletterPage() {
       const data = await res.json()
       if (data.success) {
         setStatus('success')
+        setGuidaToken(data.guidaToken || null)
         setEmail('')
       } else {
         setStatus('error')
@@ -441,9 +443,28 @@ export default function NewsletterPage() {
               <div style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '36px 28px', textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', marginBottom: '14px' }}>✓</div>
                 <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: '22px', marginBottom: '10px', color: '#fff' }}>Sei dentro!</h3>
-                <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7 }}>
-                  Controlla la tua email — la miniguida è già in arrivo.
-                </p>
+                {guidaToken ? (
+                  <>
+                    <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
+                      La tua guida ti aspetta già, senza bisogno di aprire l'email.
+                    </p>
+                    <Link
+                      href={`/guida?t=${guidaToken}`}
+                      style={{ display: 'inline-block', padding: '14px 28px', background: '#EC4899', color: '#fff', fontWeight: 700, borderRadius: '10px', textDecoration: 'none', fontSize: '16px' }}
+                    >
+                      Vai alla tua guida →
+                    </Link>
+                    <p style={{ marginTop: '18px', color: '#55667a', fontSize: '13px', lineHeight: 1.6 }}>
+                      La newsletter invece arriva regolarmente via email, martedì e venerdì.
+                    </p>
+                  </>
+                ) : (
+                  <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7 }}>
+                    Iscrizione fatta. Per aprire subito la guida vai su{' '}
+                    <Link href="/guida" style={{ color: '#fff', textDecoration: 'underline' }}>beautyx.it/guida</Link>{' '}
+                    e inserisci di nuovo la tua email: ti sblocca l'accesso all'istante.
+                  </p>
+                )}
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ maxWidth: '520px', margin: '0 auto' }}>

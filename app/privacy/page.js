@@ -43,7 +43,7 @@ export default function PrivacyPage() {
           </p>
 
           <Section titolo="1. Chi siamo">
-            Il titolare del trattamento dei dati personali è <strong>Luigi Perri</strong>, consulente e fondatore di Beautyx, con sede in Italia.
+            Il titolare del trattamento dei dati personali è <strong>Svetage S.r.l.</strong> — P.IVA/C.F. 01959270495 · Via Toscana 6/8, 57128 Livorno (LI), Italia · REA LI 216353 · Capitale sociale 10.000 € interamente versato, la società che sviluppa il progetto Beautyx. Il referente e fondatore di Beautyx è <strong>Luigi Perri</strong>.
             Per qualsiasi questione relativa alla privacy puoi scriverci a{' '}
             <a href="mailto:privacy@beautyx.it" style={{ color: '#EC4899', textDecoration: 'none' }}>privacy@beautyx.it</a>.
           </Section>
@@ -154,6 +154,9 @@ export default function PrivacyPage() {
           <p style={{ fontSize: '12px', color: '#bbb' }}>
             © 2025 Beautyx ·{' '}
             <Link href="/newsletter" style={{ color: '#bbb', textDecoration: 'none' }}>Newsletter</Link>
+          </p>
+          <p style={{ fontSize: '11px', color: '#999', marginTop: '8px' }}>
+            Beautyx è un progetto di Svetage S.r.l. — P.IVA/C.F. 01959270495 · Via Toscana 6/8, 57128 Livorno (LI), Italia · REA LI 216353 · Capitale sociale 10.000 € interamente versato
           </p>
         </footer>
 
