@@ -471,10 +471,17 @@ export default function LandingPage() {
         .bx-home-logo { left: 0; top: 0; width: 137px; height: 150px; border-radius: 4px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
         .bx-home-brandlink { padding-left: 164px; }
         .bx-home-wordmark-img { height: 54px; width: auto; display: block; }
+        /* Stessa identica geometria della pagina /newsletter (navbar h-14=56px, logo 150px
+           fuori flusso, hero con pt-20=80px): il badge eyebrow partiva a y=136 mentre il
+           logo finiva a y=150 → 14px di sovrapposizione (bug Mason, 2026-08-11). +32px di
+           margin-top sul badge porta il gap a ~18px, senza toccare la dimensione del logo.
+           Su mobile (logo 104px) il gap naturale è già ~32px: margin extra azzerato. */
+        .bx-home-eyebrow { margin-top: 32px; }
         @media (max-width: 480px) {
           .bx-home-logo { width: 95px; height: 104px; top: 0; }
           .bx-home-brandlink { padding-left: 118px; }
           .bx-home-wordmark-img { height: 42px; }
+          .bx-home-eyebrow { margin-top: 0; }
         }
       `}</style>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
@@ -536,7 +543,7 @@ export default function LandingPage() {
           <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-teal-500/10 border border-teal-500/30 rounded-full text-teal-300 text-sm font-medium mb-6">
+          <div className="bx-home-eyebrow inline-flex items-center gap-2 px-4 py-1.5 bg-teal-500/10 border border-teal-500/30 rounded-full text-teal-300 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
             AI-powered · Gestione completa · Consulente dedicato
           </div>

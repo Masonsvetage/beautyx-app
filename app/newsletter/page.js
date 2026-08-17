@@ -141,10 +141,20 @@ export default function NewsletterPage() {
         .bx-nl-logo { left: 0; top: 0; width: 137px; height: 150px; filter: drop-shadow(0 2px 4px rgba(26,26,15,.55)); }
         .bx-nl-brandlink { padding-left: 164px; }
         .bx-nl-wordmark-img { height: 54px; width: auto; display: block; }
+        /* Spazio extra sopra il badge eyebrow dell'hero: il logo (150px, fuori flusso)
+           sporge 94px sotto l'header (56px) e finiva a y=150, mentre il badge (dopo
+           padding-top 80px dell'hero) partiva a y=136 — 14px di sovrapposizione reale
+           (bug segnalato da Mason con screenshot, 2026-08-11). +32px di margin-top sul
+           badge porta il gap a ~18px di respiro, sopra la soglia minima di sicurezza
+           12-16px, senza toccare la dimensione del logo (richiesta esplicita di Mason:
+           logo grande, mai rimpicciolito). Su mobile (logo 104px) il gap naturale è
+           già ~32px: nessun margin extra necessario, quindi si azzera sotto 480px. */
+        .bx-nl-eyebrow { margin-top: 32px; }
         @media (max-width: 480px) {
           .bx-nl-logo { width: 95px; height: 104px; top: 0; filter: drop-shadow(0 1.5px 3px rgba(26,26,15,.55)); }
           .bx-nl-brandlink { padding-left: 118px; }
           .bx-nl-wordmark-img { height: 42px; }
+          .bx-nl-eyebrow { margin-top: 0; }
         }
         .bx-cosa-item { position: relative; padding-left: 8px; }
         .bx-cosa-num {
@@ -202,7 +212,7 @@ export default function NewsletterPage() {
             style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: '80px 32px 96px', display: 'flex', alignItems: 'center', gap: '60px' }}
           >
             <div style={{ maxWidth: '640px' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(236,72,153,0.15)', border: '1px solid rgba(236,72,153,0.3)', color: '#EC4899', fontWeight: 700, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '100px', marginBottom: '32px' }}>
+              <div className="bx-nl-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(236,72,153,0.15)', border: '1px solid rgba(236,72,153,0.3)', color: '#EC4899', fontWeight: 700, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '100px', marginBottom: '32px' }}>
                 Newsletter gratuita · Beautyx
               </div>
 
