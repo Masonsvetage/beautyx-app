@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { quizDomande, quizIntro, capitoli } from '@/lib/data/dieci-errori'
-
-const QUIZ_STORAGE_KEY = 'beautyx-guida-quiz-risposte'
+import { QUIZ_STORAGE_KEY, QUIZ_CHANGE_EVENT } from './useQuizCompleted'
 
 // ── Shuffle Fisher-Yates ────────────────────────────────────────────────────
 // Mescola un array di INDICI (mai l'array di dati originale), cosi' la
@@ -110,6 +109,10 @@ export default function Quiz() {
       try {
         const coerenza = calcolaCoerenza(next)
         window.localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify({ risposte: next, coerenza }))
+        // Notifica GuidaContent che il quiz e' completato, cosi' il Capitolo 1
+        // si sblocca subito senza bisogno di un reload (stesso pattern di
+        // CHANGE_EVENT in useWorkbookAnswer.js).
+        window.dispatchEvent(new CustomEvent(QUIZ_CHANGE_EVENT))
       } catch {
         // localStorage non disponibile, va bene comunque: il risultato resta in memoria
       }

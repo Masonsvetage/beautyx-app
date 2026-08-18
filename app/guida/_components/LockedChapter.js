@@ -7,7 +7,7 @@
 // lo scroll "Capitolo successivo" del capitolo precedente continuano a puntare
 // a un elemento esistente nel DOM — solo che qui non c'e' contenuto pieno da
 // scorrere oltre: e' un muro reale, non un avviso visivo su un pulsante.
-export default function LockedChapter({ numero, titolo, totaleCapitoli = 10 }) {
+export default function LockedChapter({ numero, titolo, totaleCapitoli = 10, messaggio }) {
   const numeroPad = String(numero).padStart(2, '0')
 
   return (
@@ -27,7 +27,7 @@ export default function LockedChapter({ numero, titolo, totaleCapitoli = 10 }) {
             {titolo}
           </h2>
           <p className="mt-6 text-[#cfc6b0] text-sm leading-relaxed">
-            Completa l&apos;esercizio del capitolo precedente per continuare.
+            {messaggio || "Completa l'esercizio del capitolo precedente per continuare."}
           </p>
         </div>
       </div>

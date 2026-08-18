@@ -3,10 +3,11 @@
 import { useState } from 'react'
 
 // Menu sticky per saltare a un capitolo. Mostra Quiz (in apertura) + numeri 1-10.
-// unlockedNumbers: Set<number> dei capitoli raggiungibili — un capitolo N>1 e'
-// sbloccato solo se l'esercizio del capitolo N-1 e' stato compilato (vedi
-// GuidaContent.js + useWorkbookAnswer.useAllWorkbookAnswers). Il quiz e' sempre
-// raggiungibile, il Capitolo 1 e' sempre sbloccato.
+// unlockedNumbers: Set<number> dei capitoli raggiungibili — il Capitolo 1 e'
+// sbloccato solo dopo aver completato il quiz diagnostico, un capitolo N>1 solo
+// se l'esercizio del capitolo N-1 e' stato compilato (vedi GuidaContent.js +
+// useQuizCompleted / useWorkbookAnswer.useAllWorkbookAnswers). Il quiz stesso e'
+// sempre raggiungibile (e' il primo step, non dipende da nulla).
 export default function ChapterNav({ numeri, activeId, unlockedNumbers, onNavigate }) {
   const [open, setOpen] = useState(false)
 
@@ -15,7 +16,11 @@ export default function ChapterNav({ numeri, activeId, unlockedNumbers, onNaviga
     ...numeri.map((n) => ({
       id: `capitolo-${n}`,
       label: String(n).padStart(2, '0'),
-      locked: n > 1 && unlockedNumbers ? !unlockedNumbers.has(n) : false,
+      locked: unlockedNumbers ? !unlockedNumbers.has(n) : false,
+      lockedHint:
+        n === 1
+          ? 'Completa il quiz diagnostico per continuare'
+          : 'Completa prima l’esercizio del capitolo precedente',
     })),
   ]
 
@@ -41,7 +46,7 @@ export default function ChapterNav({ numeri, activeId, unlockedNumbers, onNaviga
               key={item.id}
               onClick={() => handleClick(item)}
               disabled={item.locked}
-              title={item.locked ? 'Completa prima l’esercizio del capitolo precedente' : undefined}
+              title={item.locked ? item.lockedHint : undefined}
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1 ${
                 item.locked
                   ? 'text-[#c2b896] cursor-not-allowed'

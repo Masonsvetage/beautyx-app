@@ -86,7 +86,7 @@ export default function Chapter({ capitolo, totaleCapitoli = 10 }) {
 
           {/* Narrazione — card chiara ancorata nella meta' inferiore del viewport */}
           <div className="min-h-screen flex items-end justify-center px-5 sm:px-10 pb-14 sm:pb-20">
-            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/20 bg-[#f5f1ea]/90 backdrop-blur-md p-8 sm:p-12">
+            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/20 bg-[#f5f1ea]/60 backdrop-blur-md p-8 sm:p-12">
               <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-6">
                 Narrazione e il danno
               </p>
@@ -135,7 +135,7 @@ export default function Chapter({ capitolo, totaleCapitoli = 10 }) {
 
           {/* Il caso pratico — stessa storia, stessa illustrazione di sfondo */}
           <div className="min-h-screen flex items-end justify-center px-5 sm:px-10 pb-14 sm:pb-20">
-            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/20 bg-[#f5f1ea]/90 backdrop-blur-md p-8 sm:p-12">
+            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/20 bg-[#f5f1ea]/60 backdrop-blur-md p-8 sm:p-12">
               <RevealBlock>
                 <span className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-[#dcc9a0]/70">
                   <span className="block w-1.5 h-1.5 rounded-full bg-[#8a6d1f]" />
@@ -177,7 +177,7 @@ export default function Chapter({ capitolo, totaleCapitoli = 10 }) {
         {/* Layer di testo — card scura, coerente con lo stile della barra risposta */}
         <div className="relative z-10 -mt-[100vh]">
           <div className="min-h-screen flex items-end justify-center px-5 sm:px-10 pb-14 sm:pb-20">
-            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/40 bg-[#14140b]/88 backdrop-blur-md p-8 sm:p-12">
+            <div className="max-w-xl sm:max-w-2xl w-full rounded-2xl border border-[#c9a34a]/30 shadow-xl shadow-black/40 bg-[#14140b]/55 backdrop-blur-md p-8 sm:p-12">
               <RevealBlock>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#c9a34a] mb-2">
                   L&apos;esercizio pratico — da domani

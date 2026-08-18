@@ -12,6 +12,7 @@ import Quiz from './Quiz'
 import WorkbookSummary from './WorkbookSummary'
 import { useActiveSection } from './useActiveSection'
 import { useAllWorkbookAnswers, MIN_UNLOCK_CHARS } from './useWorkbookAnswer'
+import { useQuizCompleted } from './useQuizCompleted'
 
 const CHAPTER_NUMBERS = capitoli.map((c) => c.numero)
 const CHAPTER_IDS = CHAPTER_NUMBERS.map((n) => `capitolo-${n}`)
@@ -20,13 +21,16 @@ const ALL_NAV_IDS = ['quiz', ...CHAPTER_IDS]
 export default function GuidaContent() {
   const activeId = useActiveSection(ALL_NAV_IDS)
   const risposteWorkbook = useAllWorkbookAnswers(CHAPTER_NUMBERS)
+  const quizCompletato = useQuizCompleted()
 
-  // Un capitolo N>1 e' raggiungibile dal ChapterNav solo se l'esercizio del
-  // capitolo N-1 e' stato compilato — coerente con il blocco di progressione
-  // richiesto in Chapter.js (vedi useWorkbookAnswer.MIN_UNLOCK_CHARS).
+  // Il Capitolo 1 e' raggiungibile solo dopo aver completato il quiz
+  // diagnostico (primo vero step del percorso) — vedi useQuizCompleted.
+  // Un capitolo N>1 e' raggiungibile solo se l'esercizio del capitolo N-1 e'
+  // stato compilato — coerente con il blocco di progressione richiesto in
+  // Chapter.js (vedi useWorkbookAnswer.MIN_UNLOCK_CHARS).
   const unlockedNumbers = new Set(
     CHAPTER_NUMBERS.filter((n) => {
-      if (n === 1) return true
+      if (n === 1) return quizCompletato
       const prev = (risposteWorkbook[n - 1] || '').trim()
       return prev.length > MIN_UNLOCK_CHARS
     })
@@ -142,12 +146,13 @@ export default function GuidaContent() {
       </section>
 
       {/* ── I 10 CAPITOLI — scrollytelling ──
-          Blocco di progressione REALE: un capitolo N>1 viene renderizzato per
+          Blocco di progressione REALE: un capitolo N viene renderizzato per
           intero solo se e' in unlockedNumbers (stesso criterio di ChapterNav,
-          calcolato sopra). Finche' non e' raggiungibile si mostra un
-          LockedChapter — un muro vero nel DOM, non solo un pulsante disabilitato
-          — cosi' non e' piu' possibile scorrere con la rotellina oltre un
-          capitolo senza aver compilato l'esercizio di quello precedente. */}
+          calcolato sopra: Capitolo 1 richiede il quiz completato, N>1 richiede
+          l'esercizio del capitolo precedente). Finche' non e' raggiungibile si
+          mostra un LockedChapter — un muro vero nel DOM, non solo un pulsante
+          disabilitato — cosi' non e' piu' possibile scorrere con la rotellina
+          oltre un capitolo senza aver soddisfatto la condizione richiesta. */}
       {capitoli.map((capitolo) =>
         unlockedNumbers.has(capitolo.numero) ? (
           <Chapter key={capitolo.numero} capitolo={capitolo} totaleCapitoli={CHAPTER_NUMBERS.length} />
@@ -157,6 +162,11 @@ export default function GuidaContent() {
             numero={capitolo.numero}
             titolo={capitolo.titolo}
             totaleCapitoli={CHAPTER_NUMBERS.length}
+            messaggio={
+              capitolo.numero === 1
+                ? 'Completa il quiz diagnostico qui sopra per continuare.'
+                : undefined
+            }
           />
         )
       )}
