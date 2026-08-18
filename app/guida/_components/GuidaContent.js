@@ -11,8 +11,8 @@ import LockedChapter from './LockedChapter'
 import Quiz from './Quiz'
 import WorkbookSummary from './WorkbookSummary'
 import { useActiveSection } from './useActiveSection'
-import { useAllWorkbookAnswers, MIN_UNLOCK_CHARS } from './useWorkbookAnswer'
-import { useQuizCompleted } from './useQuizCompleted'
+import { useAllWorkbookAnswers, MIN_UNLOCK_CHARS, workbookKey } from './useWorkbookAnswer'
+import { useQuizCompleted, QUIZ_STORAGE_KEY } from './useQuizCompleted'
 
 const CHAPTER_NUMBERS = capitoli.map((c) => c.numero)
 const CHAPTER_IDS = CHAPTER_NUMBERS.map((n) => `capitolo-${n}`)
@@ -35,6 +35,19 @@ export default function GuidaContent() {
       return prev.length > MIN_UNLOCK_CHARS
     })
   )
+
+  // Strumento SOLO per test (Mason/team): azzera quiz + esercizi salvati in
+  // questo browser senza dover usare l'incognito ogni volta. NON tocca il
+  // cookie guida_access_token (quello e' l'accesso alla pagina, non va perso).
+  const handleResetProgressiTest = () => {
+    try {
+      CHAPTER_NUMBERS.forEach((n) => window.localStorage.removeItem(workbookKey(n)))
+      window.localStorage.removeItem(QUIZ_STORAGE_KEY)
+    } catch {
+      // localStorage non disponibile — nessun crash
+    }
+    window.location.reload()
+  }
 
   return (
     <div
@@ -193,6 +206,16 @@ export default function GuidaContent() {
         <p className="text-xs text-[#a29c8a]">
           © {new Date().getFullYear()} Beautyx · Guida interattiva "10 errori" · Le tue risposte restano salvate solo in questo browser.
         </p>
+        {/* Strumento SOLO per test interni — non per utenti finali. Azzera
+            quiz + esercizi salvati in questo browser (localStorage), lasciando
+            intatto l'accesso alla pagina (cookie guida_access_token). */}
+        <button
+          type="button"
+          onClick={handleResetProgressiTest}
+          className="mt-3 text-[11px] text-[#c9c2ae] hover:text-[#a29c8a] underline underline-offset-2 transition-colors"
+        >
+          Reset progressi guida (solo per test)
+        </button>
       </footer>
     </div>
   )
