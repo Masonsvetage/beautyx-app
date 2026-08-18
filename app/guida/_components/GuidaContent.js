@@ -7,6 +7,7 @@ import ChapterNav from './ChapterNav'
 import RevealBlock from './RevealBlock'
 import RichText from './RichText'
 import Chapter from './Chapter'
+import LockedChapter from './LockedChapter'
 import Quiz from './Quiz'
 import WorkbookSummary from './WorkbookSummary'
 import { useActiveSection } from './useActiveSection'
@@ -140,10 +141,25 @@ export default function GuidaContent() {
         <Quiz />
       </section>
 
-      {/* ── I 10 CAPITOLI — scrollytelling ── */}
-      {capitoli.map((capitolo) => (
-        <Chapter key={capitolo.numero} capitolo={capitolo} totaleCapitoli={CHAPTER_NUMBERS.length} />
-      ))}
+      {/* ── I 10 CAPITOLI — scrollytelling ──
+          Blocco di progressione REALE: un capitolo N>1 viene renderizzato per
+          intero solo se e' in unlockedNumbers (stesso criterio di ChapterNav,
+          calcolato sopra). Finche' non e' raggiungibile si mostra un
+          LockedChapter — un muro vero nel DOM, non solo un pulsante disabilitato
+          — cosi' non e' piu' possibile scorrere con la rotellina oltre un
+          capitolo senza aver compilato l'esercizio di quello precedente. */}
+      {capitoli.map((capitolo) =>
+        unlockedNumbers.has(capitolo.numero) ? (
+          <Chapter key={capitolo.numero} capitolo={capitolo} totaleCapitoli={CHAPTER_NUMBERS.length} />
+        ) : (
+          <LockedChapter
+            key={capitolo.numero}
+            numero={capitolo.numero}
+            titolo={capitolo.titolo}
+            totaleCapitoli={CHAPTER_NUMBERS.length}
+          />
+        )
+      )}
 
       {/* ── CONCLUSIONE ── */}
       <section id="conclusione" className="scroll-mt-24 max-w-2xl mx-auto px-6 py-20">

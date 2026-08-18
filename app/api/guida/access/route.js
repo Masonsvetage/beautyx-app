@@ -7,12 +7,38 @@ const supabase = createClient(
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
+// Stesso pattern in-memory di /api/newsletter/subscribe, con limite un po' più
+// permissivo: questo endpoint è un lookup legittimo (recupero token guida) che
+// un utente reale potrebbe dover ripetere più volte (es. cambia dispositivo).
+const ipRequests = new Map()
+const RATE_LIMIT = 5
+const RATE_WINDOW_MS = 60 * 60 * 1000
+
+function isRateLimited(ip) {
+  const now = Date.now()
+  const entry = ipRequests.get(ip)
+  if (!entry || now - entry.firstRequest > RATE_WINDOW_MS) {
+    ipRequests.set(ip, { count: 1, firstRequest: now })
+    return false
+  }
+  if (entry.count >= RATE_LIMIT) return true
+  entry.count++
+  return false
+}
+
 export async function POST(request) {
   try {
     const { email } = await request.json()
 
     if (!email || !EMAIL_REGEX.test(email)) {
       return Response.json({ error: 'Email non valida' }, { status: 400 })
+    }
+
+    const forwarded = request.headers.get('x-forwarded-for')
+    const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown'
+
+    if (isRateLimited(ip)) {
+      return Response.json({ error: "Troppi tentativi. Riprova tra un'ora." }, { status: 429 })
     }
 
     const normalizedEmail = email.trim().toLowerCase()

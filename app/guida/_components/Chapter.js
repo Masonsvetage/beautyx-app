@@ -55,7 +55,7 @@ export default function Chapter({ capitolo, totaleCapitoli = 10 }) {
             src={`/guida/errore-${numeroPad}-narrazione.png`}
             alt={`Illustrazione errore ${numero}: ${titolo}`}
             fill
-            className="object-contain"
+            className="object-cover"
             sizes="100vw"
             priority={numero === 1}
           />
@@ -167,7 +167,7 @@ export default function Chapter({ capitolo, totaleCapitoli = 10 }) {
             src={`/guida/errore-${numeroPad}-workbook.png`}
             alt={`Illustrazione esercizio pratico errore ${numero}: ${titolo}`}
             fill
-            className="object-contain"
+            className="object-cover"
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-[#1a1a0f]/45 sm:bg-[#1a1a0f]/40" />
