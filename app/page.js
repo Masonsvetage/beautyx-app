@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
+import GuidaFooterLink from '@/components/common/GuidaFooterLink'
 
 const CAT_COLORS = {
   novita: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
@@ -1099,6 +1100,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-6">
             <Link href="/login" className="hover:text-slate-300 transition-colors">Accedi</Link>
             <Link href="/signup" className="hover:text-slate-300 transition-colors">Registrati</Link>
+            <GuidaFooterLink className="hover:text-slate-300 transition-colors" />
           </div>
         </div>
       </footer>

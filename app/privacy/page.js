@@ -1,12 +1,24 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { cookies } from 'next/headers'
 
 export const metadata = {
   title: 'Privacy Policy — Beautyx',
   description: 'Come Beautyx tratta i tuoi dati personali.',
 }
 
-export default function PrivacyPage() {
+// Stesso cookie di accesso usato da /guida (vedi app/guida/page.js, ACCESS_COOKIE).
+// Il link "Rileggi la guida" nel footer compare SOLO se il cookie è presente — euristica
+// economica di sola visualizzazione, mai usata per decidere cosa mostrare dentro /guida
+// (quella validazione vera, contro Supabase, resta interamente in app/guida/page.js).
+// Pagina Server Component: si può leggere il cookie direttamente con cookies(), senza
+// bisogno del componente client GuidaFooterLink usato altrove ('use client' pages).
+const ACCESS_COOKIE = 'guida_access_token'
+
+export default async function PrivacyPage() {
+  const cookieStore = await cookies()
+  const hasGuidaAccess = !!cookieStore.get(ACCESS_COOKIE)?.value
+
   return (
     <>
       <style>{`
@@ -154,6 +166,12 @@ export default function PrivacyPage() {
           <p style={{ fontSize: '12px', color: '#bbb' }}>
             © 2025 Beautyx ·{' '}
             <Link href="/newsletter" style={{ color: '#bbb', textDecoration: 'none' }}>Newsletter</Link>
+            {hasGuidaAccess && (
+              <>
+                {' · '}
+                <Link href="/guida" style={{ color: '#bbb', textDecoration: 'none' }}>Rileggi la guida →</Link>
+              </>
+            )}
           </p>
           <p style={{ fontSize: '11px', color: '#999', marginTop: '8px' }}>
             Beautyx è un progetto di Svetage S.r.l. — P.IVA/C.F. 01959270495 · Via Toscana 6/8, 57128 Livorno (LI), Italia · REA LI 216353 · Capitale sociale 10.000 € interamente versato

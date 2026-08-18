@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import GuidaFooterLink from '@/components/common/GuidaFooterLink'
 
 // Tassonomia tag per l'archivio "Newsletter già uscite" (/api/public/newsletter-archive).
 // Tassonomia definitiva Alessia (8 categorie) — i valori salvati nel DB devono
@@ -564,6 +565,7 @@ export default function NewsletterPage() {
           <p style={{ fontSize: '12px', color: '#555' }}>
             © 2025 Beautyx ·{' '}
             <Link href="/privacy" style={{ color: '#666', textDecoration: 'none' }}>Privacy</Link>
+            <GuidaFooterLink style={{ color: '#666', textDecoration: 'none' }} separator=" · " />
           </p>
           <p style={{ fontSize: '11px', color: '#444', marginTop: '8px' }}>
             Beautyx è un progetto di Svetage S.r.l. — P.IVA/C.F. 01959270495 · Via Toscana 6/8, 57128 Livorno (LI), Italia · REA LI 216353 · Capitale sociale 10.000 € interamente versato
