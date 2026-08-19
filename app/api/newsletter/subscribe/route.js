@@ -1,27 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 import dns from 'dns'
+import { isRateLimited } from '@/lib/rateLimit'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
 
-const ipRequests = new Map()
+// Rate limiting distribuito via Upstash Redis (lib/rateLimit.js), con
+// fallback automatico a Map() in-memory se le env var Upstash non sono
+// configurate. Soglia invariata: 3 richieste/ora per IP.
+const RATE_LIMIT_PREFIX = 'newsletter-subscribe'
 const RATE_LIMIT = 3
-const RATE_WINDOW_MS = 60 * 60 * 1000
-
-function isRateLimited(ip) {
-  const now = Date.now()
-  const entry = ipRequests.get(ip)
-  if (!entry || now - entry.firstRequest > RATE_WINDOW_MS) {
-    ipRequests.set(ip, { count: 1, firstRequest: now })
-    return false
-  }
-  if (entry.count >= RATE_LIMIT) return true
-  entry.count++
-  return false
-}
+const RATE_WINDOW_SECONDS = 60 * 60
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -119,7 +111,7 @@ export async function POST(request) {
     const forwarded = request.headers.get('x-forwarded-for')
     const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown'
 
-    if (isRateLimited(ip)) {
+    if (await isRateLimited(RATE_LIMIT_PREFIX, ip, RATE_LIMIT, RATE_WINDOW_SECONDS)) {
       return Response.json({ error: "Troppi tentativi. Riprova tra un'ora." }, { status: 429 })
     }
 

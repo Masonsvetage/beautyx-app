@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { isRateLimited } from '@/lib/rateLimit'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -8,24 +9,15 @@ const supabase = createClient(
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
-// Stesso pattern in-memory di /api/newsletter/subscribe, con limite un po' più
-// permissivo: questo endpoint è un lookup legittimo (recupero token guida) che
-// un utente reale potrebbe dover ripetere più volte (es. cambia dispositivo).
-const ipRequests = new Map()
+// Rate limiting distribuito via Upstash Redis (lib/rateLimit.js), con
+// fallback automatico a Map() in-memory se le env var Upstash non sono
+// configurate. Soglia invariata: 5 richieste/ora per IP — un po' più
+// permissiva di /api/newsletter/subscribe perché questo endpoint è un lookup
+// legittimo (recupero token guida) che un utente reale potrebbe dover
+// ripetere più volte (es. cambia dispositivo).
+const RATE_LIMIT_PREFIX = 'guida-access'
 const RATE_LIMIT = 5
-const RATE_WINDOW_MS = 60 * 60 * 1000
-
-function isRateLimited(ip) {
-  const now = Date.now()
-  const entry = ipRequests.get(ip)
-  if (!entry || now - entry.firstRequest > RATE_WINDOW_MS) {
-    ipRequests.set(ip, { count: 1, firstRequest: now })
-    return false
-  }
-  if (entry.count >= RATE_LIMIT) return true
-  entry.count++
-  return false
-}
+const RATE_WINDOW_SECONDS = 60 * 60
 
 // Decisione di Mason (19/08/2026): l'accesso a /guida richiede conferma reale
 // via double opt-in Beehiiv. Questo endpoint è il vero cancello quando non
@@ -98,7 +90,7 @@ export async function POST(request) {
     const forwarded = request.headers.get('x-forwarded-for')
     const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown'
 
-    if (isRateLimited(ip)) {
+    if (await isRateLimited(RATE_LIMIT_PREFIX, ip, RATE_LIMIT, RATE_WINDOW_SECONDS)) {
       return Response.json({ error: "Troppi tentativi. Riprova tra un'ora." }, { status: 429 })
     }
 

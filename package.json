@@ -20,6 +20,8 @@
     "@anthropic-ai/sdk": "^0.71.2",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.87.1",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.2",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "imapflow": "^1.2.10",
