@@ -25,13 +25,18 @@ function isRateLimited(ip) {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
-// Stati Beehiiv (data.data.status sulla risposta di create subscription) che
-// rappresentano un'iscrizione accettata, anche se non ancora confermata via
-// double opt-in. Escludiamo esplicitamente gli stati di rifiuto/errore/non-attivo:
-// "invalid" (email non valida), "inactive" (disiscritto), "paused" e
-// "needs_attention" (richiede approvazione/rifiuto manuale, non ancora deciso).
+// Decisione di Mason (19/08/2026): l'accesso a /guida è concesso SOLO dopo
+// conferma reale via double opt-in Beehiiv, non più a chiunque inserisca
+// un'email sintatticamente valida con MX valido. Qui, in fase di iscrizione,
+// emettiamo il token guida SOLO se lo stato riportato da Beehiiv è già
+// "active" nel momento stesso della POST — caso raro ma possibile per
+// un'email già confermata in passato (es. iscritta storica che si re-iscrive).
+// "pending"/"validating" (conferma non ancora cliccata) NON danno più token
+// qui: l'utente lo otterrà in un secondo momento, dopo aver confermato,
+// tramite il gate su /guida (app/api/guida/access/route.js), che verifica lo
+// stato reale via lookup live su Beehiiv prima di emettere il token.
 // Vedi doc ufficiale: https://developers.beehiiv.com/api-reference/subscriptions/create
-const GUIDA_ALLOWED_STATUSES = new Set(['active', 'pending', 'validating'])
+const GUIDA_ALLOWED_STATUSES = new Set(['active'])
 
 const MX_CHECK_TIMEOUT_MS = 3500
 
@@ -156,13 +161,15 @@ export async function POST(request) {
     }
 
     // Iscrizione Beehiiv andata a buon fine (HTTP 2xx): questo NON basta a
-    // concedere l'accesso alla guida. Beehiiv risponde 200 anche con
-    // status "validating" (email in corso di validazione) o altri stati non
-    // ancora confermati/rifiutati — bisogna leggere data.data.status ed
-    // emettere il token solo per stati che rappresentano un'iscrizione accettata.
+    // concedere l'accesso alla guida. Beehiiv risponde 200 anche con status
+    // "pending"/"validating" (conferma double opt-in non ancora cliccata) —
+    // bisogna leggere data.data.status ed emettere il token SOLO se è già
+    // "active" ora. Il caso normale (email appena iscritta, non ancora
+    // confermata) non crea alcun token qui: niente scappatoia via
+    // /api/guida/access, che ricontrolla Beehiiv live prima di crearne uno.
     const subscriptionStatus = data?.data?.status
     if (!GUIDA_ALLOWED_STATUSES.has(subscriptionStatus)) {
-      console.warn('Iscrizione Beehiiv con stato non idoneo ad accesso guida:', subscriptionStatus, 'per', email)
+      console.log('Iscrizione Beehiiv non ancora confermata (nessun token guida emesso ora):', subscriptionStatus, 'per', email)
     }
     const guidaToken = GUIDA_ALLOWED_STATUSES.has(subscriptionStatus)
       ? await ensureGuidaAccessToken(email)

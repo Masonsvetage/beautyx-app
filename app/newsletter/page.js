@@ -461,9 +461,10 @@ export default function NewsletterPage() {
                   </>
                 ) : (
                   <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7 }}>
-                    Iscrizione fatta. Per aprire subito la guida vai su{' '}
+                    Controlla la tua email e clicca il link di conferma. Una volta confermato,
+                    torna su{' '}
                     <Link href="/guida" style={{ color: '#fff', textDecoration: 'underline' }}>beautyx.it/guida</Link>{' '}
-                    e inserisci di nuovo la tua email: ti sblocca l'accesso all'istante.
+                    e inserisci di nuovo questa email: ti si sblocca all'istante.
                   </p>
                 )}
               </div>

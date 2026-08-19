@@ -1100,8 +1100,14 @@ export default function LandingPage() {
           <div className="flex items-center gap-6">
             <Link href="/login" className="hover:text-slate-300 transition-colors">Accedi</Link>
             <Link href="/signup" className="hover:text-slate-300 transition-colors">Registrati</Link>
+            <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
             <GuidaFooterLink className="hover:text-slate-300 transition-colors" />
           </div>
+        </div>
+        <div className="max-w-6xl mx-auto mt-4">
+          <p className="text-xs text-slate-600 text-center md:text-left">
+            Beautyx è un progetto di Svetage S.r.l. — P.IVA/C.F. 01959270495 · Via Toscana 6/8, 57128 Livorno (LI), Italia · REA LI 216353 · Capitale sociale 10.000 € interamente versato
+          </p>
         </div>
       </footer>
 
