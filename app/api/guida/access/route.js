@@ -122,7 +122,16 @@ export async function POST(request) {
       return Response.json({ error: 'Errore di rete, riprova.' }, { status: 500 })
     }
 
+    if (beehiivLookup.status === null) {
+      // Nessuna subscription Beehiiv trovata per questa email: davvero mai
+      // iscritta (non solo "non ancora confermata"). Unico caso in cui ha
+      // senso invitare all'iscrizione (vedi GuidaGate.js, stato 'notfound').
+      return Response.json({ error: 'Email non trovata.' }, { status: 404 })
+    }
+
     if (beehiivLookup.status !== 'active') {
+      // Iscritta ma non ancora confermata via double opt-in (status Beehiiv
+      // "pending"/"validating"/altro diverso da "active" e "null").
       return Response.json(
         {
           error:

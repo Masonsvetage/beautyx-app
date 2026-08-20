@@ -4,7 +4,14 @@ import { useState } from 'react'
 
 export default function GuidaGate() {
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState('idle') // idle | loading | notfound | error
+  // idle | loading | notfound (404, email mai iscritta) | unconfirmed (403,
+  // iscritta ma non confermata via double opt-in) | ratelimited (429, troppi
+  // tentativi) | error (400/500/rete/altro). Solo 'notfound' mostra il link
+  // "Iscriviti qui" — negli altri casi l'utente è già iscritto (o ha solo
+  // sbagliato a riprovare), quindi invitarlo a iscriversi di nuovo sarebbe
+  // contraddittorio. Distinzione fatta sullo status HTTP della risposta, non
+  // sul testo del messaggio (che può cambiare lato copy senza rompere la logica).
+  const [status, setStatus] = useState('idle')
   const [message, setMessage] = useState('')
 
   async function handleSubmit(e) {
@@ -25,8 +32,23 @@ export default function GuidaGate() {
         return
       }
 
-      setStatus('notfound')
-      setMessage(data.error || 'Email non trovata.')
+      if (res.status === 404) {
+        setStatus('notfound')
+        setMessage(data.error || 'Email non trovata.')
+      } else if (res.status === 403) {
+        setStatus('unconfirmed')
+        setMessage(
+          data.error ||
+            'Non risulta ancora una conferma per questa email — controlla la posta e clicca il link di conferma, poi riprova qui.'
+        )
+      } else if (res.status === 429) {
+        setStatus('ratelimited')
+        setMessage(data.error || "Troppi tentativi. Riprova tra un'ora.")
+      } else {
+        // 400 (email non valida), 500 (errore generico) o qualunque altro caso
+        setStatus('error')
+        setMessage(data.error || 'Errore di rete. Riprova tra poco.')
+      }
     } catch {
       setStatus('error')
       setMessage('Errore di rete. Riprova tra poco.')
