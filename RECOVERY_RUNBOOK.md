@@ -100,6 +100,18 @@ NON fare: tentare di rimuovere index.lock dalla sandbox Linux (non funziona)
 
 ## Health check rapido (30 secondi)
 
+Script unico in **sola lettura** (nessuna operazione di modifica/eliminazione):
+
+```bash
+bash scripts/health-check.sh
+```
+
+Copre: pagine `/newsletter` e `/miniguida`, POST `/api/newsletter/subscribe`,
+Beehiiv (stato + iscritti attivi, GET), Vercel (stato ultimo deploy, GET).
+Legge le credenziali da `.env.local` (`BEEHIIV_*`, `VERCEL_TOKEN`).
+
+Fallback manuale se lo script non è disponibile:
+
 ```bash
 curl -s -o /dev/null -w "newsletter: %{http_code}\n" https://beautyx-appnews.vercel.app/newsletter
 curl -s -o /dev/null -w "miniguida: %{http_code}\n" https://beautyx-appnews.vercel.app/miniguida
@@ -108,7 +120,11 @@ curl -s -X POST https://beautyx-appnews.vercel.app/api/newsletter/subscribe \
   -d '{"email":"healthcheck@test.com","website":""}' | python3 -m json.tool
 ```
 
-**Risultati attesi:** 200, 200, {"success":true}
+**Risultati attesi:** 200; `/miniguida` 307 → /login (gate autenticazione, atteso); {"success":true}
+
+### Accesso monitoraggio diretto (sola lettura)
+- **Beehiiv** — `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` già in `.env.local`. Endpoint: `GET https://api.beehiiv.com/v2/publications/{id}?expand[]=stats`.
+- **Vercel** — crea un token in *vercel.com → Settings → Tokens*, scope limitato al team `luigis-projects-5fcd891f`, e incollalo in `.env.local` come `VERCEL_TOKEN`. Usato solo per `GET .../v6/deployments` (stato deploy). Mai scrittura/redeploy automatico.
 
 ---
 

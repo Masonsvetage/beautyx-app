@@ -87,13 +87,322 @@ come sostituite con la data (storico).
 
 ---
 
+## /guida — link footer condizionale "Rileggi la guida" (2026-08-18)
+
+- **Contesto:** Mason ha approvato un link permanente a `/guida` nel footer del
+  sito, ma SOLO visibile per chi ha già il cookie `guida_access_token` (chi è
+  probabilmente già iscritto) — mai per un visitatore qualunque. Il vero
+  controllo d'accesso resta interamente in `app/guida/page.js` (token contro
+  Supabase `guida_access`); qui si decide solo se MOSTRARE il link, non se dare
+  accesso.
+- **Componente creato:** `components/common/GuidaFooterLink.js` — client
+  component (`'use client'`) che legge `document.cookie` per `guida_access_token`
+  e renderizza `<Link href="/guida">Rileggi la guida →</Link>` solo se presente
+  (altrimenti `null`). Accetta prop `separator` per il "· " davanti al link, così
+  il separatore non appare mai da solo quando il link è nascosto.
+- **Approccio scelto per pagina — perché due tecniche diverse:**
+  - `app/newsletter/page.js` e `app/page.js` sono entrambe `'use client'` in
+    cima al file → `cookies()` di `next/headers` non è utilizzabile lì
+    direttamente. Usato il componente client `GuidaFooterLink` (document.cookie),
+    coerente con il pattern già esistente in `app/newsletter/page.js`
+    (`readAccessCookie()`, riga 26-32, stesso cookie `ACCESS_COOKIE`).
+  - `app/privacy/page.js` NON è `'use client'` (Server Component) → usato
+    `cookies()` da `next/headers` direttamente in testa alla pagina
+    (`PrivacyPage` reso `async`), stesso pattern di `app/guida/page.js`. Nessun
+    componente extra necessario.
+  - **Regola futura:** per qualunque nuova pagina che debba leggere
+    `guida_access_token` solo per decidere la VISUALIZZAZIONE (mai per dare
+    accesso vero) — se la pagina è Server Component usare `cookies()` inline;
+    se è `'use client'`, riusare `components/common/GuidaFooterLink.js` invece
+    di duplicare la logica `document.cookie`.
+- **File modificati:** `components/common/GuidaFooterLink.js` (nuovo),
+  `app/newsletter/page.js` (footer, riga ~568), `app/page.js` (footer, riga
+  ~1103), `app/privacy/page.js` (footer, riga ~169 + `cookies()` in testa).
+  `app/guida/page.js` non toccato (accesso già gestito lì, come da richiesta).
+
+## /guida — reset progressi test + opacità card definitiva (2026-08-18)
+
+- **Contesto:** Mason continuava a segnalare quiz/capitolo 1-2 "sbloccati senza
+  compilare nulla". La logica di sblocco in `GuidaContent.js` (riga 33, `if (n
+  === 1) return quizCompletato`) era già corretta e live — il sospetto (confermato
+  come causa più probabile) è che i test avvenissero nello stesso browser/tab con
+  `localStorage` già popolato da test precedenti, non un bug di codice.
+- **Fix 1 — pulsante reset per i test:** aggiunto in fondo al footer di
+  `app/guida/_components/GuidaContent.js` un link discreto "Reset progressi guida
+  (solo per test)" (piccolo, grigio, sotto il copyright). `onClick` rimuove da
+  `localStorage` tutte le chiavi `beautyx-guida-esercizio-*` (via `workbookKey(n)`,
+  importato da `useWorkbookAnswer.js`) e `beautyx-guida-quiz-risposte` (import
+  `QUIZ_STORAGE_KEY` da `useQuizCompleted.js`), poi `window.location.reload()`.
+  Non tocca il cookie `guida_access_token` (accesso alla pagina, non progresso).
+  **Regola futura:** questo è l'unico modo corretto per "ripulire" un test su
+  `/guida` senza incognito — usarlo prima di ogni verifica di quiz/capitoli.
+- **Fix 2 — opacità card portata a 35% esatto:** su richiesta esplicita di Mason
+  (non negoziabile questa volta), in `Chapter.js` le tre card sono passate da
+  `/60` e `/55` a `/35`: narrazione (riga 89) e caso pratico (riga 138)
+  `bg-[#f5f1ea]/35`, workbook (riga 180) `bg-[#14140b]/35`. Per compensare il
+  rischio di leggibilità a quel livello di trasparenza, aggiunta solo una classe
+  Tailwind v4 `text-shadow-[...]` sul contenitore di ciascuna card (eredita sui
+  figli, non serve toccare ogni paragrafo): alone chiaro
+  `rgba(245,241,234,0.85)` sulle due card chiare, alone scuro `rgba(0,0,0,0.7)`
+  sulla card scura del workbook. Nessun'altra modifica di stile.
+  **Verificato:** Tailwind installato è v4.1.17 (`node_modules/tailwindcss/package.json`),
+  che supporta nativamente l'utility `text-shadow-*` incluse le arbitrary values;
+  stesso pattern di valori con virgole dentro parentesi (`rgba(...)`) già usato
+  altrove nel progetto (es. `bg-[radial-gradient(...)]` in `GuidaContent.js`).
+
+## /guida — accesso legato alla conferma reale double opt-in (2026-08-19)
+
+- **Contesto:** decisione esplicita di Mason: l'accesso a `/guida` va concesso
+  SOLO dopo che l'email è stata davvero confermata via click sul link di
+  double opt-in Beehiiv — non più a chiunque risulti "pending"/"validating".
+  Chiudeva il residuo segnalato da Riccardo nell'audit del 18/08/2026
+  (`memory/riccardo.md`): il token veniva emesso a priori anche per email mai
+  confermate, e `/api/guida/access` (gate di recupero email su `GuidaGate.js`)
+  faceva solo un lookup nella tabella Supabase senza mai controllare lo stato
+  Beehiiv, quindi il token pre-creato restava comunque recuperabile.
+- **Fix 1 — `app/api/newsletter/subscribe/route.js`:** `GUIDA_ALLOWED_STATUSES`
+  ridotto al solo `'active'` (era `{'active','pending','validating'}`).
+  `ensureGuidaAccessToken` ora viene chiamata solo se lo stato Beehiiv riportato
+  dalla risposta di creazione subscription è già `active` in quel momento (caso
+  raro: email già confermata in passato). Per il caso normale (email appena
+  iscritta, non confermata) non viene creato alcun token — niente più scappatoia
+  a valle.
+- **Fix 2 — `app/api/guida/access/route.js`** (il vero cancello, chiamato da
+  `GuidaGate.js`): prima controlla se esiste già un token in `guida_access` per
+  l'email (se sì, lo restituisce subito, nessuna richiesta esterna ripetuta per
+  chi ha già accesso). Se non esiste, chiama LIVE l'endpoint Beehiiv
+  `GET /v2/publications/:publicationId/subscriptions/by_email/:email` (email
+  URL-encoded, stesso `BEEHIIV_API_KEY`/`BEEHIIV_PUBLICATION_ID` usati in
+  `subscribe/route.js`) e legge `data.data.status`. Token creato ORA solo se
+  `status === 'active'`; altrimenti risposta 403 con messaggio esplicito
+  ("Non risulta ancora una conferma per questa email..."). Rate limiting
+  esistente (5 richieste/ora per IP) invariato — anzi più importante ora che
+  l'endpoint fa una chiamata esterna a Beehiiv.
+- **Fix 3 — `app/newsletter/page.js`:** il messaggio di successo del form, ramo
+  senza `guidaToken` (il caso ora più comune), riscritto per essere onesto:
+  invita a confermare via email prima di poter sbloccare la guida su
+  `/guida`. Il ramo con `guidaToken` presente (email già confermata in
+  precedenza) resta invariato — mostra ancora il pulsante diretto.
+- **Verifica:** solo statica (grep + lettura + `node --check` sui due route
+  API); build completa non eseguibile nel sandbox. `GuidaGate.js` non
+  modificato — gestisce già correttamente qualunque `data.error` restituito.
+- **Nota per Riccardo:** questo fix chiude il residuo "priorità alta" del suo
+  audit 18/08/2026 in `memory/riccardo.md` — da riconfermare con audit
+  indipendente sul codice reale, come da convenzione del team, prima di
+  marcarlo risolto in quel file.
+
+## /guida — GuidaGate.js: distinguere gli errori di `/api/guida/access` per stato HTTP (2026-08-20)
+
+- **Contesto:** audit di Alessia del 20/08/2026 — `GuidaGate.js` mappava
+  QUALSIASI errore restituito da `POST /api/guida/access` sullo stesso stato
+  `notfound`, che mostra sempre in coda il link "Iscriviti qui per riceverla".
+  Risultato: un iscritto legittimo non ancora confermato (403) o che aveva
+  solo sbagliato a riprovare troppe volte (429) vedeva comunque l'invito a
+  iscriversi di nuovo — messaggio contraddittorio.
+- **Scoperta in corso d'opera — il bug era più a monte:** `app/api/guida/access/route.js`
+  non emetteva affatto un 404 distinto. Il branch `if (beehiivLookup.status !== 'active')`
+  copriva sia "email mai iscritta" (`status === null`, nessuna subscription Beehiiv)
+  sia "iscritta ma non confermata" (`status === 'pending'/'validating'`), restituendo
+  in entrambi i casi lo stesso 403 con lo stesso messaggio di "non confermata". Senza
+  sistemare anche questo, il fix su `GuidaGate.js` non avrebbe mai potuto mostrare il
+  link "Iscriviti qui" a nessuno, nemmeno a chi non è mai stato iscritto.
+  **Fix in `route.js`:** aggiunto un branch dedicato PRIMA di quello 403 — se
+  `beehiivLookup.status === null` → `404` con `{ error: 'Email non trovata.' }`;
+  altrimenti (status Beehiiv presente ma diverso da `'active'`) → resta `403` con
+  il messaggio di non-conferma esistente.
+- **Fix in `GuidaGate.js`:** lo stato `notfound` unico è stato sostituito con 4 stati
+  distinti, mappati sullo **status HTTP** della risposta (non sul testo del messaggio,
+  che può cambiare lato copy senza rompere la logica):
+  - `notfound` (404) → messaggio + link "Iscriviti qui" (unico caso corretto, invariato)
+  - `unconfirmed` (403) → messaggio dell'API sulla conferma mancante, NESSUN link
+  - `ratelimited` (429) → messaggio "Troppi tentativi...", NESSUN link
+  - `error` (400/500/rete/altro) → messaggio generico, NESSUN link
+  Il JSX che renderizza il link era già scritto come `{status === 'notfound' && (...)}`
+  — bastava restringere correttamente quando lo stato veniva assegnato.
+- **Testi:** placeholder ragionevoli per ora (non è compito di Davide scrivere il
+  copy finale) — da passare a Federica/Elena per la revisione voce Beautyx.
+- **Verifica:** solo statica. `node --check` su `route.js` OK (nessuna JSX, sintassi
+  valida). `GuidaGate.js` contiene JSX quindi `node --check` nativo non lo valida —
+  controllo manuale di bilanciamento parentesi/graffe, struttura invariata rispetto
+  all'originale salvo i rami `if/else if` aggiuntivi. Build completa Next.js non
+  eseguibile nel sandbox.
+- **File modificati:** `app/guida/_components/GuidaGate.js`,
+  `app/api/guida/access/route.js`.
+
+## Fix sicurezza gestionale — helper verifyCentroOwnership + ~45 endpoint IDOR (2026-08-20)
+
+- **Contesto:** Riccardo (audit completo di tutti i ~140 `app/api/route.js`, vedi
+  `memory/riccardo.md` 20/08/2026) ha trovato che `app/api/beautyx/chat/route.js`
+  (il chatbot AI reale della dashboard, diverso dal vecchio prototipo `/api/chat`
+  già rimosso) e circa 40 altri endpoint della dashboard business si fidavano di
+  un `centro_id` passato dal client (body/query) senza mai verificare che la
+  sessione autenticata avesse davvero accesso a quel centro — IDOR su dati
+  finanziari, bancari, HR di qualsiasi centro cliente, usando la SERVICE_KEY che
+  bypassa RLS.
+- **Meccanismo di auth riusato (non inventato):** lo stesso pattern già corretto
+  e in uso in `app/api/contact-requests/route.js`, `app/api/booking/route.js`,
+  `app/api/onboarding/create-centro/route.js`, `app/api/admin/users/route.js` e
+  `app/api/hpa/dashboard/stats/route.js` — sessione letta via `createServerClient`
+  (`@supabase/ssr`) + `supabase.auth.getUser()`, poi lookup su `user_profiles`
+  (colonne `ruolo`/`ruolo_livello`, usate in modo intercambiabile nel progetto) e,
+  per gli HPA, verifica dell'assegnazione attiva su `hpa_centro_assignments`
+  (`hpa_id`, `centro_id`, `data_fine IS NULL OR data_fine >= oggi` — stessa
+  logica già scritta a mano in `hpa/dashboard/stats/route.js` righe 39-48, e
+  anche presente come funzione SQL `get_accessible_centros()` nelle migrazioni,
+  mai però chiamata da codice applicativo).
+- **Helper creato:** `lib/auth/verifyCentroOwnership.js` — due funzioni:
+  - `verifyCentroOwnership(request, centroId)`: applica il meccanismo sopra,
+    ritorna `{ ok:true, user, profile, supabase }` o `{ ok:false, status, error }`
+    (401 non autenticato, 400 centro_id mancante, 403 non autorizzato). Regole:
+    `ruolo`/`ruolo_livello === 'admin'` → accesso a tutto; `profile.centro_id`
+    coincide col richiesto → accesso (titolare/direttore/amministrativo del
+    proprio centro); `ruolo`/`ruolo_livello === 'hpa'` con riga attiva in
+    `hpa_centro_assignments` → accesso.
+  - `verifyRowCentroOwnership(request, supabaseAdmin, { table, id, idColumn,
+    centroColumn })`: per gli endpoint che mutano una riga per `id` senza
+    `centro_id` nel payload (PATCH/DELETE) — legge prima il `centro_id` reale
+    della riga (con il client service-key già istanziato dalla route, per non
+    dipendere da RLS non garantita su ogni tabella) e poi applica la stessa
+    verifica.
+  - `centroOwnershipErrorResponse(result)`: costruisce la Response 401/403/400.
+- **`app/api/beautyx/chat/route.js` — il più critico, sistemato per primo:**
+  check `verifyCentroOwnership` inserito subito dopo il parsing di `message`/
+  `context`, PRIMA di `check_ai_limit`, di qualunque query Supabase e della
+  prima chiamata Anthropic (niente costo AI su richieste non autorizzate).
+  `user_id` non è più letto dal body: si usa sempre `ownershipCheck.user.id`
+  (la sessione reale), per evitare che un client possa spacciarsi per un altro
+  utente ai fini di rate limit/tracking token AI.
+- **Ricognizione sistematica:** grep di tutti i ~153 `route.js` sotto `app/api/`
+  per il pattern `centro_id`, poi verifica manuale file per file di quali
+  facessero già un controllo di ownership reale (non solo "utente loggato").
+  Trovati e corretti con l'helper **36 file/endpoint**:
+  `accantonamenti/route.js`, `accantonamenti/liquidity/route.js`,
+  `anomalies/route.js`, `bank/categories/route.js`,
+  `bank/movements/cleanup/route.js`, `bank/movements/dedup/route.js`,
+  `bank/movements/merge-categories/route.js`, `bank/movements/restore/route.js`,
+  `bank/movements/route.js`, `bank/upload/route.js`, `bank/vendors/route.js`,
+  `beautyx/chat/route.js`, `beautyx/conversations/route.js`,
+  `beautyx/insights/route.js`, `beautyx/memory/route.js`, `budget/route.js`,
+  `budget/comparison/route.js`, `categories/route.js`, `closures/route.js`,
+  `daily-costs/route.js`, `daily-revenues/route.js`, `employees/route.js`,
+  `obiettivi/route.js`, `obiettivi/riepilogo/route.js`,
+  `obiettivi/suggeriti/route.js`, `opening-hours/route.js`,
+  `optimization-plans/route.js`, `progressi-obiettivi/route.js`,
+  `registro/stats/route.js`, `registro/giornata/route.js`,
+  `registro/pagamenti/route.js`, `registro/spese/route.js`,
+  `registro/crediti/route.js`, `registro/crediti/[id]/route.js`,
+  `revenue/daily/route.js`, `soglie-alert/route.js`, `vendors/apply/route.js`,
+  `vendors/route.js`, `activity/route.js` (quest'ultimo solo se `centro_id` è
+  presente nel payload) — 38 in totale contando anche `hpa/reports/route.js`,
+  `hpa/messages/mark-read/route.js` e `scores/centro/[id]/route.js` scoperti nel
+  secondo giro (vedi sotto).
+- **Secondo giro — file inizialmente marcati "OK" per euristica ma in realtà
+  vulnerabili:** l'euristica iniziale (presenza di `auth.getUser`) dava falsi
+  "a posto" quando il file controllava solo che l'utente fosse loggato, senza
+  verificare che il `centro_id` passato appartenesse a lui. Trovati così e
+  corretti: `registro/giornata/route.js`, `registro/pagamenti/route.js`,
+  `registro/spese/route.js`, `registro/crediti/route.js`,
+  `registro/crediti/[id]/route.js` (pattern `getAuth()` con solo login-check,
+  niente ownership), `hpa/reports/route.js` (GET per `report_id` leggeva
+  QUALSIASI report di QUALSIASI centro senza controllo — vero IDOR; GET/POST
+  per `centro_id` non verificavano l'assegnazione HPA↔centro),
+  `hpa/messages/mark-read/route.js` (chiamava `mark_messages_as_read` RPC con
+  un `centro_id` arbitrario, permettendo di marcare come letti i messaggi di un
+  centro altrui — integrità, non confidenzialità), `scores/centro/[id]/route.js`
+  (nessun controllo di ruolo/ownership: qualunque utente loggato poteva leggere
+  punteggio e storico transazioni di QUALSIASI centro dall'URL).
+- **Verificati e NON toccati perché già corretti o con meccanismo diverso e
+  legittimo (falsi positivi dell'euristica):** `centro/servizi/route.js` e
+  tutti gli altri `centro/*` — derivano `centro_id` dal PROPRIO profilo
+  (`user_profiles.centro_id`), mai da input client, quindi IDOR strutturalmente
+  impossibile. `hpa/dashboard/alerts`, `hpa/dashboard/clients`,
+  `hpa/beautyx-history` — non accettano mai un `centro_id` esterno: derivano la
+  lista centri da `hpa_centro_assignments` filtrata su `user.id`, oppure (per
+  `beautyx-history`) delegano il controllo alla funzione SQL
+  `get_centro_beautyx_conversations`/`get_beautyx_conversation_messages` che fa
+  RAISE EXCEPTION se l'HPA non è assegnato al centro (stesso meccanismo, solo a
+  livello DB). `user/ratings/route.js`, `user/email-integrations/route.js` —
+  `centro_id` è solo metadato sulla riga dell'utente stesso, tutte le query
+  filtrano per `user_id = user.id`, mai usato per leggere dati altrui.
+  `admin/*` "veri" — già gated su `ruolo/ruolo_livello === 'admin'`, accesso
+  pieno a tutti i centri è comportamento admin voluto (coerente con la regola
+  "admin" dentro `verifyCentroOwnership`). `centro/servizi/suggest/route.js` —
+  non usa affatto `centro_id` (solo AI text generation).
+- **Rivisti ma NON corretti, severità bassa, per scelta esplicita (non IDOR
+  di confidenzialità):** `hpa/call/route.js` (POST crea una sessione di
+  chiamata con `centro_id` non verificato, ma GET/PATCH successivi sono già
+  protetti da `client_id.eq.user.id OR hpa_id.eq.user.id` — worst case è un
+  record di sessione taggato con un centro sbagliato, nessuna lettura di dati
+  altrui); `hpa/minutes/route.js` (stesso pattern, `centro_id` è solo tag su
+  una riga di crediti minuti propria dell'utente).
+- **Verifica:** solo statica — `node --check` su tutti i 42 file `.js` toccati
+  (incluso l'helper nuovo), nessun errore di sintassi. Build Next.js completa
+  non eseguibile nel sandbox.
+- **File creato:** `lib/auth/verifyCentroOwnership.js`.
+- **Nota per Riccardo:** da riconfermare con audit indipendente sul codice
+  reale, come da convenzione del team, prima di marcare risolto il finding
+  critico in `memory/riccardo.md`.
+
 ## Task tecnici pendenti (aggiornato 24/07/2026)
 
 1. ~~**Middleware redirect** — `/` → `/newsletter` per utenti non autenticati~~ ✓ IMPLEMENTATO 24/07/2026 — middleware unificato: `proxy.js` gestisce tutta la logica auth + redirect `/`, `middleware.js` lo re-esporta come `{ proxy as middleware, config }`
 2. **Homepage stats** — nascondere sezione metriche quando `centri_attivi === 0`
-3. **Rate limiting Upstash** — sostituire rate limiting in-memory (inefficace su Vercel serverless) con Redis Upstash
+3. ~~**Rate limiting Upstash** — sostituire rate limiting in-memory (inefficace su Vercel serverless) con Redis Upstash~~ ✓ IMPLEMENTATO 19/08/2026 (codice pronto, MA vedi sezione dedicata sotto: resta sul fallback in-memory finché Mason non crea il DB Upstash e le env var su Vercel — passo umano ancora da fare)
 4. **Error monitoring** — aggiungere Sentry per visibilità errori in produzione
 5. **Disconnettere vecchio repo** `beautyx-app` dal vecchio progetto Vercel
+
+## Rate limiting Upstash Redis — migrazione da Map() in-memory (2026-08-19)
+
+- **Contesto:** il rate limiting delle due route pubbliche esposte a traffico
+  ads (`app/api/newsletter/subscribe/route.js`, 3 richieste/ora per IP; e
+  `app/api/guida/access/route.js`, 5 richieste/ora per IP) viveva in una
+  `Map()` locale al processo. Su Vercel serverless ogni invocazione può girare
+  su un'istanza diversa: la Map non è condivisa, quindi il limite era
+  facilmente aggirabile con traffico reale. Approvato da Mason: migrazione a
+  Upstash Redis (REST, compatibile serverless/edge).
+- **Pacchetti aggiunti a `package.json`:** `@upstash/ratelimit` (^2.0.8) e
+  `@upstash/redis` (^1.38.2). Installati fisicamente nel sandbox con
+  `npm install` (54 pacchetti, nessun errore) — `package-lock.json` già
+  aggiornato di conseguenza, non serve reinstallare da zero sulla macchina di
+  Mason, basta il normale `npm install`/`push.bat` che già gira lì.
+- **Modulo creato:** `lib/rateLimit.js` — esporta
+  `isRateLimited(prefix, identifier, limit, windowSeconds)` (async, ritorna
+  `true` se la richiesta va bloccata). Algoritmo: **sliding window**
+  (`Ratelimit.slidingWindow`), non fixed window né token bucket — con fixed
+  window un utente può mandare N richieste a fine finestra e altre N appena
+  inizia la successiva (fino a 2N in pochi secondi), esattamente il burst che
+  vogliamo evitare su un endpoint pubblico da ads; il token bucket è pensato
+  per traffico che deve poter "scoppiettare" e recuperare gradualmente, non è
+  il nostro caso con soglie basse e fisse per IP.
+- **Fallback se le env var mancano o Upstash è irraggiungibile:** il modulo
+  NON fa esplodere la richiesta né lascia passare tutto senza limite — torna
+  al vecchio comportamento Map() in-memory (stessa logica di prima, per
+  processo/istanza) con un `console.warn`/`console.error` nei log. Verificato
+  con uno script Node locale nel sandbox (senza env var Upstash): 3 richieste
+  passano, la quarta viene bloccata, esattamente come il vecchio codice.
+- **Route aggiornate:** entrambe importano `import { isRateLimited } from
+  '@/lib/rateLimit'` e chiamano `await isRateLimited(prefix, ip, limit,
+  windowSeconds)` al posto della vecchia funzione locale. Soglie invariate
+  (3/h newsletter, 5/h guida), stessa chiave IP da `x-forwarded-for` (stesso
+  pattern `forwarded.split(',')[0].trim()` di prima). Prefix distinti
+  (`newsletter-subscribe`, `guida-access`) così i due endpoint non
+  condividono contatori né in Redis né nel fallback in-memory.
+- **PASSI ANCORA DA FARE DA MASON — senza questi il rate limiting resta sul
+  fallback in-memory anche dopo il deploy:**
+  1. Creare un database Redis gratuito su upstash.com (account Upstash, se
+     non già esistente).
+  2. Dalla dashboard Upstash del database, copiare le due chiavi REST:
+     `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`.
+  3. Aggiungerle come variabili d'ambiente nel progetto Vercel
+     `beautyx-app_news` (stesso identico pattern già seguito per
+     Supabase/Beehiiv in questo progetto — **mai** in `.env.local` in chat,
+     sempre dalla dashboard Vercel, vedi regola critica sopra).
+  4. Ridistribuire (redeploy) dopo aver aggiunto le variabili, perché Vercel
+     le inietta solo nelle nuove build/invocazioni.
+- **Verifica fatta:** solo statica (`node --check` sui tre file, grep,
+  esecuzione locale del modulo con script Node per confermare fallback);
+  build completa Next.js non eseguita nel sandbox (non necessaria per questa
+  modifica, nessun impatto su pagine/route diverse da queste due).
 
 ---
 
@@ -115,3 +424,28 @@ come sostituite con la data (storico).
 - Font/colore del wordmark "Beautyx": Mason ha bocciato anche Playfair Display nero
   come "banale, font e colore banali" — da rivedere con un'opzione più distintiva
   (es. colore oro coerente col logo, non nero) nel prossimo giro.
+
+## Follow-up (2026-08-11) — logo che sporge tocca il badge eyebrow sottostante
+
+- **Contesto:** dopo il fix precedente (logo croppato 531x580, `position:absolute`,
+  137x150 desktop / 95x104 mobile, `top:0` nell'header 56px) il logo sporge
+  correttamente ma il suo vertice inferiore arrivava a sovrapporre il badge eyebrow
+  "Newsletter gratuita · Beautyx" (hero, subito sopra l'H1). Verificato col calcolo:
+  header 56px + hero padding-top 80px = badge a y=136, logo fino a y=150 → 14px di
+  overlap reale su desktop (e su tablet/desktop in generale, non solo sotto i 700px
+  di `flex-direction:column`). Su mobile (logo 104px) il gap naturale era già ~32px,
+  nessun overlap.
+- **Fix:** aggiunta una classe CSS dedicata al badge (non un padding-top sull'intero
+  hero, per non spostare anche H1/paragrafo/CTA) con `margin-top: 32px` di default,
+  azzerato a `margin-top: 0` sotto i 480px dove non serve. File:
+  `app/newsletter/page.js` → classe `.bx-nl-eyebrow` (badge alla riga con
+  "Newsletter gratuita · Beautyx"); `app/page.js` → classe `.bx-home-eyebrow`
+  (badge hero "AI-powered · Gestione completa · Consulente dedicato" — **non**
+  quello della sezione "Parliamoci direttamente" più in basso, che ha lo stesso
+  markup Tailwind ma non è sotto al logo e non va toccato).
+  **Motivo/regola:** stessa geometria (header 56px + hero pt 80px + logo 150px)
+  ripetuta identica su `/newsletter` e su `app/page.js` — se in futuro cambia
+  l'altezza dell'header o la dimensione del logo su una pagina, va ricalcolato lo
+  stesso overlap sull'altra pagina.
+  **Vincolo rispettato:** il logo NON è stato rimpicciolito (Mason lo vuole grande,
+  vedi regola sopra) — si è dato spazio al contenuto hero, non tolto spazio al logo.

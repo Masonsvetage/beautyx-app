@@ -128,6 +128,10 @@ Formula di apertura: "Sai qual è il problema vero di chi ha un centro estetico?
 **3. "TU" DIRETTO. SEMPRE.**
 Non "le titolari di centri estetici". Non "chi gestisce un'attività". Tu. Sempre "tu".
 
+**3bis. MAI "VOI" — NEMMENO PER GENERALIZZARE (correzione Mason, luglio 2026).**
+Errore reale, passato la revisione di Elena: "C'è una cosa che quasi nessuna di voi ammette ad alta voce". Usare "voi" (plurale, gruppo) invece di "tu" crea una spaccatura implicita — io che parlo da fuori/da sopra a un gruppo, come se io sapessi e voi (plurale, indistinto) foste dall'altra parte, ignare. Anche quando l'intento è descrivere un fenomeno diffuso ("quasi tutte fanno così"), la frase va sempre riportata al "tu" singolare diretto, una persona sola davanti a te — mai un pubblico. Non generalizzare mai nominando il gruppo: generalizza restando nel "tu" ("è una cosa che quasi nessuna ammette ad alta voce, ma che tu conosci benissimo" — non "che quasi nessuna di voi ammette").
+Regola pratica: se in una frase compare "voi" o "voi altre" per riferirsi alle lettrici come gruppo, riscrivere sempre al singolare "tu". Elena deve controllare esplicitamente questo pattern, non solo il tono generale.
+
 **4. VENDI LO STATO MENTALE, NON IL PRODOTTO.**
 Montemagno non vende corsi — vende la sensazione di capire il mondo meglio degli altri. Beautyx non vende una newsletter — vende serenità, controllo, chiarezza, certezza sul futuro del centro.
 
@@ -202,6 +206,28 @@ Chiusure con beneficio:
 - ❌ Frasi subordinate lunghe e concatenate
 - ❌ Entusiasmo finto ("Incredibile!", "Fantastico!") — l'energia deve essere genuina
 - ❌ Tre CTA diverse — una sola per pezzo
+
+---
+
+## [luglio 2026] — I CASI PRATICI SONO CONSULENZE BEAUTYX, NON EPIFANIE CASUALI
+
+**Contesto:** nel pilota del nuovo formato miniguida, il caso di Giorgia risolveva l'errore grazie a una scoperta casuale e solitaria (riordinando scaffali, per caso, da sola).
+**Correzione Mason:** "quando fai gli esempi [...] la soluzione non deve venire da una scoperta occasionale ma come se fosse stata una consulenza con Beautyx. La svolta arrivò quando insieme cominciammo ad osservare qual era stato il più bel complimento che avesse ricevuto in maniera spontanea da una cliente. Le venne in mente una signora che le disse [...] e da lì andate avanti."
+**Regola:** la svolta nei casi pratici va raccontata come se emergesse da una consulenza/dialogo con Beautyx — una domanda guida ("insieme cominciammo a osservare...") che fa riaffiorare qualcosa che la protagonista già sapeva/aveva vissuto (un ricordo, un complimento ricevuto, un momento specifico). Resta maieutico — la risposta è sempre sua, non prescritta dall'esterno — ma il contesto in cui emerge è esplicitamente un momento di lavoro/dialogo con Beautyx, non un colpo di fortuna solitario (scaffali, agende ritrovate per caso, ecc.).
+**Come applicarlo:** ogni caso pratico dei 10 errori deve avere una frase tipo "La svolta arrivò quando insieme cominciammo a [azione guida]" seguita dal ricordo/dato che la protagonista recupera da sé.
+
+**Correzione terminologica (Mason, luglio 2026): MAI la parola "consulenza" abbinata a Beautyx nei casi pratici.** Suona come qualcosa a pagamento, e dà l'impressione di monetizzare prima di aver dimostrato valore. Usare "incontro" o "colloquio" — il meccanismo (domanda guida → ricordo/dato che la protagonista già aveva) resta identico, cambia solo l'etichetta. Attenzione anche alla concordanza singolare: è UN consulente/UN incontro one-to-one, mai forme plurali tipo "le chiesero" che suggeriscono una seduta di gruppo — sempre "le chiese", "le fu chiesto", "durante l'incontro le fu domandato".
+
+**PROMEMORIA VIGILANZA STILE MONTEMAGNO (Mason, luglio 2026):** "mi raccomando che Federica aggiorni sempre sui suggerimenti lo stile e che non perda lo stile Montemagno che vedo che a volte lo perde." Federica deve rileggere questo intero file prima di ogni testo nuovo, non solo all'inizio del progetto. Elena controlla esplicitamente la deriva dallo stile Montemagno (ritmo alternato, "tu" diretto, niente liste travestite, contrasto "non X ma Y" col contagocce) su OGNI capitolo, non solo sul primo pilota.
+
+---
+
+## [luglio 2026] — "SI SENTE VISTA" NON SI USA PIÙ: È VUOTO
+
+**Contesto:** il termine "vista/e" ("si sente vista", "sentirsi viste") ricorreva più volte nella miniguida come descrizione dell'emozione che una cliente prova quando il centro la conosce davvero.
+**Correzione Mason:** "ancora il termine 'viste' che non vuol dire nulla! Si sentono protagoniste, si sentono coccolate, si sentono importanti, hai mille modi per descrivere un'emozione — 'viste' non vuol dire un cazzo."
+**Regola:** vietato usare "vista/e" come descrizione emotiva generica. Ogni volta che serve esprimere il sentirsi riconosciuta/valorizzata da una cliente, scegliere un'emozione CONCRETA e specifica al contesto — es. protagonista, coccolata, importante, accolta per davvero, aspettata, ricordata (nel senso di "qualcuno si è ricordato di lei", non l'astratto "vista") — mai il generico "vista".
+**Come applicarlo:** Federica deve rileggere questa regola prima di scrivere qualunque passaggio emotivo su clienti/relazione. Elena controlla esplicitamente che "vista/e" non compaia più in questo senso, capitolo per capitolo.
 
 ---
 
