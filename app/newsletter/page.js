@@ -232,7 +232,7 @@ export default function NewsletterPage() {
                 <a href="#form-section" style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '16px 32px', borderRadius: '10px', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}>
                   Iscriviti gratis →
                 </a>
-                <p style={{ fontSize: '13px', color: '#666' }}>La miniguida oggi in email. Più: una domanda al mese a un consulente vero, gratis.</p>
+                <p style={{ fontSize: '13px', color: '#666' }}>Conferma l&apos;email e la miniguida è tua. Più: una domanda al mese a un consulente vero, gratis.</p>
               </div>
             </div>
 
@@ -312,8 +312,8 @@ export default function NewsletterPage() {
               {[
                 {
                   num: '01',
-                  titolo: 'Subito: la miniguida',
-                  desc: '"10 errori che (quasi) tutte fanno nella gestione del centro" — nella tua email oggi. Proprio oggi, appena ti iscrivi.',
+                  titolo: 'Appena confermi: la miniguida',
+                  desc: 'Ti mandiamo un\'email, tu confermi con un click — un attimo, non di più. E "10 errori che (quasi) tutte fanno nella gestione del centro" è già lì che ti aspetta.',
                 },
                 {
                   num: '02',
@@ -460,12 +460,18 @@ export default function NewsletterPage() {
                     </p>
                   </>
                 ) : (
-                  <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7 }}>
-                    Controlla la tua email e clicca il link di conferma. Una volta confermato,
-                    torna su{' '}
-                    <Link href="/guida" style={{ color: '#fff', textDecoration: 'underline' }}>beautyx.it/guida</Link>{' '}
-                    e inserisci di nuovo questa email: ti si sblocca all'istante.
-                  </p>
+                  <>
+                    <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7, marginBottom: '14px' }}>
+                      Ti abbiamo appena mandato un&apos;email di conferma — di solito arriva in pochi minuti, e se non la vedi subito dai un&apos;occhiata anche allo spam: ogni tanto si nasconde lì.
+                    </p>
+                    <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7, marginBottom: '14px' }}>
+                      Un click sul link dentro l&apos;email, ed è fatta: è il nostro modo per essere sicuri che la guida arrivi proprio a te, alla casella giusta, quella vera.
+                    </p>
+                    <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.7 }}>
+                      Fatto il click, torna su{' '}
+                      <Link href="/guida" style={{ color: '#fff', textDecoration: 'underline' }}>beautyx.it/guida</Link>, reinserisci qui la tua email, e la guida si sblocca — tutta tua.
+                    </p>
+                  </>
                 )}
               </div>
             ) : (
@@ -487,14 +493,14 @@ export default function NewsletterPage() {
                     type="submit" disabled={status === 'loading'}
                     style={{ padding: '16px 24px', background: '#EC4899', color: '#fff', fontWeight: 700, border: 'none', borderRadius: '10px', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontSize: '16px', opacity: status === 'loading' ? 0.6 : 1, fontFamily: "var(--font-inter), sans-serif", width: '100%' }}
                   >
-                    {status === 'loading' ? 'Iscrizione in corso...' : 'Iscriviti e scarica la miniguida →'}
+                    {status === 'loading' ? 'Iscrizione in corso...' : 'Iscriviti e sblocca la miniguida →'}
                   </button>
                 </div>
                 {status === 'error' && (
                   <p style={{ marginTop: '10px', color: '#ff6b6b', fontSize: '13px' }}>{errorMsg}</p>
                 )}
                 <p style={{ marginTop: '14px', fontSize: '13px', color: '#55667a', lineHeight: 1.6 }}>
-                  Ricevi subito la miniguida, poi la newsletter martedì e venerdì. Puoi disiscriverti quando vuoi.
+                  Conferma l&apos;email e la miniguida è tua, poi la newsletter martedì e venerdì. Puoi disiscriverti quando vuoi.
                 </p>
                 <p style={{ marginTop: '10px', fontSize: '11px', color: '#3d4f60', lineHeight: 1.65 }}>
                   Iscrivendoti accetti il trattamento dei tuoi dati per ricevere la newsletter Beautyx. Usiamo Beehiiv e Supabase. I tuoi dati non vengono mai venduti a terzi.{' '}
@@ -564,7 +570,7 @@ export default function NewsletterPage() {
         {/* ── FOOTER ── */}
         <footer style={{ background: '#111', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 32px', textAlign: 'center' }}>
           <p style={{ fontSize: '12px', color: '#555' }}>
-            © 2025 Beautyx ·{' '}
+            © {new Date().getFullYear()} Beautyx ·{' '}
             <Link href="/privacy" style={{ color: '#666', textDecoration: 'none' }}>Privacy</Link>
             <GuidaFooterLink style={{ color: '#666', textDecoration: 'none' }} separator=" · " />
           </p>
@@ -628,7 +634,7 @@ export default function NewsletterPage() {
               ) : (
                 <div style={{ marginTop: '8px', paddingTop: '24px', borderTop: '1px solid #e7e0d5', textAlign: 'center' }}>
                   <p style={{ fontSize: '16px', color: '#333', lineHeight: 1.8, marginBottom: '24px' }}>
-                    Il testo intero di ogni numero è il primo regalo per chi si iscrive — il resto arriva dopo, due volte a settimana, dritto in email. Entra anche tu: bastano pochi secondi, e questo numero (e tutti gli altri) è già tuo.
+                    Il testo intero di ogni numero è il primo regalo per chi si iscrive — il resto arriva dopo, due volte a settimana, dritto in email. Entra anche tu: iscriviti, conferma con un click, e questo numero (e tutti gli altri) è tuo.
                   </p>
                   <a
                     href="#form-section"

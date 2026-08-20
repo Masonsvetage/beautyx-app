@@ -164,7 +164,7 @@ export default async function PrivacyPage() {
         {/* FOOTER */}
         <footer style={{ borderTop: '1px solid #e0dbd3', padding: '20px 32px', textAlign: 'center' }}>
           <p style={{ fontSize: '12px', color: '#bbb' }}>
-            © 2025 Beautyx ·{' '}
+            © {new Date().getFullYear()} Beautyx ·{' '}
             <Link href="/newsletter" style={{ color: '#bbb', textDecoration: 'none' }}>Newsletter</Link>
             {hasGuidaAccess && (
               <>
