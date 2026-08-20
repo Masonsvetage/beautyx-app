@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -10,6 +11,13 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const centroId = searchParams.get('centro_id')
+
+    if (!centroId) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('vendors')
@@ -30,6 +38,13 @@ export async function POST(request) {
   try {
     const payload = await request.json()
 
+    if (!payload?.centro_id) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, payload.centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     const { data, error } = await supabase
       .from('vendors')
       .insert(payload)
@@ -48,6 +63,9 @@ export async function POST(request) {
 export async function PATCH(request) {
   try {
     const { id, nome, pattern_match, categoria, note } = await request.json()
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'vendors', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const updateData = {
       nome,
@@ -77,6 +95,9 @@ export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'vendors', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { error } = await supabase
       .from('vendors')

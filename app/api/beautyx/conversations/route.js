@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
@@ -16,6 +17,9 @@ export async function GET(request) {
     if (!centro_id) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('beautyx_conversations')
@@ -55,6 +59,9 @@ export async function POST(request) {
     if (!centro_id) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('beautyx_conversations')
@@ -98,6 +105,9 @@ export async function PATCH(request) {
     if (!id) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'beautyx_conversations', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const updates = {}
     if (titolo !== undefined) updates.titolo = titolo
@@ -149,6 +159,9 @@ export async function DELETE(request) {
     if (!id) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'beautyx_conversations', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Prima verifica se la conversazione è pinnata
     const { data: conversation, error: fetchError } = await supabase

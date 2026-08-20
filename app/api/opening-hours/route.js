@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -10,6 +11,13 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const centroId = searchParams.get('centro_id')
+
+    if (!centroId) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('opening_hours')
@@ -29,6 +37,13 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const { centro_id, hours } = await request.json()
+
+    if (!centro_id) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Elimina orari esistenti
     await supabase

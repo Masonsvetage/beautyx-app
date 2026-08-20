@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
+
+// Client SERVICE_KEY usato solo per risalire al centro_id di un obiettivo quando
+// la richiesta filtra per obiettivo_id senza passare centro_id (vedi nota in
+// app/api/obiettivi/route.js sullo stesso pattern).
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
 /**
  * GET /api/progressi-obiettivi?centro_id=xxx&data=2025-01-16
@@ -15,6 +25,35 @@ export async function GET(request) {
     const data = searchParams.get('data')
     const fromDate = searchParams.get('from')
     const toDate = searchParams.get('to')
+
+    if (!centroId && !obiettivoId) {
+      return NextResponse.json(
+        { error: 'centro_id o obiettivo_id richiesto' },
+        { status: 400 }
+      )
+    }
+
+    if (centroId) {
+      const ownership = await verifyCentroOwnership(request, centroId)
+      if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+    } else {
+      // Solo obiettivo_id fornito: risali al centro_id dell'obiettivo e verifica
+      const { data: obiettivo, error: obErr } = await supabaseAdmin
+        .from('obiettivi')
+        .select('centro_id')
+        .eq('id', obiettivoId)
+        .maybeSingle()
+
+      if (obErr) {
+        return NextResponse.json({ error: obErr.message }, { status: 500 })
+      }
+      if (!obiettivo) {
+        return NextResponse.json({ error: 'Obiettivo non trovato' }, { status: 404 })
+      }
+
+      const ownership = await verifyCentroOwnership(request, obiettivo.centro_id)
+      if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+    }
 
     let query = supabase
       .from('progressi_obiettivi')
@@ -76,6 +115,9 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Upsert: aggiorna se esiste, altrimenti crea
     const { data: progresso, error } = await supabase

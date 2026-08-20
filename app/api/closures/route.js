@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -10,6 +11,13 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const centroId = searchParams.get('centro_id')
+
+    if (!centroId) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('exceptional_closures')
@@ -29,6 +37,13 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const { centro_id, data_inizio, data_fine, motivo, ricorrente, tipo_ricorrenza } = await request.json()
+
+    if (!centro_id) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('exceptional_closures')
@@ -56,6 +71,9 @@ export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'exceptional_closures', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { error } = await supabase
       .from('exceptional_closures')

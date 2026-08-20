@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { SOGLIE_DEFAULT } from '@/lib/analytics-alerts'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -19,6 +20,9 @@ export async function GET(request) {
     if (!centroId) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Carica soglie personalizzate dal database
     const { data: soglieDB, error } = await supabase
@@ -96,6 +100,9 @@ export async function POST(request) {
       )
     }
 
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     // Upsert: inserisci o aggiorna
     const { data, error } = await supabase
       .from('soglie_alert')
@@ -137,6 +144,9 @@ export async function DELETE(request) {
 
     if (id) {
       // Elimina per ID
+      const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'soglie_alert', id })
+      if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
       const { error } = await supabase
         .from('soglie_alert')
         .delete()
@@ -144,6 +154,9 @@ export async function DELETE(request) {
 
       if (error) throw error
     } else if (centroId && tipoSoglia) {
+      const ownership = await verifyCentroOwnership(request, centroId)
+      if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
       // Elimina per centro + tipo + categoria
       let query = supabase
         .from('soglie_alert')

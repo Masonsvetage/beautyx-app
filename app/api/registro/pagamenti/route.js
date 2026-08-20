@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { ricalcolaTotaliGiornata } from '../giornata/route'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 async function getAuth() {
   const cookieStore = await cookies()
@@ -29,6 +30,9 @@ export async function POST(request) {
   if (!centro_id || importo == null) {
     return NextResponse.json({ error: 'centro_id e importo richiesti' }, { status: 400 })
   }
+
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   const oggi = data || new Date().toISOString().split('T')[0]
 

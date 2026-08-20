@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 async function getAuth() {
   const cookieStore = await cookies()
@@ -48,6 +49,9 @@ export async function GET(request) {
   const data = searchParams.get('data') || new Date().toISOString().split('T')[0]
   if (!centro_id) return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
 
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
   const [giornataRes, pagRes, speseRes, creditiApertiRes] = await Promise.all([
     admin.from('registro_giornate').select('*').eq('centro_id', centro_id).eq('data', data).maybeSingle(),
     admin.from('registro_pagamenti').select('metodo, importo, descrizione').eq('centro_id', centro_id).eq('data', data),
@@ -70,6 +74,9 @@ export async function POST(request) {
 
   const { centro_id, data, n_clienti, n_servizi, n_prodotti, note } = await request.json()
   if (!centro_id) return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   const oggi = data || new Date().toISOString().split('T')[0]
 
@@ -102,6 +109,9 @@ export async function PATCH(request) {
   const body = await request.json()
   const { centro_id, data, incasso_effettivo, n_clienti } = body
   if (!centro_id || !data) return NextResponse.json({ error: 'centro_id e data richiesti' }, { status: 400 })
+
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   const update = { source: 'manuale', updated_at: new Date().toISOString() }
   if (incasso_effettivo !== undefined) update.incasso_effettivo = parseFloat(incasso_effettivo) || 0

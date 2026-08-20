@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
@@ -20,6 +21,9 @@ export async function GET(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Supabase ha limite default 1000 righe che non può essere aumentato facilmente
     // Recuperiamo TUTTI i movimenti con paginazione automatica
@@ -94,6 +98,18 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    // Tutti i movimenti importati devono appartenere allo stesso centro dichiarato in [0]
+    const hasMixedCentro = movements.some(m => m.centro_id !== centroId)
+    if (hasMixedCentro) {
+      return NextResponse.json(
+        { error: 'Tutti i movimenti devono appartenere allo stesso centro_id' },
+        { status: 400 }
+      )
+    }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Recupera movimenti esistenti per evitare duplicati
     // Usa firma completa: data+importo+tipo+descrizione_parziale
@@ -175,6 +191,9 @@ export async function PATCH(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'bank_movements', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Imposta categorized_manually = true per proteggere questa modifica
     // dalle future applicazioni automatiche delle regole

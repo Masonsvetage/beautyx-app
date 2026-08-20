@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 
 export const maxDuration = 60 // secondi — necessario per sync Koibox via BeautyX
 import { createClient } from '@supabase/supabase-js'
+import { verifyCentroOwnership } from '@/lib/auth/verifyCentroOwnership'
 import { extractMonitorData, cleanTextResponse } from '@/lib/beautyx/monitorExtractor'
 import { getCompleteBusinessData } from '@/lib/beautyx/dataHub'
 import { loadAgentPrompt } from '@/lib/beautyx/agentPrompts'
@@ -832,13 +833,26 @@ export async function POST(request) {
 
     const {
       centro_id,
-      user_id,
       conversation_id,
       pagina_corrente,
       storico_messaggi = [],
       insights_attivi = [],
       dati_contesto = {}
     } = context || {}
+
+    // === 0. AUTH — verifica sessione + ownership del centro_id PRIMA di qualunque
+    //          query dati o chiamata Anthropic (evita costo API su richieste non
+    //          autorizzate). Vedi lib/auth/verifyCentroOwnership.js per il dettaglio
+    //          del meccanismo (riuso del pattern già in uso in contact-requests,
+    //          booking, onboarding/create-centro, admin/users, hpa/dashboard/stats). ===
+    const ownershipCheck = await verifyCentroOwnership(request, centro_id)
+    if (!ownershipCheck.ok) {
+      return NextResponse.json({ error: ownershipCheck.error }, { status: ownershipCheck.status })
+    }
+    // user_id non è mai preso dal body: si usa sempre l'id della sessione
+    // autenticata, per evitare che un client possa spacciarsi per un altro
+    // utente ai fini di rate limiting/tracking token AI.
+    const user_id = ownershipCheck.user.id
 
     // === 1. CHECK LIMITE TOKEN AI ===
     if (user_id) {

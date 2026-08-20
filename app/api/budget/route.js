@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { distributeAnnualBudget } from '@/lib/pianificazione-utils'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -16,6 +17,9 @@ export async function GET(request) {
     if (!centroId) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('budget_plans')
@@ -48,6 +52,9 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Crea budget plan
     const { data: budgetPlan, error: budgetError } = await supabase
@@ -93,6 +100,9 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
 
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'budget_plans', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     const updateData = {}
     if (importo_annuale !== undefined) updateData.importo_annuale = parseFloat(importo_annuale)
     if (note !== undefined) updateData.note = note
@@ -121,6 +131,9 @@ export async function DELETE(request) {
     if (!id) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'budget_plans', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Delete cascade rimuoverà anche i monthly breakdowns
     const { error } = await supabase

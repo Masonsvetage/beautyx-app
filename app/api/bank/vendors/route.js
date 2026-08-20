@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
@@ -20,6 +21,9 @@ export async function GET(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('vendor_mappings')
@@ -54,6 +58,9 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Deve avere almeno category_id O categoria_custom
     if (!category_id && !categoria_custom) {

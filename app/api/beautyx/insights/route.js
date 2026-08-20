@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
@@ -16,6 +17,9 @@ export async function GET(request) {
     if (!centro_id) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('beautyx_insights')
@@ -70,6 +74,9 @@ export async function POST(request) {
         error: 'centro_id, tipo e titolo richiesti'
       }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const validTipi = ['obiettivo', 'progresso', 'alert', 'suggerimento', 'traguardo']
     if (!validTipi.includes(tipo)) {
@@ -126,6 +133,9 @@ export async function PATCH(request) {
     if (!id) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'beautyx_insights', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const updates = {}
     if (valore_corrente !== undefined) updates.valore_corrente = valore_corrente

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 // POST: Log attività utente
 // GET: Lista utenti con ultima attività (per HPA)
@@ -32,6 +33,13 @@ export async function POST(request) {
 
     if (!activity_type) {
       return Response.json({ error: 'activity_type richiesto' }, { status: 400 })
+    }
+
+    // Se viene passato un centro_id, verifica che l'utente lo possa davvero usare
+    // (evita che un log di attività venga taggato con il centro di qualcun altro)
+    if (centro_id) {
+      const ownership = await verifyCentroOwnership(request, centro_id)
+      if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
     }
 
     // Usa service role per inserire (bypass RLS)

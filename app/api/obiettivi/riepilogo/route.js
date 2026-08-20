@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 /**
  * GET /api/obiettivi/riepilogo?centro_id=xxx&data=2025-01-16
@@ -17,6 +18,9 @@ export async function GET(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Recupera tutti gli obiettivi attivi del centro
     const { data: obiettivi, error: obError } = await supabase

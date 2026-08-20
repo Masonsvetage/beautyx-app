@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { ricalcolaTotaliGiornata } from '../../giornata/route'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 async function getAuth() {
   const cookieStore = await cookies()
@@ -32,6 +33,10 @@ export async function PATCH(request, { params }) {
   const { data: credito, error: fetchErr } = await admin
     .from('registro_crediti').select('*').eq('id', id).maybeSingle()
   if (fetchErr || !credito) return NextResponse.json({ error: 'Credito non trovato' }, { status: 404 })
+
+  const ownership = await verifyCentroOwnership(request, credito.centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
   if (credito.saldato) return NextResponse.json({ error: 'Credito già saldato' }, { status: 400 })
 
   const oggi = new Date().toISOString().split('T')[0]

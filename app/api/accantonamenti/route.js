@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -15,6 +16,9 @@ export async function GET(request) {
     if (!centroId) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('accantonamenti')
@@ -58,6 +62,9 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('accantonamenti')
@@ -107,6 +114,9 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
 
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'accantonamenti', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     const updateData = {}
     if (nome !== undefined) updateData.nome = nome
     if (descrizione !== undefined) updateData.descrizione = descrizione
@@ -143,6 +153,9 @@ export async function DELETE(request) {
     if (!id) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'accantonamenti', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Verifica che il saldo sia 0 prima di eliminare
     const { data: accantonamento } = await supabase

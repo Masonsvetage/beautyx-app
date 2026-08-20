@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { calculateBudgetComparison } from '@/lib/pianificazione-utils'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -17,6 +18,9 @@ export async function GET(request) {
     if (!centroId || !anno) {
       return NextResponse.json({ error: 'centro_id e anno richiesti' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Carica budget plans per l'anno
     const { data: budgetPlans, error: budgetError } = await supabase

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
@@ -24,6 +25,9 @@ export async function GET(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Se richiesto un range di date
     if (fromDate && toDate) {
@@ -97,6 +101,9 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const targetDate = data || new Date().toISOString().split('T')[0]
     const totale = (parseFloat(pos) || 0) +

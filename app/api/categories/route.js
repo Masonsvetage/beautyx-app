@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -11,6 +12,13 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const centroId = searchParams.get('centro_id')
     const tipo = searchParams.get('tipo') // opzionale: entrata, uscita, entrambi
+
+    if (!centroId) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('custom_categories')
@@ -60,6 +68,13 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const { centro_id, nome, tipo, colore, icona } = await request.json()
+
+    if (!centro_id) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Ottieni l'ordinamento più alto e aggiungi 1
     const { data: maxOrder } = await supabase
@@ -111,6 +126,9 @@ export async function PATCH(request) {
   try {
     const { id, nome, tipo, colore, icona } = await request.json()
 
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'custom_categories', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     const updateData = { nome, tipo, colore }
 
     // Aggiungi icona solo se fornita
@@ -144,6 +162,9 @@ export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'custom_categories', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Verifica che non sia una categoria di default
     const { data: category } = await supabase

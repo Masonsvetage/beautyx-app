@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
+
+// Client con SERVICE_KEY usato SOLO per il lookup del centro_id reale di una riga
+// (necessario perché il client `supabase` sopra è creato con createBrowserClient/anon
+// key, senza sessione attaccata: non è affidabile per leggere dati sotto RLS in un
+// contesto server-side). Le query dati vere restano sul client `supabase` esistente,
+// per non alterare comportamento pre-esistente fuori dallo scope di questo fix.
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
 /**
  * GET /api/obiettivi?centro_id=xxx
@@ -21,6 +33,9 @@ export async function GET(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('obiettivi')
@@ -92,6 +107,9 @@ export async function POST(request) {
       )
     }
 
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     const { data: obiettivo, error } = await supabase
       .from('obiettivi')
       .insert({
@@ -145,6 +163,9 @@ export async function PATCH(request) {
       )
     }
 
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     const { data: obiettivo, error } = await supabase
       .from('obiettivi')
       .update(updates)
@@ -179,6 +200,9 @@ export async function DELETE(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { error } = await supabase
       .from('obiettivi')

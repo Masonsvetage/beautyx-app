@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -17,6 +18,9 @@ export async function POST(request) {
     if (!centro_id) {
       return NextResponse.json({ error: 'centro_id è obbligatorio' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Carica tutti i fornitori del centro
     const { data: vendors, error: vendorsError } = await supabase

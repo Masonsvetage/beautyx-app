@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
@@ -46,6 +47,9 @@ export async function POST(request) {
         restored_at: backup.restored_at
       }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, backup.centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const movementsToRestore = backup.movements_data
     const count = movementsToRestore.length
@@ -144,6 +148,9 @@ export async function GET(request) {
         { status: 400 }
       )
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: backups, error } = await supabase
       .from('bank_movements_backups')

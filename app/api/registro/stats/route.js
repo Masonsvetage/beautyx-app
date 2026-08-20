@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,6 +19,9 @@ export async function GET(request) {
   const to       = searchParams.get('to')
 
   if (!centroId) return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+
+  const ownership = await verifyCentroOwnership(request, centroId)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   let query = admin
     .from('registro_giornate')

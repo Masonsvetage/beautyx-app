@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -11,6 +12,13 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const centroId = searchParams.get('centro_id')
     const stato = searchParams.get('stato') // opzionale
+
+    if (!centroId) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('validated_anomalies')
@@ -37,6 +45,13 @@ export async function POST(request) {
   try {
     const payload = await request.json()
 
+    if (!payload?.centro_id) {
+      return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+    }
+
+    const ownership = await verifyCentroOwnership(request, payload.centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     const { data, error } = await supabase
       .from('validated_anomalies')
       .insert(payload)
@@ -55,6 +70,9 @@ export async function POST(request) {
 export async function PATCH(request) {
   try {
     const { id, stato, note_utente, risolto_in_data } = await request.json()
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'validated_anomalies', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const updateData = {
       stato,

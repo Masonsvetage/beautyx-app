@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { ricalcolaTotaliGiornata } from '../giornata/route'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 async function getAuth() {
   const cookieStore = await cookies()
@@ -29,6 +30,9 @@ export async function POST(request) {
   if (!centro_id || !descrizione || importo == null) {
     return NextResponse.json({ error: 'centro_id, descrizione e importo richiesti' }, { status: 400 })
   }
+
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   const oggi = data || new Date().toISOString().split('T')[0]
 
@@ -69,6 +73,11 @@ export async function GET(request) {
   const centro_id = searchParams.get('centro_id')
   const data_da   = searchParams.get('data_da') || new Date().toISOString().split('T')[0]
   const data_a    = searchParams.get('data_a')  || new Date().toISOString().split('T')[0]
+
+  if (!centro_id) return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   const { data, error } = await admin.from('registro_spese')
     .select('*').eq('centro_id', centro_id)

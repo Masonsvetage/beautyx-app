@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 function createSupabase(cookieStore) {
   return createServerClient(
@@ -44,7 +45,7 @@ export async function GET(request) {
     const report_id = searchParams.get('id')
 
     if (report_id) {
-      // Singolo report
+      // Singolo report — verifica ownership sul centro_id reale del report PRIMA di restituirlo
       const { data: report, error } = await supabase
         .from('hpa_session_reports')
         .select('*, user_profiles!hpa_session_reports_hpa_id_fkey(nome, cognome, email)')
@@ -52,12 +53,20 @@ export async function GET(request) {
         .single()
 
       if (error) throw error
+      if (!report) return Response.json({ error: 'Report non trovato' }, { status: 404 })
+
+      const ownership = await verifyCentroOwnership(request, report.centro_id)
+      if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
       return Response.json({ report })
     }
 
     if (!centro_id) {
       return Response.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownershipList = await verifyCentroOwnership(request, centro_id)
+    if (!ownershipList.ok) return centroOwnershipErrorResponse(ownershipList)
 
     // Lista report per centro
     const { data: reports, error } = await supabase
@@ -107,6 +116,9 @@ export async function POST(request) {
     if (!centro_id || !sintesi?.trim()) {
       return Response.json({ error: 'centro_id e sintesi sono obbligatori' }, { status: 400 })
     }
+
+    const ownershipCreate = await verifyCentroOwnership(request, centro_id)
+    if (!ownershipCreate.ok) return centroOwnershipErrorResponse(ownershipCreate)
 
     const { data: report, error } = await supabase
       .from('hpa_session_reports')

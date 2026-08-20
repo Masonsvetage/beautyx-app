@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 // GET: Punteggio dettagliato di un singolo centro
 export async function GET(request, { params }) {
@@ -26,6 +27,9 @@ export async function GET(request, { params }) {
     }
 
     const { id: centroId } = await params
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Ottieni score del centro
     const { data: score, error: scoreError } = await supabase

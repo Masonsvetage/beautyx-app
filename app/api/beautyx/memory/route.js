@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -25,8 +26,8 @@ export async function GET(request) {
   const centro_id = searchParams.get('centro_id')
   if (!centro_id) return NextResponse.json({ contenuto: '' })
 
-  const user = await getAuth()
-  if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   const { data } = await supabaseAdmin
     .from('beautyx_memory')
@@ -45,6 +46,9 @@ export async function PUT(request) {
     if (!centro_id || contenuto === undefined) {
       return NextResponse.json({ error: 'centro_id e contenuto richiesti' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabaseAdmin
       .from('beautyx_memory')

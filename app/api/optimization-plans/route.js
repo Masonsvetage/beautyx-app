@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -21,6 +22,9 @@ export async function GET(request) {
     if (!centroId) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyCentroOwnership(request, centroId)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
       .from('optimization_plans')
@@ -95,6 +99,9 @@ export async function POST(request) {
       )
     }
 
+    const ownership = await verifyCentroOwnership(request, centro_id)
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     // Crea il piano
     const { data: plan, error: planError } = await supabase
       .from('optimization_plans')
@@ -167,6 +174,9 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
 
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'optimization_plans', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
     // Campi aggiornabili
     const allowedFields = [
       'titolo', 'descrizione', 'obiettivo_risparmio', 'stato',
@@ -218,6 +228,9 @@ export async function DELETE(request) {
     if (!id) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'optimization_plans', id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { error } = await supabase
       .from('optimization_plans')

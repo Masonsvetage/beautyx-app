@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { ricalcolaTotaliGiornata } from '../giornata/route'
+import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 async function getAuth() {
   const cookieStore = await cookies()
@@ -29,6 +30,11 @@ export async function GET(request) {
   const centro_id   = searchParams.get('centro_id')
   const solo_aperti = searchParams.get('solo_aperti') !== 'false'
 
+  if (!centro_id) return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
+
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
   let query = admin.from('registro_crediti').select('*').eq('centro_id', centro_id)
   if (solo_aperti) query = query.eq('saldato', false)
   query = query.order('data_attesa_saldo', { ascending: true, nullsFirst: false })
@@ -52,6 +58,9 @@ export async function POST(request) {
   if (!centro_id || !nome_cliente || importo_totale == null) {
     return NextResponse.json({ error: 'centro_id, nome_cliente e importo_totale richiesti' }, { status: 400 })
   }
+
+  const ownership = await verifyCentroOwnership(request, centro_id)
+  if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   const oggi = data_servizio || new Date().toISOString().split('T')[0]
   const acconto = Number(acconto_versato) || 0
