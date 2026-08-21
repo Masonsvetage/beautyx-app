@@ -466,6 +466,93 @@ come sostituite con la data (storico).
   build completa Next.js non eseguita nel sandbox (non necessaria per questa
   modifica, nessun impatto su pagine/route diverse da queste due).
 
+## Mistero tabella `obiettivi`/`obiettivi_step` vs `objectives_3s` — chiarito (2026-08-21)
+
+- **Contesto:** Riccardo aveva scoperto interrogando il DB di produzione
+  (`scfumedmisbuxhdywwpb`) che `public` ha solo 15 tabelle, `obiettivi` e
+  `obiettivi_step` NON esistono, ed esiste invece `objectives_3s`. Verificato
+  in prima persona via `execute_sql`/`list_tables`/`list_migrations`.
+- **Causa reale:** il 17/07/2026 (migrazione al nuovo progetto Supabase) sono
+  state applicate 3 migrazioni in sequenza sul progetto nuovo:
+  `restore_beautyx_public_schema` → `drop_obsolete_v1_tables` (droppa solo
+  prototipi vecchi: chat_messages, diagnostics, sentiment_reports, sessions,
+  clients) → `install_beautyx_schema_v2`, che installa uno schema v2 con
+  `objectives_3s` (tabella semplice: id, centro_id, tipo CHECK IN
+  ('serenita','stima','soldi','successo'), titolo, descrizione, valore_target,
+  valore_attuale, unita_misura, data_inizio/fine, stato CHECK IN
+  ('attivo','completato','annullato'), priorita, created_at, completed_at) —
+  **non è una tabella obiettivi mai esistita e poi rinominata**, è un dominio
+  diverso (sembra legata al framework SvetAge/"4 Elementi", non al modulo
+  goal-setting). Le vecchie migration `add-objectives-tracking.sql`,
+  `update-objectives-full-lifecycle.sql`, `20260117_fix_obiettivi_default_suggeriti.sql`
+  in `supabase/migrations/` (che creano `obiettivi`, `obiettivi_step`,
+  `progressi_obiettivi`, `obiettivi_valutazioni`, `obiettivi_storico`) sono
+  rimaste come file locali ma **non risultano mai applicate al nuovo
+  progetto** (confermato: `list_migrations` mostra solo 6 migrazioni reali sul
+  DB, nessuna delle quali crea queste tabelle) — sono state perse nel passaggio
+  di progetto Supabase del 17/07 e mai riapplicate.
+- **`objectives_3s` NON è un sostituto valido per un semplice repunta del
+  codice:** schema incompatibile — mancano `nome`, `icona`,
+  `valore_riferimento`/`valore_obiettivo` (nomi diversi), `direzione`,
+  `frequenza`, `giorni_rimanenti`, `creato_da`, `visibile_*`, `note`,
+  `numero_proroghe`; l'enum `tipo` è completamente diverso
+  (economico/clienti/servizi/prodotti/efficienza/qualita/marketing/formazione/altro
+  richiesto dal frontend vs serenita/stima/soldi/successo in `objectives_3s`);
+  l'enum `stato` pure (suggerito/bozza/attivo/in_valutazione/concluso/prorogato/sospeso
+  richiesto vs attivo/completato/annullato); e mancano del tutto le tabelle
+  gemelle `obiettivi_step`, `obiettivi_valutazioni`, `obiettivi_storico` di cui
+  il frontend ha bisogno (steps, storico, valutazioni). Rimappare il codice su
+  `objectives_3s` richiederebbe di fatto riscrivere lo schema, non un rename.
+- **La feature NON è codice morto/abbandonato — è agganciata e attiva:**
+  `app/obiettivi/page.js` è una pagina completa e funzionante (wizard di
+  creazione a 5 step, modal dettaglio con step/countdown, modal di valutazione
+  con proroga/conclusione), collegata da: `components/Navbar.js` riga 134
+  (voce di menu "Obiettivi", condizionata al permesso reale
+  `obiettivi.visualizza` — presente anche in `contexts/AuthContext.js`,
+  `app/admin/permessi/page.js` e nella migrazione
+  `002_sistema_permessi_gerarchico.sql`, quindi è un permesso vero del sistema
+  gerarchico, non un residuo), `app/strategie/page.js` ("Sfide & Obiettivi" →
+  `/obiettivi`), e dai widget dashboard `components/dashboard/ObjectivesTracker.js`
+  e `components/dashboard/GamificationWidget.js` (link diretti a `/obiettivi`).
+  In pratica: oggi chiunque clicchi su "Obiettivi" da un centro reale prende
+  500 da tutti gli endpoint `obiettivi*`/`progressi-obiettivi` (tabelle
+  inesistenti) — è una feature reale e voluta, rotta in produzione da quando
+  è avvenuta la migrazione DB del 17/07/2026, non un progetto mai completato.
+- **Nessuna modifica al codice fatta per questo punto** (oltre ai due fix di
+  sicurezza già applicati in precedenza su questi stessi file — vedi sezioni
+  sopra): non ha senso ripuntare gli endpoint su `objectives_3s` (schema
+  incompatibile, sarebbe una riscrittura mascherata da "fix"), e non è nemmeno
+  un caso di "feature morta da disattivare" — è una decisione di prodotto/
+  priorità (ricreare le 5 tabelle v1 mancanti su Supabase per far tornare viva
+  la feature così com'è, oppure redesign della gestione obiettivi attorno al
+  nuovo modello `objectives_3s`) che spetta a Mason/Coordinatore, non a Davide.
+- **Verifica fatta:** query dirette su Postgres (`execute_sql`, `list_tables`,
+  `list_migrations`) sul progetto reale `scfumedmisbuxhdywwpb`; lettura
+  `supabase/migrations/add-objectives-tracking.sql`,
+  `update-objectives-full-lifecycle.sql`,
+  `20260117_fix_obiettivi_default_suggeriti.sql`; grep di `obiettivi`/
+  `objectives_3s` su `app/`, `components/`, `contexts/`; lettura completa
+  `app/obiettivi/page.js` e `app/api/obiettivi/route.js`.
+
+## Pulizia whitelist `COLONNE_SERVIZI` in `centro/servizi/route.js` POST (2026-08-21)
+
+- **Contesto:** residuo segnalato da Riccardo nella riverifica indipendente —
+  la whitelist `COLONNE_SERVIZI` in `app/api/centro/servizi/route.js` (POST)
+  includeva ancora `'centro_id'`, mentre l'endpoint gemello
+  `app/api/centro/servizi/[id]/route.js` (PUT) era già stato corretto in
+  precedenza (vedi sezione "2 gap residui" sopra). Non sfruttabile: l'insert
+  fa `{ ...servizioData, centro_id: centroId, codice_barcode }`, quindi il
+  `centro_id` verificato via `getAuth()` vince comunque sullo spread — ma
+  restava un residuo incoerente.
+- **Fix:** rimosso `'centro_id'` da `COLONNE_SERVIZI` in `route.js`, aggiunto
+  lo stesso commento esplicativo già presente in `[id]/route.js` (perché è
+  escluso deliberatamente). L'insert continua a impostare `centro_id: centroId`
+  esplicitamente dopo lo spread — comportamento invariato.
+- **Verifica:** grep (`COLONNE_SERVIZI`, `centro_id: centroId` — confermato che
+  l'insert imposta ancora il centro_id verificato) e `node --check
+  app/api/centro/servizi/route.js` → OK. Build Next.js completa non eseguita
+  nel sandbox.
+
 ---
 
 ## REGOLA CRITICA — Header logo: mai far crescere la barra, il logo va fuori dal flusso

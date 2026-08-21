@@ -66,8 +66,12 @@ export async function GET() {
 
 // Colonne valide della tabella servizi (filtra campi UI/non-DB dal payload)
 // codice_barcode è ESCLUSO: viene generato automaticamente al POST e non modificabile via PUT
+// centro_id è ESCLUSO deliberatamente: il centro_id REALE viene già impostato subito
+// sotto (`{ ...servizioData, centro_id: centroId, ... }`, verificato in getAuth()) —
+// includerlo qui non aprirebbe un buco (lo spread esplicito dopo vince comunque), ma
+// resta un residuo incoerente con l'endpoint gemello [id]/route.js già corretto.
 const COLONNE_SERVIZI = new Set([
-  'nome', 'descrizione', 'categoria', 'tipo', 'centro_id',
+  'nome', 'descrizione', 'categoria', 'tipo',
   'durata_preparazione_min', 'durata_esecuzione_min', 'durata_chiusura_min', 'durata_sanificazione_min',
   'nr_operatrici', 'sovrapponibile', 'iva_aliquota_id', 'ricarico_percentuale',
   'margine_min_utile_perc', 'note_interne',
