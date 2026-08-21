@@ -343,6 +343,68 @@ come sostituite con la data (storico).
   reale, come da convenzione del team, prima di marcare risolto il finding
   critico in `memory/riccardo.md`.
 
+## Fix sicurezza gestionale — 2 gap residui trovati da Riccardo nella riverifica indipendente (2026-08-21)
+
+- **Contesto:** dopo il fix IDOR sui 42 endpoint (vedi sezione sopra, 2026-08-20),
+  Riccardo ha fatto una riverifica indipendente e trovato 2 problemi NON coperti
+  dal fix originale (vedi `memory/riccardo.md`, item "Da fare prima di considerare
+  il fix chiuso").
+- **Fix 1 — `app/api/obiettivi/step/route.js` (GET/POST/PATCH), zero auth:**
+  l'endpoint lavora su `obiettivo_id` (non `centro_id` diretto, la tabella
+  `obiettivi_step` non ha colonna `centro_id`, solo FK `obiettivo_id →
+  obiettivi(id)`) e prima non faceva ALCUN controllo — usava solo `lib/supabase.js`
+  (client `createBrowserClient`, nessuna sessione lato server) senza mai chiamare
+  `auth.getUser()`. Oggi risponde 500 in prod (tabella non ancora creata), ma
+  sarebbe un IDOR completo il giorno in cui la tabella esiste. **Fix applicato:**
+  aggiunto `verifyRowCentroOwnership` (da `lib/auth/verifyCentroOwnership.js`, che
+  internamente usa `createServerClient`/`auth.getUser()`) su GET (verifica via
+  `obiettivo_id` → tabella `obiettivi`), POST (stesso, prima dell'insert) e PATCH.
+  Per PATCH l'`id` nel body è la riga di `obiettivi_step` stessa (non l'obiettivo),
+  quindi serve un lookup a due livelli: prima si legge `obiettivo_id` dalla riga
+  step (con `supabaseAdmin`, service-key), poi si verifica l'ownership sul
+  `centro_id` dell'obiettivo padre. Query dati (`select`/`insert`/`update`) restano
+  sul client `supabase` esistente (`lib/supabase.js`), NON sostituito — stesso
+  pattern già in uso in `app/api/obiettivi/route.js` (preso come riferimento
+  esplicito), dove la sicurezza è demandata all'helper di ownership e non al
+  client usato per le query (le tabelle hanno RLS permissivo `USING(true)`, il
+  confine è applicativo). In PATCH, aggiunto anche lo strip di
+  `obiettivo_id`/`id`/`created_at` dall'oggetto di update (stesso principio del
+  Fix 2 sotto, applicato qui per coerenza anche se non esplicitamente richiesto:
+  `obiettivo_id` scrivibile avrebbe permesso di "spostare" uno step su un
+  obiettivo/centro altrui).
+- **Fix 2a — `app/api/obiettivi/route.js` PATCH:** verificava correttamente il
+  `centro_id` REALE della riga (via `verifyRowCentroOwnership`) ma poi passava
+  l'intero `updates` (body meno `id`) a `.update()`, quindi un `centro_id` nel
+  body avrebbe riassegnato la riga a un centro arbitrario. **Fix:** prima
+  dell'update si distrugge `centro_id`/`id`/`created_at` da `updates` →
+  `safeUpdates`, solo questo va a `.update()`.
+- **Fix 2b — `app/api/centro/servizi/[id]/route.js` PUT:** qui il bug era più
+  subdolo — l'endpoint filtrava già il body con una whitelist `COLONNE_SERVIZI`,
+  MA quella whitelist includeva esplicitamente `'centro_id'` (riga 29 originale),
+  quindi il filtro non bloccava nulla: un centro_id spoofato passava il filtro e
+  arrivava a `.update()`. **Fix:** rimosso `'centro_id'` da `COLONNE_SERVIZI`,
+  con commento che spiega perché è escluso deliberatamente (il centro_id reale è
+  già garantito da `getAuth()` + `.eq('centro_id', centroId)` nella query).
+- **Altri campi sensibili — verificati, nessun altro trovato in questi due
+  endpoint:** in `obiettivi/route.js` PATCH lo strip copre anche `id`/`created_at`
+  oltre a `centro_id` (nessun'altra colonna di ownership/identità nella tabella
+  `obiettivi`, vedi schema in `supabase/migrations/update-objectives-full-lifecycle.sql`).
+  In `centro/servizi/[id]/route.js` la whitelist `COLONNE_SERVIZI` è comunque un
+  approccio "solo colonne esplicite" (allowlist, non blocklist) — più sicuro per
+  design: qualunque nuova colonna aggiunta in futuro alla tabella `servizi` NON
+  sarà scrivibile finché non viene aggiunta esplicitamente qui, quindi non serve
+  un audit ricorrente su quel file per questo tipo di bug (a differenza di
+  `obiettivi/route.js`, dove lo spread `...updates` resta una blocklist: se in
+  futuro la tabella `obiettivi` guadagna un'altra colonna di identità/ownership,
+  va aggiunta esplicitamente allo strip).
+- **Verifica:** solo statica — `node --check` sui 3 file (`app/api/obiettivi/step/route.js`,
+  `app/api/obiettivi/route.js`, `app/api/centro/servizi/[id]/route.js`), tutti OK
+  (package.json ha `"type": "module"`, node 22 valida correttamente la sintassi
+  ESM/import). Build Next.js completa non eseguita nel sandbox.
+- **Nota per Riccardo:** da riconfermare con audit indipendente, come da
+  convenzione del team, prima di marcare risolti questi 2 residui in
+  `memory/riccardo.md`.
+
 ## Task tecnici pendenti (aggiornato 24/07/2026)
 
 1. ~~**Middleware redirect** — `/` → `/newsletter` per utenti non autenticati~~ ✓ IMPLEMENTATO 24/07/2026 — middleware unificato: `proxy.js` gestisce tutta la logica auth + redirect `/`, `middleware.js` lo re-esporta come `{ proxy as middleware, config }`

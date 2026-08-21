@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
+
+// Client con SERVICE_KEY usato SOLO per il lookup del centro_id reale di una riga
+// (necessario perché il client `supabase` sopra è creato con createBrowserClient/anon
+// key, senza sessione attaccata: non è affidabile per leggere dati sotto RLS in un
+// contesto server-side). Le query dati vere restano sul client `supabase` esistente,
+// stesso pattern di `app/api/obiettivi/route.js`.
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
 /**
  * GET /api/obiettivi/step?obiettivo_id=xxx
@@ -12,6 +24,11 @@ export async function GET(request) {
     if (!obiettivoId) {
       return NextResponse.json({ error: 'obiettivo_id richiesto' }, { status: 400 })
     }
+
+    // obiettivo_id è l'id di una riga in `obiettivi`, che ha centro_id diretto:
+    // verifica ownership tramite quella riga prima di leggere gli step.
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: steps, error } = await supabase
       .from('obiettivi_step')
@@ -34,6 +51,16 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json()
+    const { obiettivo_id } = body
+
+    if (!obiettivo_id) {
+      return NextResponse.json({ error: 'obiettivo_id richiesto' }, { status: 400 })
+    }
+
+    // Verifica che l'obiettivo_id indicato appartenga a un centro dell'utente
+    // PRIMA di creare uno step collegato ad esso.
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivo_id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: step, error } = await supabase
       .from('obiettivi_step')
@@ -62,9 +89,33 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
 
+    // `id` qui è la riga di obiettivi_step, che NON ha un centro_id diretto
+    // (solo obiettivo_id). Prima si recupera l'obiettivo_id reale della riga
+    // (con il client service-key, per non dipendere da RLS), poi si verifica
+    // l'ownership sul centro_id dell'obiettivo padre.
+    const { data: existingStep, error: stepLookupError } = await supabaseAdmin
+      .from('obiettivi_step')
+      .select('id, obiettivo_id')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (stepLookupError) throw stepLookupError
+    if (!existingStep) {
+      return NextResponse.json({ error: 'Step non trovato' }, { status: 404 })
+    }
+
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: existingStep.obiettivo_id })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
+    // obiettivo_id/id/created_at non sono riassegnabili dal client via update:
+    // stessa logica anti-corruzione-dati richiesta per obiettivi PATCH e
+    // centro/servizi PUT (centro_id qui non è nemmeno una colonna della tabella,
+    // ma obiettivo_id lo è e permetterebbe lo stesso tipo di attacco).
+    const { obiettivo_id: _ignoredObiettivoId, id: _ignoredId, created_at: _ignoredCreatedAt, ...safeUpdates } = updates
+
     const { data: step, error } = await supabase
       .from('obiettivi_step')
-      .update(updates)
+      .update(safeUpdates)
       .eq('id', id)
       .select()
       .single()

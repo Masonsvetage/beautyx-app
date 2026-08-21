@@ -166,9 +166,15 @@ export async function PATCH(request) {
     const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
+    // centro_id/id/created_at non sono riassegnabili dal client: l'ownership
+    // sopra verifica il centro_id REALE della riga, ma se venisse passato al
+    // .update() un centro_id diverso nel body, l'utente potrebbe riassegnare
+    // la propria riga a un centro arbitrario (corruzione dati cross-centro).
+    const { centro_id: _ignoredCentroId, id: _ignoredId, created_at: _ignoredCreatedAt, ...safeUpdates } = updates
+
     const { data: obiettivo, error } = await supabase
       .from('obiettivi')
-      .update(updates)
+      .update(safeUpdates)
       .eq('id', id)
       .select()
       .single()

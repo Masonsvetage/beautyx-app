@@ -91,3 +91,51 @@ Il rate limiting via Upstash Redis (`lib/rateLimit.js`) è scritto correttamente
 ## REGOLA AGGIORNAMENTO LOG
 
 Dopo ogni incident, anomalia risolta o nuova regola di sicurezza approvata, aggiorna subito questo file.
+
+---
+
+### 2026-08-21 — Riverifica INDIPENDENTE fix IDOR helper `verifyCentroOwnership` (~42 endpoint di Davide)
+
+**Verdetto: PROBLEMI TROVATI** (fix di Davide solido nella sostanza, ma non completo al 100%: 1 gap reale non protetto + 1 pattern di rischio medio ripetuto in almeno 2 file).
+
+**PARTE 1 — Statica:**
+- `lib/auth/verifyCentroOwnership.js` letto per intero: logica corretta, default-deny in tutti i casi limite verificati — `centro_id` null/undefined → 400; profilo mancante → 403; ruolo/ruolo_livello malformato o non riconosciuto → cade nel 403 finale; confronto `String(profile.centro_id) === String(centroId)` evita mismatch di tipo; riga senza `centro_id` in `verifyRowCentroOwnership` → nega per sicurezza (403). Nessun bypass trovato.
+- Campione di 10 file verificato riga per riga: `bank/movements/route.js` (GET/POST/PATCH), `bank/upload/route.js`, `registro/giornata/route.js` (GET/POST/PATCH), `registro/pagamenti/route.js`, `registro/crediti/[id]/route.js`, `beautyx/chat/route.js`, `hpa/reports/route.js` (GET singolo+lista, POST), `scores/centro/[id]/route.js`, `obiettivi/route.js` (GET/POST/PATCH/DELETE), `obiettivi/riepilogo` e `obiettivi/suggeriti`, `vendors/apply/route.js`. In tutti: la verifica avviene PRIMA di qualunque query/mutazione sui dati, e il `centro_id`/`user_id` usato nelle query successive è sempre quello verificato (in `beautyx/chat/route.js` il `user_id` è esplicitamente preso da `ownershipCheck.user.id`, mai dal body — corretto).
+- **Finding A — rischio MEDIO, integrità dati (non confidenzialità), presente in almeno 2 file:** `app/api/obiettivi/route.js` PATCH (righe 154-186) e `app/api/centro/servizi/[id]/route.js` PUT (righe 61-102) fanno `.update()` spargendo l'intero body/payload client (`{ id, ...updates }` oppure un `Object.fromEntries` filtrato che però include ancora `centro_id` tra le colonne ammesse). L'ownership viene verificata sul `centro_id` REALE della riga PRIMA dell'update, ma il valore scritto può comunque contenere un `centro_id` diverso dichiarato dal client: un utente che possiede legittimamente una riga (un proprio obiettivo o servizio) può riassegnarla a un `centro_id` arbitrario, "iniettando" dati falsi nell'elenco di un altro centro o orfanizzando la propria risorsa. Non è più IDOR di lettura, è un'escalation di scrittura più stretta (serve già possedere la riga di partenza) ma reale. Da chiudere escludendo esplicitamente `centro_id` dai campi aggiornabili in questi update (whitelist senza quella colonna, o `delete updates.centro_id` prima dell'update).
+- **Finding B — gap NON coperto dal fix, CONFERMATO ANCHE IN PRODUZIONE:** `app/api/obiettivi/step/route.js` (GET/POST/PATCH) non ha ALCUN controllo di autenticazione — nessuna chiamata a `auth.getUser()` in tutto il file, usa `supabase` da `lib/supabase.js` che è un `createBrowserClient` (pensato per il browser, senza sessione allegata quando usato lato server in una route handler). Il file non è stato intercettato dal grep sistematico di Davide su `centro_id` perché lavora solo su `obiettivo_id` (non ha mai `centro_id` nel proprio codice, pur scrivendo su una tabella collegata logicamente a `obiettivi`, che ha `centro_id`). **Verifica live:** `curl https://www.beautyx.it/api/obiettivi/step?obiettivo_id=...` e la POST corrispondente rispondono **500** "Could not find the table 'public.obiettivi_step' in the schema cache" — NON 401. L'endpoint è raggiungibile senza autenticazione; oggi non è sfruttabile solo perché la tabella `obiettivi_step` non esiste ancora nello schema Supabase reale (probabile funzionalità mai completata/collegata). Se quella tabella viene creata in futuro senza rivedere questo file, l'endpoint diventa immediatamente un IDOR completo (lettura E scrittura, zero auth). Da correggere ORA (aggiungere lo stesso pattern `verifyRowCentroOwnership`/`verifyCentroOwnership` risolvendo `centro_id` tramite lookup su `obiettivi` dato l'`obiettivo_id`), non quando la tabella verrà creata.
+
+**PARTE 2 — Live in produzione (curl, senza autenticazione):**
+- Endpoint corretti campionati → tutti **401** come atteso: `scores/centro/[id]`, `hpa/reports`, `obiettivi`, `bank/movements`, `registro/giornata`, `accantonamenti`, `vendors`, `beautyx/chat` (sia body vuoto → 400 "message richiesto" prima ancora dell'auth check per mancanza campo obbligatorio, sia con `context.centro_id` fittizio → 401 corretto, l'ownership check intercetta prima di qualunque query/chiamata Anthropic).
+- Endpoint NON toccati dal fix, verificati per non-regressione → coerenti con il comportamento pre-fix: `centro/servizi` → 401, `hpa/dashboard/alerts` → 401, `registro/giornate` → 401, `registro/medie` → 401, `public/news` → 200 (pubblico by design, invariato). Nessuna rottura rilevata.
+
+**Da fare prima di considerare il fix "chiuso":**
+1. `obiettivi/step/route.js` — aggiungere verifica ownership (priorità alta, gap reale confermato live, oggi non sfruttabile solo per un problema di schema DB scollegato).
+2. `obiettivi/route.js` PATCH e `centro/servizi/[id]/route.js` PUT — escludere `centro_id` dai campi scrivibili via update (priorità media).
+3. Considerare un secondo giro di grep mirato su tutti i file `app/api/**/route.js` che referenziano un `*_id` collegato a una tabella con `centro_id` ma SENZA passare `centro_id` esplicitamente nel proprio codice (stesso pattern di elusione del grep di Davide che ha fatto sfuggire il punto 1) — non ancora fatto per mancanza di tempo in questo giro, consigliato come prossimo passo.
+
+Non ho toccato il codice (compito di revisione, non di fix) — segnalazione a Davide/Mason per i due interventi sopra.
+
+---
+
+### 2026-08-21 (2° giro, stesso giorno) — Riverifica INDIPENDENTE dei due fix di Davide su `obiettivi/step`, `obiettivi` PATCH, `centro/servizi/[id]` PUT
+
+**Verdetto: ALTRI PROBLEMI TROVATI — audit NON chiuso.**
+
+**Statica (codice letto per intero, working tree):** la logica dei tre fix è corretta, nessun bypass trovato.
+- `obiettivi/step/route.js`: GET/POST verificano ownership su `obiettivi` (padre) PRIMA di leggere/inserire su `obiettivi_step`. PATCH fa il lookup a due livelli (service-key su `obiettivi_step` per risolvere `obiettivo_id`, poi ownership sul centro dell'obiettivo padre) sempre PRIMA di qualunque `.update()`; casi limite (id/obiettivo_id mancante, step inesistente, obiettivo_id orfano/null, profilo utente assente) cadono tutti in un 400/403/404 senza mai raggiungere la scrittura. `obiettivo_id`/`id`/`created_at` esclusi da `safeUpdates`.
+- `obiettivi/route.js` PATCH: `centro_id`/`id`/`created_at` esclusi da `safeUpdates`, verificato che sia `safeUpdates` (non `updates`) a raggiungere `.update()`.
+- `centro/servizi/[id]/route.js` PUT: `centro_id` rimosso da `COLONNE_SERVIZI`, un payload malevolo con `centro_id` iniettato viene filtrato da `Object.fromEntries` prima di arrivare a `.update()`.
+
+**CRITICO — motivo reale della non-chiusura:** `git status`/`git log` mostrano che tutti e tre i file sono modifiche **non committate** (working tree "modified", nessun commit dopo `f1173ed`, non pushate su `origin/main`). **I fix non sono mai stati deployati su Vercel/produzione.** La verifica live lo conferma: `GET/POST/PATCH https://www.beautyx.it/api/obiettivi/step` senza auth rispondono ancora **500** "Could not find the table 'public.obiettivi_step'/'obiettivi' in the schema cache" — esattamente lo stesso comportamento pre-fix già segnalato nel giro precedente, non 401. `PATCH /api/obiettivi` senza auth risponde anch'esso 500 (stesso motivo: codice vecchio ancora live). Nessuna regressione sugli endpoint non toccati: `GET /api/obiettivi` → 401, `GET/PUT /api/centro/servizi/[id]` → 401 (questi passano da `verifyCentroOwnership`/`getAuth()` già deployati in `f1173ed`, non toccati dai nuovi fix non ancora live).
+
+**Nuovo — anomalia indipendente scoperta verificando in produzione:** interrogato direttamente il Supabase di produzione (`scfumedmisbuxhdywwpb`) via `information_schema.tables`/`pg_class` su tutti gli schemi: **le tabelle `obiettivi` e `obiettivi_step` non esistono da nessuna parte** (schema `public` ha solo 15 tabelle, nessuna `obiettivi*`; esiste invece `objectives_3s`, verosimilmente il vero nome attuale/rinominato). Non è uno IDOR sfruttabile (niente può scrivere su una tabella inesistente) ma significa che l'intera funzionalità "obiettivi" fallisce sempre con 500 in scrittura, autenticata o no — e ha reso impossibile distinguere a occhio, dal solo status code live, "fix deployato" da "fix non deployato" (entrambi danno 500). Da chiarire con Davide/Mason: tabella mai creata o rinominata senza aggiornare le route?
+
+**Minore — stesso pattern di whitelist-bug trovato in un file gemello mai controllato prima:** `app/api/centro/servizi/route.js` (endpoint collezione, POST) ha lo stesso `COLONNE_SERVIZI` con `'centro_id'` ancora incluso (riga 70) — MA qui non è sfruttabile oggi: l'insert è `.insert({ ...servizioData, centro_id: centroId, codice_barcode })`, col `centro_id: centroId` verificato scritto DOPO lo spread, quindi vince sempre sull'eventuale valore malevolo. Rischio latente/fragile (basta invertire l'ordine in un refactor futuro per riaprire il buco) — consigliata pulizia preventiva della whitelist anche qui.
+
+**Prossimi passi prima di richiudere l'audit:**
+1. Davide deve fare commit + push dei 3 fix (oggi solo locali/non committati) e confermare il deploy Vercel.
+2. Dopo il deploy, ripetere gli stessi curl live su `obiettivi/step` (attesi 400/401/403, non più 500) — impossibile finché la tabella `obiettivi_step`/`obiettivi` non esiste comunque (vedi anomalia sopra), quindi va risolta anche quella per validare il fix end-to-end.
+3. Chiarire con Mason se `obiettivi`/`obiettivi_step` sono tabelle da creare o se il codice va ripuntato su `objectives_3s`.
+4. Facoltativo/hygiene: rimuovere `centro_id` anche da `COLONNE_SERVIZI` in `centro/servizi/route.js`.
+
+Nessun altro caso analogo trovato nel giro completo su `centro_id` in tutti gli ~88 file `app/api/**/route.js`.

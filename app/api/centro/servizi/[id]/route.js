@@ -25,8 +25,12 @@ async function getAuth() {
 
 // Colonne valide della tabella servizi (filtra campi non-DB dal payload)
 // codice_barcode è ESCLUSO: viene generato al POST e non va mai sovrascritto dal PUT
+// centro_id è ESCLUSO deliberatamente: il centro_id REALE della riga viene già
+// verificato in getAuth()/query (.eq('centro_id', centroId)) — includerlo qui
+// permetterebbe a un utente legittimo di riassegnare un proprio servizio a un
+// centro_id arbitrario passato dal client (corruzione dati cross-centro).
 const COLONNE_SERVIZI = new Set([
-  'nome', 'descrizione', 'categoria', 'tipo', 'centro_id',
+  'nome', 'descrizione', 'categoria', 'tipo',
   'durata_preparazione_min', 'durata_esecuzione_min', 'durata_chiusura_min', 'durata_sanificazione_min',
   'nr_operatrici', 'sovrapponibile', 'iva_aliquota_id', 'ricarico_percentuale',
   'margine_min_utile_perc', 'note_interne',
