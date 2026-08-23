@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
+import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 // Client con SERVICE_KEY usato per TUTTE le query (lookup ownership e dati).
 // `progressi_obiettivi`/`obiettivi` sono state ricreate il 2026-08-21 con RLS
@@ -35,6 +35,11 @@ export async function GET(request) {
       )
     }
 
+    // centro_id verificato sulla sessione (o derivato dall'obiettivo e poi
+    // verificato) — riusato più sotto per il doppio controllo di coerenza sul
+    // join, non solo per il check di ownership iniziale.
+    let verifiedCentroId = centroId
+
     if (centroId) {
       const ownership = await verifyCentroOwnership(request, centroId)
       if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
@@ -55,14 +60,24 @@ export async function GET(request) {
 
       const ownership = await verifyCentroOwnership(request, obiettivo.centro_id)
       if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
+      verifiedCentroId = obiettivo.centro_id
     }
 
+    // SICUREZZA (fix 2026-08-23, audit Riccardo): `!inner` forza il join a
+    // scartare righe senza obiettivo collegato o il cui obiettivo non passa
+    // il filtro sottostante — necessario per poter filtrare esplicitamente
+    // anche su `obiettivo.centro_id`, non solo su `progressi_obiettivi.centro_id`.
+    // Anche se la scrittura è ora blindata (vedi POST sopra), questo secondo
+    // filtro protegge in lettura da eventuali righe già incoerenti in tabella
+    // per altri motivi (es. dati pre-esistenti, migrazioni, bug futuri).
     let query = supabaseAdmin
       .from('progressi_obiettivi')
       .select(`
         *,
-        obiettivo:obiettivi(*)
+        obiettivo:obiettivi!inner(*)
       `)
+      .eq('obiettivo.centro_id', verifiedCentroId)
       .order('data', { ascending: false })
 
     if (centroId) {
@@ -120,6 +135,36 @@ export async function POST(request) {
 
     const ownership = await verifyCentroOwnership(request, centro_id)
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
+    // SICUREZZA (fix 2026-08-23, audit Riccardo su PoC reale — vedi
+    // memory/riccardo.md): il centro_id è verificato sopra, ma NON basta —
+    // va verificato ANCHE che l'obiettivo_id fornito nello stesso payload
+    // appartenga davvero a quel centro. Senza questo controllo un titolare
+    // del proprio centro A poteva inviare centro_id=A (verificato, proprio)
+    // insieme a un obiettivo_id reale di un centro B altrui: l'upsert andava
+    // a buon fine e la successiva GET esponeva l'intero record `obiettivi`
+    // del centro B (nome, note, dati riservati) dentro la risposta di A.
+    // Riusa lo stesso helper già in uso nel resto della feature
+    // (verifyRowCentroOwnership) applicato alla riga `obiettivi` realmente
+    // referenziata da obiettivo_id, non al centro_id dichiarato dal client.
+    const obiettivoOwnership = await verifyRowCentroOwnership(request, supabaseAdmin, {
+      table: 'obiettivi',
+      id: obiettivo_id
+    })
+    if (!obiettivoOwnership.ok) return centroOwnershipErrorResponse(obiettivoOwnership)
+
+    // Coerenza esplicita, non solo "l'utente ha accesso a qualche centro
+    // legato all'obiettivo": l'obiettivo deve appartenere ESATTAMENTE al
+    // centro_id dichiarato in questo payload. Rilevante anche per admin/HPA
+    // multi-centro, che altrimenti passerebbero il check sopra pur creando
+    // una riga progressi_obiettivi con centro_id e obiettivo_id incoerenti
+    // tra loro (bug di integrità dati, non solo di confidenzialità).
+    if (String(obiettivoOwnership.row.centro_id) !== String(centro_id)) {
+      return NextResponse.json(
+        { error: 'obiettivo_id non appartiene al centro_id indicato' },
+        { status: 403 }
+      )
+    }
 
     // Upsert: aggiorna se esiste, altrimenti crea
     const { data: progresso, error } = await supabaseAdmin

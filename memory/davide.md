@@ -763,3 +763,83 @@ come sostituite con la data (storico).
   (i 5 richiesti + i 2 trovati durante la verifica). Non ho potuto testare il
   flusso autenticato end-to-end (nessuna sessione reale nel sandbox), come
   previsto dal compito.
+
+## Fix critico — esfiltrazione cross-tenant `progressi-obiettivi` (obiettivo_id mai verificato contro centro_id) (2026-08-23)
+
+- **Contesto:** Riccardo, riverifica indipendente del pacchetto Obiettivi
+  (`memory/riccardo.md`, voce 2026-08-23), ha trovato con PoC reale (dati
+  fittizi creati e ripuliti) che `POST /api/progressi-obiettivi` verificava
+  correttamente che `centro_id` nel body appartenesse alla sessione, ma non
+  verificava mai che l'`obiettivo_id` nello stesso body appartenesse davvero
+  a quel `centro_id`. Un titolare del proprio centro A poteva quindi inviare
+  `centro_id=A` (proprio, verificato) insieme a un `obiettivo_id` reale di un
+  centro B altrui: l'upsert andava a buon fine, e la successiva `GET
+  ?centro_id=A` (join `select('*, obiettivo:obiettivi(*)')` filtrato solo su
+  `p.centro_id`) esponeva l'intero record `obiettivi` del centro B (nome,
+  note, `valore_riferimento`, `analisi_situazione`, `motivazione`, ecc.)
+  dentro la risposta di A.
+- **Fix 1 — `POST /api/progressi-obiettivi` (`app/api/progressi-obiettivi/route.js`,
+  dopo la riga 137 circa):** dopo `verifyCentroOwnership(request, centro_id)`,
+  aggiunto un secondo controllo con l'helper già esistente
+  `verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id:
+  obiettivo_id })` (stesso import da `lib/auth/verifyCentroOwnership.js` già
+  usato nel file) per risolvere il `centro_id` REALE dell'obiettivo
+  referenziato, e poi un confronto esplicito `String(obiettivoOwnership.row.centro_id)
+  !== String(centro_id)` → 403 `{ error: 'obiettivo_id non appartiene al
+  centro_id indicato' }` se non coincidono. Ho preferito il confronto
+  esplicito oltre al solo esito di `verifyRowCentroOwnership` perché
+  quest'ultimo da solo verifica "l'utente ha accesso a *qualche* centro
+  legato all'obiettivo" (vero anche per admin/HPA multi-centro), mentre qui
+  serve garantire che l'obiettivo appartenga ESATTAMENTE al `centro_id`
+  dichiarato in quel payload — altrimenti anche un admin autorizzato su
+  entrambi i centri potrebbe comunque scrivere una riga
+  `progressi_obiettivi` con `centro_id`/`obiettivo_id` incoerenti tra loro
+  (bug di integrità dati, non solo di confidenzialità).
+- **Fix 2 — `GET /api/progressi-obiettivi`:** aggiunto un secondo filtro
+  esplicito indipendente dalla scrittura, per difesa in profondità. Il join
+  è passato da `obiettivo:obiettivi(*)` a `obiettivo:obiettivi!inner(*)`
+  (stesso pattern `!inner` già in uso in
+  `app/api/contact-requests/route.js` — verificato compatibile con la
+  versione installata di `@supabase/supabase-js`) più `.eq('obiettivo.centro_id',
+  verifiedCentroId)`, dove `verifiedCentroId` è il `centro_id` già verificato
+  sulla sessione (uguale a `centroId` nel ramo `?centro_id=`, oppure derivato
+  e poi verificato nel ramo `?obiettivo_id=`). Così anche se in futuro
+  esistessero righe incoerenti in tabella per qualunque altro motivo (bug,
+  migrazione, intervento manuale), il join da solo non basterebbe più a farle
+  uscire nella risposta.
+- **Non-regressione:** il caso legittimo (centro che aggiorna/legge i
+  progressi di un proprio obiettivo) continua a funzionare — verificato con
+  PoC diretta sul DB (vedi sotto): la query con il nuovo filtro
+  `obiettivo.centro_id = centro_id` restituisce comunque la riga quando
+  `obiettivo.centro_id` coincide col `centro_id` richiesto.
+- **PoC di riproduzione eseguita sul DB di produzione (`scfumedmisbuxhdywwpb`),
+  dati fittizi creati e ripuliti subito dopo:** creati 2 centri fittizi
+  (A, B) e 2 obiettivi fittizi (uno per centro, "Obiettivo SEGRETO Centro B"
+  con note riservate). Simulata la scrittura che l'endpoint PRE-fix avrebbe
+  permesso (riga `progressi_obiettivi` con `centro_id=A`, `obiettivo_id`
+  dell'obiettivo di B). **Riprodotta la falla con la query VECCHIA**
+  (join semplice filtrato solo su `p.centro_id=A`): restituisce
+  `"obiettivo_nome_esposto":"Obiettivo SEGRETO Centro B"` — falla confermata
+  identica a quella di Riccardo. **Confermato il fix con la query NUOVA**
+  (stesso filtro aggiuntivo `obiettivo.centro_id=A` applicato dalla route
+  corretta): la stessa riga cross-tenant sparisce (0 risultati). Verificato
+  anche il ramo legittimo: inserita una seconda riga con `obiettivo_id` di un
+  obiettivo REALMENTE di centro A → la query nuova la restituisce
+  correttamente ("Obiettivo pubblico Centro A"), confermando che il fix non
+  rompe l'uso normale. Il confronto usato in POST
+  (`obiettivoOwnership.row.centro_id !== centro_id`) è stato validato con gli
+  stessi dati reali: obiettivo di B ha `centro_id=B` ≠ `centro_id=A`
+  dichiarato → avrebbe dato 403, esattamente il comportamento voluto.
+  **Pulizia:** tutte le righe/tabelle di test cancellate, verificate a 0
+  residui con una query di conteggio finale.
+- **Verifica:** statica (`grep` sugli import/uso di `verifyRowCentroOwnership`/
+  `verifyCentroOwnership`/`!inner`, `node --check
+  app/api/progressi-obiettivi/route.js` → OK) + PoC diretta sul DB prod come
+  sopra. Non ho potuto testare il flusso HTTP autenticato end-to-end (nessuna
+  sessione reale nel sandbox) — la logica applicativa (confronto stringhe)
+  è identica a quella già in uso e verificata altrove nella stessa feature.
+- **File modificato:** `app/api/progressi-obiettivi/route.js` (import
+  aggiornato riga 3, fix GET righe ~38-80, fix POST righe ~139-167).
+- **Nota per Riccardo:** da riconfermare con audit indipendente sul codice
+  reale, come da convenzione del team, mirato solo su questo file, prima di
+  marcare chiuso il finding critico del 2026-08-23 in `memory/riccardo.md`.
