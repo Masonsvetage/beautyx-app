@@ -1,5 +1,20 @@
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
+import { verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
+
+// Client con SERVICE_KEY, usato SOLO per il controllo di ownership e per
+// l'update in PATCH (stesso pattern di `verifyRowCentroOwnership`: leggere il
+// centro_id reale della riga con un client che non dipende da policy RLS non
+// garantite su questa tabella, poi verificare che l'utente abbia accesso a
+// quel centro tramite `verifyCentroOwnership`). NOTA (corretta il 23/08/2026,
+// audit Riccardo): `verifyCentroOwnership` copre l'accesso al CENTRO (admin,
+// titolare, hpa con assegnazione su `hpa_centro_assignments`), ma NON basta da
+// sola per un HPA — vedi controllo aggiuntivo `hpa_id === user.id` nel PATCH.
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
 // GET: Lista appuntamenti
 // POST: Crea appuntamento (usato internamente, clienti usano /api/booking)
@@ -114,6 +129,53 @@ export async function PATCH(request) {
       return Response.json({ error: 'appointment_id richiesto' }, { status: 400 })
     }
 
+    // SICUREZZA (2026-08-23, audit Riccardo): prima di questo fix l'update
+    // avveniva per solo `id`, senza ALCUN controllo di ownership/assegnazione
+    // — chiunque autenticato poteva aggiornare (o cancellare) l'appuntamento
+    // di QUALSIASI centro conoscendo/indovinando un `appointment_id`. Stesso
+    // schema già usato per `obiettivi_step` PATCH e per le altre risorse
+    // mutate per id senza `centro_id` nel payload: si legge prima il
+    // `centro_id` reale della riga (con `supabaseAdmin`, per non dipendere da
+    // RLS non garantita su questa tabella) e poi si verifica che l'utente
+    // autenticato abbia accesso a quel centro — `verifyCentroOwnership`
+    // copre già il caso admin, titolare/direttore del proprio centro E hpa
+    // con assegnazione attiva su `hpa_centro_assignments`, quindi non serve
+    // reinventare la logica multi-centro HPA qui.
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, {
+      table: 'hpa_appointments',
+      id: appointment_id
+    })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
+
+    // SICUREZZA (2026-08-23, audit Riccardo — gap confermato sul fix precedente):
+    // `verifyRowCentroOwnership`/`verifyCentroOwnership` verificano solo che
+    // l'utente abbia accesso al CENTRO della riga (admin, titolare del centro,
+    // oppure hpa con assegnazione attiva su `hpa_centro_assignments`). Ma la
+    // migrazione originale `20260205_03_hpa_availability.sql` (righe 100-102)
+    // definisce l'accesso HPA come "solo i propri appuntamenti"
+    // (`hpa_id = auth.uid()`), e la GET in questo stesso file applica infatti
+    // `.eq('hpa_id', user.id)` per il ruolo hpa. Senza questo controllo, un HPA
+    // con assegnazione attiva sullo stesso centro potrebbe modificare/cancellare
+    // l'appuntamento di un ALTRO HPA sul centro. Admin e titolare/direttore del
+    // centro (autorizzati sopra tramite ruolo admin o centro_id proprio, non
+    // tramite assegnazione hpa) restano autorizzati su tutti gli appuntamenti
+    // del centro, coerente col resto del progetto (es. `hpa/reports` GET lista,
+    // `hpa/dashboard/*`).
+    const isHpaRole = ownership.profile?.ruolo === 'hpa' || ownership.profile?.ruolo_livello === 'hpa'
+    const isAdminRole = ownership.profile?.ruolo === 'admin' || ownership.profile?.ruolo_livello === 'admin'
+    if (isHpaRole && !isAdminRole) {
+      const { data: apptRow, error: apptError } = await supabaseAdmin
+        .from('hpa_appointments')
+        .select('hpa_id')
+        .eq('id', appointment_id)
+        .maybeSingle()
+
+      if (apptError) throw apptError
+      if (!apptRow || apptRow.hpa_id !== user.id) {
+        return Response.json({ error: 'Non autorizzato: non è un tuo appuntamento' }, { status: 403 })
+      }
+    }
+
     const updates = { updated_at: new Date().toISOString() }
 
     if (stato) {
@@ -128,7 +190,10 @@ export async function PATCH(request) {
       updates.note = note
     }
 
-    const { data, error } = await supabase
+    // Update tramite supabaseAdmin (stesso client già usato per il controllo
+    // di ownership sopra): l'ownership è già verificata, il filtro su `id` è
+    // sufficiente e non serve rifiltrare su centro_id/hpa_id qui.
+    const { data, error } = await supabaseAdmin
       .from('hpa_appointments')
       .update(updates)
       .eq('id', appointment_id)

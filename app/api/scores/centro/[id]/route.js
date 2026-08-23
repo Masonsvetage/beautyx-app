@@ -41,17 +41,44 @@ export async function GET(request, { params }) {
     if (scoreError && scoreError.code !== 'PGRST116') throw scoreError
 
     // Ottieni storico transazioni punti (ultime 20)
-    const { data: transactions, error: txError } = await supabase
+    // SICUREZZA (difesa in profondità, 2026-08-23 — audit Riccardo, stesso
+    // schema del fix già fatto su progressi-obiettivi): `obiettivo:obiettivi(titolo)`
+    // non filtrava mai `obiettivi.centro_id` — se mai esistesse una riga
+    // score_transactions con un obiettivo_id di un centro diverso, questo
+    // endpoint esporrebbe il titolo di un obiettivo altrui.
+    // A differenza di progressi-obiettivi però qui NON si può usare
+    // `obiettivi!inner` + `.eq('obiettivo.centro_id', ...)`: `obiettivo_id` in
+    // `score_transactions` è una FK NULLABILE per design (vedi migrazione
+    // `20260205_05_client_scoring.sql` — righe di tipo `streak_bonus`,
+    // `bonus_admin`/`malus_admin` e `reset_mensile` sono inserite SENZA
+    // obiettivo_id). Un inner join scarterebbe dall'elenco proprio queste
+    // transazioni legittime (non solo quelle davvero cross-tenant), rompendo
+    // lo storico punteggio. Si filtra quindi lato applicativo, DOPO la query:
+    // si azzera solo il campo `obiettivo` (mai l'intera riga) quando il
+    // centro_id dell'obiettivo collegato non coincide col centro verificato —
+    // stessa garanzia di sicurezza del pattern !inner, zero rischio di far
+    // sparire transazioni legittime senza obiettivo collegato.
+    const { data: rawTransactions, error: txError } = await supabase
       .from('score_transactions')
       .select(`
         *,
-        obiettivo:obiettivi(titolo)
+        obiettivo:obiettivi(titolo, centro_id)
       `)
       .eq('centro_id', centroId)
       .order('created_at', { ascending: false })
       .limit(20)
 
     if (txError) throw txError
+
+    const transactions = (rawTransactions || []).map(tx => {
+      if (!tx.obiettivo) return tx
+      if (String(tx.obiettivo.centro_id) !== String(centroId)) {
+        return { ...tx, obiettivo: null }
+      }
+      // centro_id era necessario solo per il controllo sopra, non va esposto
+      const { centro_id: _omit, ...obiettivoSafe } = tx.obiettivo
+      return { ...tx, obiettivo: obiettivoSafe }
+    })
 
     // Ottieni info centro
     const { data: centro } = await supabase

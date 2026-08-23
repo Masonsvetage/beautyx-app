@@ -188,3 +188,51 @@ Nessun altro caso analogo trovato nel giro completo su `centro_id` in tutti gli 
 - Il finding critico del 23/08 (esfiltrazione cross-tenant `progressi-obiettivi`) è **FIX CONFERMATO** — chiuso, nessun bypass, nessun residuo dati.
 - L'**AUDIT SICUREZZA GESTIONALE COMPLESSIVO NON è chiuso**: 3 endpoint (`centro/pacchetti/route.js`, `centro/pacchetti/[id]/route.js`, `scores/centro/[id]/route.js`, + nota collaterale `hpa/appointments` PATCH) hanno lo stesso difetto strutturale di `progressi-obiettivi` pre-fix, oggi non sfruttabile solo perché le tabelle collegate non esistono ancora nel DB di produzione. Da correggere PRIMA che quelle tabelle vengano create (stesso principio già applicato a `obiettivi/step`): validare `servizio_id`↔`centro_id` a scrittura in `pacchetti`/`pacchetti_items`, filtrare il join `obiettivi.centro_id` in `scores/centro/[id]`, e aggiungere ownership check reale al PATCH di `hpa/appointments`.
 - Segnalazione a Davide/Mason per pianificare il fix insieme alla creazione di quelle tabelle (non urgente per il lancio ads, che non tocca questi endpoint, ma da non dimenticare come è già successo una volta con `obiettivi/step`).
+
+---
+
+### 2026-08-23 (3° giro, stesso giorno) — Riverifica INDIPENDENTE fix preventivo 3 endpoint dormienti (pacchetti, scores/centro/[id], hpa/appointments PATCH)
+
+**Verdetto: ALTRI PROBLEMI TROVATI — audit NON chiuso** (le due deviazioni dichiarate da Davide sono corrette; trovato 1 gap nuovo su `hpa/appointments` PATCH + 1 nota di processo).
+
+**1) `scores/centro/[id]` — filtro-in-JS-dopo-la-query:** confermato equivalente in sicurezza. `.order()`/`.limit(20)` sono hardcoded, nessun query-param client può alterarli; il redacting (`obiettivo:null` su mismatch) avviene su TUTTE le righe recuperate prima del `return`, mai una risposta parziale nel mezzo; nessun log stampa il payload grezzo. Nessuna finestra di esposizione.
+
+**2) `centro/pacchetti` GET — `servizi!inner` senza `!inner` su `pacchetti_items`:** confermato corretto per semantica PostgREST: l'inner join è solo tra `pacchetti_items`→`servizi`, quindi un item con `servizio.centro_id` non conforme viene escluso SOLO da quell'item (sparisce dall'array `items`), mentre `pacchetti_items` resta LEFT join verso `pacchetti` → i pacchetti senza item continuano a comparire con `items: []`. Nessuna falla riaperta.
+
+**3) `assertServiziAppartengonoAlCentro`:** grep su `pacchetti_items` in tutto il repo conferma che i SOLI due punti di scrittura sono POST (`pacchetti/route.js`) e PUT (`pacchetti/[id]/route.js`), entrambi chiamano la funzione PRIMA di qualunque insert/update reale. Nessun altro file tocca quella tabella.
+
+**4) NUOVO GAP — `hpa/appointments` PATCH, coverage HPA multi-centro non equivalente al modello RLS originale:** la migrazione `20260205_03_hpa_availability.sql` (righe 100-102) definisce l'accesso HPA come `hpa_id = auth.uid()` (solo i PROPRI appuntamenti), e la GET nello stesso file (riga 62) applica coerentemente `query.eq('hpa_id', user.id)` per il ruolo HPA. Il fix di Davide sul PATCH usa invece `verifyCentroOwnership`, che per un HPA concede accesso in base alla sola assegnazione attiva su `hpa_centro_assignments` per quel `centro_id` — SENZA verificare che `hpa_appointments.hpa_id` corrisponda all'HPA richiedente. `admin/hpa/route.js` POST conferma che il modello dati non impedisce affatto più HPA assegnati allo stesso centro (nessun vincolo di unicità su `centro_id` in `hpa_centro_assignments`, solo `UNIQUE(hpa_id, centro_id)`). Risultato: un HPA con assegnazione attiva su un centro potrebbe, tramite questo PATCH, modificare/cancellare un appuntamento di QUALSIASI HPA sullo stesso centro (non solo i propri), incoerente con la stessa GET del file e col modello RLS di riferimento. Non sfruttabile oggi (tabella dormiente), ma la dichiarazione "verifyRowCentroOwnership copre già nativamente il caso multi-centro HPA, non serve un controllo HPA-specifico" non è verificata: serve un controllo aggiuntivo `row.hpa_id === user.id` (oppure ammettere esplicitamente admin+titolare centro ma restringere il ramo HPA al proprio `hpa_id`) prima dell'update.
+
+**5) Grep finale su tutto `app/api/**/route.js`** per pattern "relazione annidata dentro relazione annidata" (stesso schema strutturale del bug): nessun altro punto trovato oltre ai 3 già noti/corretti.
+
+**6) Nota di processo (non bloccante):** `git status` mostra i 4 file ancora **non committati** (working tree modified, nessun commit dopo `0c80209`). Stessa dimenticanza già capitata con i fix `obiettivi/step` il 21/08 (fix locali mai deployati). Non urgente qui perché le tabelle non esistono ancora, ma da non ripetere: committare prima di considerare il lavoro finito.
+
+**Prossimo passo prima di richiudere:** Davide aggiunge il controllo `hpa_id === user.id` per il ramo HPA in `hpa/appointments` PATCH (punto 4) e fa commit+push dei 4 file.
+
+---
+
+### 2026-08-23 (4° giro, stesso giorno) — Riverifica INDIPENDENTE del fix `hpa_id` su `hpa/appointments` PATCH — CHIUSURA DEFINITIVA
+
+**Verdetto: TUTTO CONFERMATO — AUDIT SICUREZZA GESTIONALE DEFINITIVAMENTE CHIUSO.**
+
+**1) Fix confermato via lettura riga-per-riga di `app/api/hpa/appointments/route.js`:**
+- Il controllo aggiuntivo (righe 164-177) scatta **solo** se `isHpaRole && !isAdminRole` (`ownership.profile.ruolo`/`ruolo_livello`, popolati da `verifyRowCentroOwnership`→`verifyCentroOwnership`, che seleziona `ruolo, ruolo_livello` da `user_profiles`) — un admin salta sempre il blocco (accesso pieno confermato), un titolare/direttore (ruolo non hpa, non admin, autorizzato sopra solo via `centro_id` proprio) salta il blocco anch'esso, accesso pieno al centro confermato.
+- L'`hpa_id` confrontato è quello letto dal DB (`supabaseAdmin...select('hpa_id').eq('id', appointment_id)`), MAI un valore dal body client (il body espone solo `appointment_id, stato, note, cancellation_reason` — nessun campo `hpa_id`/`user_id` accettato in input, verificato a riga 126). Il confronto è con `user.id` della sessione autenticata (`supabase.auth.getUser()`, riga 120) — non falsificabile dal client.
+- Il blocco (`return ... 403`) avviene interamente PRIMA della costruzione di `updates` (riga 179) e della query di update vera e propria (riga 196-201): nessuna finestra in cui l'update parte prima del controllo.
+- Verificato `003e_STEP5_ruolo_livello.sql`: `ruolo`/`ruolo_livello` sono sempre sincronizzati alla creazione (`admin`→`admin`, `hpa`→`hpa`, altrimenti→`titolare`), quindi non esiste in pratica un profilo con `ruolo_livello='hpa'` che sia anche titolare di un `centro_id` proprio — nessun caso limite realistico in cui il controllo HPA-specifico blocchi erroneamente un titolare.
+- Caso legittimo confermato: HPA che modifica un proprio appuntamento → `apptRow.hpa_id === user.id` → check passa, update procede normalmente. Nessuna regressione.
+- `node --check app/api/hpa/appointments/route.js` → OK (rieseguito indipendentemente).
+
+**2) Perimetro:** grep su tutti gli scriventi di `hpa_appointments` in `app/api/**`: oltre al PATCH corretto, solo `booking/route.js` (righe 144-151) fa un `.update()` sulla tabella — ma aggiorna l'`appointmentId` appena creato nello stesso flusso di prenotazione (non un id arbitrario passato da un chiamante terzo), fuori perimetro rispetto al gap oggetto di questo giro. Nessun altro PATCH/DELETE nascosto sulla tabella.
+
+**3) `git status` — file dell'intero audit odierno (3 giri) ancora non committati:**
+- `app/api/centro/pacchetti/[id]/route.js`
+- `app/api/centro/pacchetti/route.js`
+- `app/api/hpa/appointments/route.js`
+- `app/api/scores/centro/[id]/route.js`
+- `memory/davide.md`
+- `memory/riccardo.md`
+
+(Il fix del 1° giro, `progressi-obiettivi`, è già committato in `0c80209`.) Altri file untracked visti in `git status` — bozze newsletter, profiling note — non appartengono all'audit di sicurezza, non inclusi.
+
+**Verdetto finale: AUDIT SICUREZZA GESTIONALE DEFINITIVAMENTE CHIUSO.** Nessun gap residuo sui 4 file del giorno; da committare tutti insieme (codice + memoria) per chiudere anche il "debito di commit" già segnalato nel giro precedente.

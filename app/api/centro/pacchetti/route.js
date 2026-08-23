@@ -28,16 +28,30 @@ export async function GET() {
     const { error, admin, centroId } = await getAuth()
     if (error) return error
 
+    // SICUREZZA (difesa in profondità, 2026-08-23 — stesso pattern già usato
+    // in GET /api/progressi-obiettivi dopo l'audit di Riccardo): il servizio
+    // referenziato da ogni pacchetti_items dovrebbe già appartenere al centro
+    // per costruzione (vedi validazione servizio_id↔centro_id in POST/PUT qui
+    // sotto), ma qui aggiungiamo comunque un filtro esplicito sul join verso
+    // `servizi`, così anche righe incoerenti (dati pregressi, bug futuri,
+    // scritture dirette sul DB) non arrivano mai a esporre nome/durate di un
+    // servizio di un centro diverso. `servizi!inner` marca SOLO il livello che
+    // porta il `centro_id` da filtrare — NON marchiamo anche `pacchetti_items`
+    // come `!inner`, apposta: un pacchetto senza alcun item deve continuare a
+    // comparire nella lista con `items: []`; solo i singoli item il cui
+    // servizio non appartiene al centro vengono esclusi dall'array annidato,
+    // mai l'intero pacchetto.
     const { data, error: err } = await admin
       .from('pacchetti')
       .select(`
         *,
         items:pacchetti_items(
           quantita,
-          servizio:servizi(id, nome, durata_preparazione_min, durata_esecuzione_min, durata_chiusura_min, durata_sanificazione_min)
+          servizio:servizi!inner(id, nome, durata_preparazione_min, durata_esecuzione_min, durata_chiusura_min, durata_sanificazione_min)
         )
       `)
       .eq('centro_id', centroId)
+      .eq('items.servizio.centro_id', centroId)
       .order('nome')
 
     if (err) throw err
@@ -46,6 +60,39 @@ export async function GET() {
     console.error('GET /api/centro/pacchetti:', err)
     return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
   }
+}
+
+// SICUREZZA: verifica che ogni servizio referenziato negli item di un
+// pacchetto appartenga davvero al `centro_id` del pacchetto stesso, PRIMA di
+// scrivere qualunque riga in `pacchetti_items`. Stesso principio del fix su
+// `progressi-obiettivi` (obiettivo_id↔centro_id, audit Riccardo 2026-08-23):
+// senza questo controllo un titolare potrebbe agganciare al proprio pacchetto
+// un `servizio_id` di un centro concorrente e vedersi restituiti (via GET)
+// nome/durate di un servizio che non gli appartiene.
+async function assertServiziAppartengonoAlCentro(admin, items, centroId) {
+  if (!Array.isArray(items) || items.length === 0) return null
+
+  const servizioIds = [...new Set(items.map(i => i?.servizio_id).filter(Boolean))]
+  if (servizioIds.length === 0) return null
+
+  const { data: serviziValidi, error: sErr } = await admin
+    .from('servizi')
+    .select('id')
+    .eq('centro_id', centroId)
+    .in('id', servizioIds)
+
+  if (sErr) throw sErr
+
+  const validIds = new Set((serviziValidi || []).map(s => s.id))
+  const invalidIds = servizioIds.filter(id => !validIds.has(id))
+
+  if (invalidIds.length > 0) {
+    return NextResponse.json(
+      { error: 'Uno o più servizi indicati non appartengono al centro' },
+      { status: 403 }
+    )
+  }
+  return null
 }
 
 export async function POST(request) {
@@ -58,6 +105,11 @@ export async function POST(request) {
 
     if (!pacchettoData.nome)
       return NextResponse.json({ error: 'Nome pacchetto obbligatorio' }, { status: 400 })
+
+    // Validazione servizio_id↔centro_id PRIMA di creare il pacchetto, per non
+    // lasciare un pacchetto orfano/senza items se la validazione fallisce.
+    const serviziError = await assertServiziAppartengonoAlCentro(admin, items, centroId)
+    if (serviziError) return serviziError
 
     const { data: pacchetto, error: insErr } = await admin
       .from('pacchetti')

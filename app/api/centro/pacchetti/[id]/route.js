@@ -23,6 +23,36 @@ async function getAuth() {
   return { user, admin, centroId: profile.centro_id }
 }
 
+// SICUREZZA: stessa verifica servizio_id↔centro_id di POST /api/centro/pacchetti
+// (audit Riccardo 2026-08-23, stesso schema del fix su progressi-obiettivi) —
+// prima di riscrivere pacchetti_items, controlla che ogni servizio referenziato
+// appartenga davvero al centro proprietario del pacchetto.
+async function assertServiziAppartengonoAlCentro(admin, items, centroId) {
+  if (!Array.isArray(items) || items.length === 0) return null
+
+  const servizioIds = [...new Set(items.map(i => i?.servizio_id).filter(Boolean))]
+  if (servizioIds.length === 0) return null
+
+  const { data: serviziValidi, error: sErr } = await admin
+    .from('servizi')
+    .select('id')
+    .eq('centro_id', centroId)
+    .in('id', servizioIds)
+
+  if (sErr) throw sErr
+
+  const validIds = new Set((serviziValidi || []).map(s => s.id))
+  const invalidIds = servizioIds.filter(id => !validIds.has(id))
+
+  if (invalidIds.length > 0) {
+    return NextResponse.json(
+      { error: 'Uno o più servizi indicati non appartengono al centro' },
+      { status: 403 }
+    )
+  }
+  return null
+}
+
 export async function PUT(request, { params }) {
   try {
     const { error, admin, centroId } = await getAuth()
@@ -30,6 +60,11 @@ export async function PUT(request, { params }) {
 
     const body = await request.json()
     const { items, ...pacchettoData } = body
+
+    // Validazione PRIMA di toccare pacchetti/pacchetti_items — vedi commento
+    // sulla funzione sopra.
+    const serviziError = await assertServiziAppartengonoAlCentro(admin, items, centroId)
+    if (serviziError) return serviziError
 
     const { data: pacchetto, error: updErr } = await admin
       .from('pacchetti')

@@ -843,3 +843,161 @@ come sostituite con la data (storico).
 - **Nota per Riccardo:** da riconfermare con audit indipendente sul codice
   reale, come da convenzione del team, mirato solo su questo file, prima di
   marcare chiuso il finding critico del 2026-08-23 in `memory/riccardo.md`.
+
+## Fix preventivo — 3 endpoint "dormienti" con lo stesso schema join-non-filtrato di progressi-obiettivi (2026-08-23, 2° giro)
+
+- **Contesto:** Riccardo, nello stesso giro di audit del 23/08 (2° giro, dopo
+  aver confermato chiuso il fix su `progressi-obiettivi`), ha fatto un grep
+  mirato su tutto `app/api/` cercando lo stesso schema architetturale del bug
+  appena corretto (join tra due tabelle filtrato solo sulla tabella esterna,
+  senza verificare che anche la relazione collegata appartenga al centro) e
+  ha trovato lo stesso schema in altri 3 punti. Le tabelle coinvolte
+  (`pacchetti`, `pacchetti_items`, `servizi`, `hpa_appointments`,
+  `hpa_centro_assignments`) **non esistono ancora oggi** sul DB di produzione
+  (`scfumedmisbuxhdywwpb`, verificato da Riccardo via `information_schema`) —
+  quindi oggi non sfruttabile, ma lo diventerebbe il giorno in cui quelle
+  tabelle venissero create, esattamente come già successo con
+  `obiettivi/step` (vedi sezioni sopra). Corretti preventivamente ORA, prima
+  che le tabelle esistano.
+
+- **Fix 1 — `app/api/centro/pacchetti/route.js` (POST) e
+  `app/api/centro/pacchetti/[id]/route.js` (PUT):** `pacchetti_items.servizio_id`
+  veniva scritto direttamente dal body client, senza mai verificare che il
+  servizio appartenesse al `centro_id` del pacchetto. Aggiunta in entrambi i
+  file una funzione `assertServiziAppartengonoAlCentro(admin, items, centroId)`
+  (stesso `admin` client service-key già usato da `getAuth()` in questi due
+  file — non serve l'helper `verifyCentroOwnership` qui perché il `centro_id`
+  non arriva mai dal client: viene già derivato dal profilo dell'utente,
+  IDOR su quel fronte strutturalmente impossibile come già notato per
+  `centro/servizi/*`): raccoglie i `servizio_id` unici degli item, li
+  confronta con una query `servizi.eq('centro_id', centroId).in('id', ...)`,
+  e risponde 403 se anche uno solo non appartiene al centro. Chiamata PRIMA
+  dell'insert del pacchetto in POST (per non lasciare un pacchetto orfano se
+  la validazione fallisce) e prima dell'update in PUT.
+  - **GET `centro/pacchetti/route.js`:** il join `servizio:servizi(...)`
+    dentro `items:pacchetti_items(...)` non filtrava `servizi.centro_id`.
+    Applicato lo stesso pattern di difesa-in-profondità di GET
+    progressi-obiettivi, ma con una scelta deliberata: ho marcato `!inner`
+    **solo** `servizi` (il livello che porta il `centro_id` da filtrare),
+    **non** `pacchetti_items`. Se avessi marcato anche `pacchetti_items` come
+    `!inner`, un pacchetto con zero item sarebbe sparito del tutto dalla
+    lista (inner join = nessuna riga figlia = riga padre esclusa) — una
+    regressione funzionale reale e non necessaria: l'obiettivo di sicurezza
+    (non esporre mai un servizio di un centro diverso) si ottiene comunque
+    marcando `!inner` solo su `servizi` e aggiungendo
+    `.eq('items.servizio.centro_id', centroId)`; l'array `items` di un
+    pacchetto continua a comparire anche vuoto, solo i singoli item con
+    servizio non conforme vengono esclusi dall'array annidato.
+
+- **Fix 2 — `app/api/scores/centro/[id]/route.js`:** il join
+  `obiettivo:obiettivi(titolo)` dentro `score_transactions` non filtrava
+  `obiettivi.centro_id`. **Qui NON ho applicato il pattern letterale
+  `!inner` + `.eq()`** richiesto per coerenza col resto della feature, per un
+  motivo concreto trovato leggendo lo schema: `score_transactions.obiettivo_id`
+  è una FK **nullabile** per design (`supabase/migrations/20260205_05_client_scoring.sql`,
+  riga 50, `ON DELETE SET NULL`) — le transazioni di tipo `streak_bonus` e
+  `bonus_admin`/`malus_admin` vengono inserite (vedi funzione
+  `add_streak_bonus`, righe 298-305 della stessa migrazione) **senza**
+  `obiettivo_id`. Un `!inner` su `obiettivi` avrebbe scartato dall'elenco
+  "ultime 20 transazioni" proprio queste righe legittime (non solo quelle
+  davvero cross-tenant), rompendo lo storico punteggio per qualunque centro
+  con bonus streak o rettifiche admin. **Fix applicato invece lato
+  applicativo:** query invariata nella forma (`obiettivo:obiettivi(titolo,
+  centro_id)`, LEFT join come prima, aggiunto solo `centro_id` alla select
+  per poterlo confrontare), poi in JS si mappa il risultato e si azzera
+  **solo il campo `obiettivo`** (mai l'intera riga di `score_transactions`)
+  quando `tx.obiettivo.centro_id !== centroId` verificato; se coincide, si
+  toglie `centro_id` dall'oggetto restituito al client (era lì solo per il
+  controllo, non andava esposto). Stessa garanzia di sicurezza del pattern
+  `!inner`, zero righe legittime perse.
+  - **Nota per Riccardo/Mason:** questa è una deviazione consapevole e
+    documentata dal pattern letterale richiesto nel compito, non una svista
+    — segnalo esplicitamente perché un audit che si aspettasse di trovare
+    `!inner` in questo file lo giudicherebbe a torto "non corretto secondo lo
+    schema". Il risultato di sicurezza (mai esporre il titolo di un
+    obiettivo di un altro centro) è identico; cambia solo la tecnica perché
+    qui, a differenza di `progressi_obiettivi.obiettivo_id` (sempre NOT
+    NULL), la FK è legittimamente opzionale.
+
+- **Fix 3 — `app/api/hpa/appointments/route.js` (PATCH):** aggiornava
+  `hpa_appointments` per `appointment_id` senza ALCUN controllo di ownership
+  — chiunque autenticato avrebbe potuto modificare/cancellare l'appuntamento
+  di un centro qualsiasi. Aggiunto un client service-key module-level
+  (`supabaseAdmin`, stesso pattern di `progressi-obiettivi`) e, prima di
+  costruire `updates`, una chiamata a
+  `verifyRowCentroOwnership(request, supabaseAdmin, { table:
+  'hpa_appointments', id: appointment_id })` — stesso helper già in uso nel
+  resto del progetto: legge il `centro_id` reale della riga e poi verifica
+  che l'utente (titolare del centro, admin, o HPA con assegnazione attiva su
+  `hpa_centro_assignments`) vi abbia accesso — non serve un controllo
+  "HPA-specifico" scritto a mano perché `verifyCentroOwnership` copre già
+  nativamente il caso multi-centro HPA. L'update stesso è stato spostato dal
+  client di sessione (`supabase`) al client service-key (`supabaseAdmin`),
+  coerente col fatto che l'ownership è già stata verificata con quel client;
+  GET non è stato toccato (non richiesto, già filtra per `hpa_id`/`centro_id`
+  a seconda del ruolo).
+
+- **Verifica:** solo statica, come richiesto (le 5 tabelle coinvolte non
+  esistono ancora in produzione, niente PoC/live possibile). `node --check`
+  su tutti e 4 i file toccati (`app/api/centro/pacchetti/route.js`,
+  `app/api/centro/pacchetti/[id]/route.js`,
+  `app/api/scores/centro/[id]/route.js`, `app/api/hpa/appointments/route.js`)
+  → tutti OK, nessun errore di sintassi. Grep di conferma sull'alias
+  `@/lib/auth/verifyCentroOwnership` (46 usi nel progetto dopo questo fix,
+  coerente col resto della codebase). Build Next.js completa non eseguita
+  nel sandbox.
+- **File modificati:** `app/api/centro/pacchetti/route.js`,
+  `app/api/centro/pacchetti/[id]/route.js`,
+  `app/api/scores/centro/[id]/route.js`, `app/api/hpa/appointments/route.js`.
+  Nessun file nuovo creato (gli helper aggiuntivi sono funzioni locali dentro
+  i file `pacchetti/route.js` e `pacchetti/[id]/route.js`, non un modulo
+  condiviso — stesso stile "ogni route.js autosufficiente" già in uso in
+  questi due file per `getAuth()`).
+- **Nota per Riccardo:** da riconfermare con audit indipendente sul codice
+  reale, come da convenzione del team, in particolare sulla scelta di
+  deviare dal pattern `!inner` in `scores/centro/[id]/route.js` (motivata
+  sopra) e sulla scelta di non marcare `pacchetti_items` come `!inner` in
+  `centro/pacchetti/route.js` GET.
+
+---
+
+### 2026-08-23 (correzione al Fix 3 sopra) — `app/api/hpa/appointments/route.js` PATCH, gap `hpa_id` trovato da Riccardo
+
+Riccardo (3° giro dello stesso giorno) ha verificato che l'affermazione fatta
+sopra — "non serve un controllo HPA-specifico scritto a mano perché
+`verifyCentroOwnership` copre già nativamente il caso multi-centro HPA" — era
+**sbagliata**. La migrazione originale `20260205_03_hpa_availability.sql`
+(righe 100-102) definisce l'accesso HPA come "solo i propri appuntamenti"
+(`hpa_id = auth.uid()`), e la GET nello stesso file infatti filtra già
+`.eq('hpa_id', user.id)` per il ruolo hpa. `verifyCentroOwnership` invece
+concede accesso a chiunque sia assegnato allo stesso centro via
+`hpa_centro_assignments`, senza controllare che `hpa_appointments.hpa_id`
+corrisponda al richiedente — quindi un HPA poteva modificare/cancellare
+l'appuntamento di un ALTRO HPA sullo stesso centro (`admin/hpa/route.js`
+conferma che più HPA possono essere assegnati allo stesso centro: solo
+`UNIQUE(hpa_id, centro_id)`, nessun vincolo di unicità sul centro).
+
+**Fix applicato:** dopo la `verifyRowCentroOwnership` già presente (invariata),
+aggiunto in PATCH un controllo aggiuntivo attivo SOLO per il ruolo hpa
+(`ownership.profile.ruolo === 'hpa' || ownership.profile.ruolo_livello ===
+'hpa'`) ed ESCLUSO per admin (`ruolo`/`ruolo_livello === 'admin'`, stesso
+pattern di distinzione ruoli già usato in tutto `app/api/hpa/*`, es.
+`hpa/reports/route.js`, `hpa/dashboard/*`): se il ruolo è hpa e non admin, una
+query dedicata su `supabaseAdmin.from('hpa_appointments').select('hpa_id').eq('id',
+appointment_id)` recupera l'`hpa_id` reale della riga (non incluso nella
+select di `verifyRowCentroOwnership`, che seleziona solo `id, centro_id`) e lo
+confronta con `user.id` — 403 "Non autorizzato: non è un tuo appuntamento" se
+non coincide. Admin e titolare/direttore del centro (autorizzati sopra tramite
+ruolo admin o `centro_id` proprio, non tramite assegnazione hpa) restano
+autorizzati su tutti gli appuntamenti del centro, come nel resto del
+progetto. Aggiornato anche il commento di intestazione del file (righe 6-13)
+che riportava la stessa affermazione errata.
+
+**Verifica:** solo statica (tabella `hpa_appointments` ancora non esistente in
+produzione, nessuna PoC live possibile). `node --check
+app/api/hpa/appointments/route.js` → OK. Grep di conferma:
+`isHpaRole`/`isAdminRole`/`apptRow` presenti e usati correttamente nel file.
+- **File modificato:** `app/api/hpa/appointments/route.js` (solo PATCH +
+  commento di intestazione). GET non toccata.
+- **Nota per Riccardo:** da riconfermare con audit indipendente, come da
+  convenzione del team.
