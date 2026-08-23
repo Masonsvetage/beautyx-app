@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
 import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
-// Client SERVICE_KEY usato solo per risalire al centro_id di un obiettivo quando
-// la richiesta filtra per obiettivo_id senza passare centro_id (vedi nota in
-// app/api/obiettivi/route.js sullo stesso pattern).
+// Client con SERVICE_KEY usato per TUTTE le query (lookup ownership e dati).
+// `progressi_obiettivi`/`obiettivi` sono state ricreate il 2026-08-21 con RLS
+// abilitata e nessuna policy per anon/authenticated (stesso pattern di
+// accantonamenti, bank_movements, ecc.): il client anon di `lib/supabase.js`
+// non avrebbe più accesso. Il confine di sicurezza reale resta applicativo,
+// tramite verifyCentroOwnership sotto.
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
@@ -55,7 +57,7 @@ export async function GET(request) {
       if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
     }
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('progressi_obiettivi')
       .select(`
         *,
@@ -120,7 +122,7 @@ export async function POST(request) {
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Upsert: aggiorna se esiste, altrimenti crea
-    const { data: progresso, error } = await supabase
+    const { data: progresso, error } = await supabaseAdmin
       .from('progressi_obiettivi')
       .upsert(
         {
@@ -160,7 +162,7 @@ export async function POST(request) {
  */
 export async function getRiepilogoGiornaliero(centroId, data) {
   // Recupera tutti gli obiettivi attivi
-  const { data: obiettivi, error: obError } = await supabase
+  const { data: obiettivi, error: obError } = await supabaseAdmin
     .from('obiettivi')
     .select('*')
     .eq('centro_id', centroId)
@@ -170,7 +172,7 @@ export async function getRiepilogoGiornaliero(centroId, data) {
   if (obError) throw obError
 
   // Recupera i progressi per la data specificata
-  const { data: progressi, error: prError } = await supabase
+  const { data: progressi, error: prError } = await supabaseAdmin
     .from('progressi_obiettivi')
     .select('*')
     .eq('centro_id', centroId)

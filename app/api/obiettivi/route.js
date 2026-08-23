@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
 import { verifyCentroOwnership, verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
-// Client con SERVICE_KEY usato SOLO per il lookup del centro_id reale di una riga
-// (necessario perché il client `supabase` sopra è creato con createBrowserClient/anon
-// key, senza sessione attaccata: non è affidabile per leggere dati sotto RLS in un
-// contesto server-side). Le query dati vere restano sul client `supabase` esistente,
-// per non alterare comportamento pre-esistente fuori dallo scope di questo fix.
+// Client con SERVICE_KEY usato per TUTTE le query su questa tabella (sia il
+// lookup ownership sia le query dati). Le tabelle obiettivi* sono state
+// ricreate il 2026-08-21 con RLS abilitata e NESSUNA policy per anon/authenticated
+// (stesso pattern di accantonamenti, bank_movements, ecc.): il client anon di
+// `lib/supabase.js` (createBrowserClient, nessuna sessione quando usato
+// server-side) non potrebbe più leggere/scrivere nulla su queste tabelle.
+// Il confine di sicurezza reale resta applicativo, tramite
+// verifyCentroOwnership/verifyRowCentroOwnership qui sotto.
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
@@ -37,7 +39,7 @@ export async function GET(request) {
     const ownership = await verifyCentroOwnership(request, centroId)
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('obiettivi')
       .select('*')
       .eq('centro_id', centroId)
@@ -110,7 +112,7 @@ export async function POST(request) {
     const ownership = await verifyCentroOwnership(request, centro_id)
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
-    const { data: obiettivo, error } = await supabase
+    const { data: obiettivo, error } = await supabaseAdmin
       .from('obiettivi')
       .insert({
         centro_id,
@@ -172,7 +174,7 @@ export async function PATCH(request) {
     // la propria riga a un centro arbitrario (corruzione dati cross-centro).
     const { centro_id: _ignoredCentroId, id: _ignoredId, created_at: _ignoredCreatedAt, ...safeUpdates } = updates
 
-    const { data: obiettivo, error } = await supabase
+    const { data: obiettivo, error } = await supabaseAdmin
       .from('obiettivi')
       .update(safeUpdates)
       .eq('id', id)
@@ -210,7 +212,7 @@ export async function DELETE(request) {
     const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('obiettivi')
       .delete()
       .eq('id', id)

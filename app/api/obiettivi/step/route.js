@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
 import { verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
-// Client con SERVICE_KEY usato SOLO per il lookup del centro_id reale di una riga
-// (necessario perché il client `supabase` sopra è creato con createBrowserClient/anon
-// key, senza sessione attaccata: non è affidabile per leggere dati sotto RLS in un
-// contesto server-side). Le query dati vere restano sul client `supabase` esistente,
-// stesso pattern di `app/api/obiettivi/route.js`.
+// Client con SERVICE_KEY usato per TUTTE le query (lookup ownership e dati).
+// `obiettivi_step` è stata ricreata il 2026-08-21 con RLS abilitata e nessuna
+// policy per anon/authenticated (stesso pattern di accantonamenti,
+// bank_movements, ecc.): il client anon di `lib/supabase.js` non avrebbe più
+// accesso. Il confine di sicurezza reale resta applicativo
+// (verifyRowCentroOwnership sotto), stesso pattern di `app/api/obiettivi/route.js`.
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
@@ -30,7 +30,7 @@ export async function GET(request) {
     const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
-    const { data: steps, error } = await supabase
+    const { data: steps, error } = await supabaseAdmin
       .from('obiettivi_step')
       .select('*')
       .eq('obiettivo_id', obiettivoId)
@@ -62,7 +62,7 @@ export async function POST(request) {
     const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivo_id })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
-    const { data: step, error } = await supabase
+    const { data: step, error } = await supabaseAdmin
       .from('obiettivi_step')
       .insert(body)
       .select()
@@ -113,7 +113,7 @@ export async function PATCH(request) {
     // ma obiettivo_id lo è e permetterebbe lo stesso tipo di attacco).
     const { obiettivo_id: _ignoredObiettivoId, id: _ignoredId, created_at: _ignoredCreatedAt, ...safeUpdates } = updates
 
-    const { data: step, error } = await supabase
+    const { data: step, error } = await supabaseAdmin
       .from('obiettivi_step')
       .update(safeUpdates)
       .eq('id', id)

@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
+
+// Client con SERVICE_KEY: `obiettivi`/`progressi_obiettivi` sono state ricreate
+// il 2026-08-21 con RLS abilitata e nessuna policy per anon/authenticated
+// (stesso pattern di accantonamenti, bank_movements, ecc.). Il confine di
+// sicurezza reale resta applicativo, tramite verifyCentroOwnership sotto.
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
 /**
  * GET /api/obiettivi/riepilogo?centro_id=xxx&data=2025-01-16
@@ -23,7 +32,7 @@ export async function GET(request) {
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Recupera tutti gli obiettivi attivi del centro
-    const { data: obiettivi, error: obError } = await supabase
+    const { data: obiettivi, error: obError } = await supabaseAdmin
       .from('obiettivi')
       .select('*')
       .eq('centro_id', centroId)
@@ -36,7 +45,7 @@ export async function GET(request) {
     if (obError) throw obError
 
     // Recupera i progressi per la data specificata
-    const { data: progressi, error: prError } = await supabase
+    const { data: progressi, error: prError } = await supabaseAdmin
       .from('progressi_obiettivi')
       .select('*')
       .eq('centro_id', centroId)

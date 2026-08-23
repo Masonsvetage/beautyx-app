@@ -598,3 +598,168 @@ come sostituite con la data (storico).
   stesso overlap sull'altra pagina.
   **Vincolo rispettato:** il logo NON è stato rimpicciolito (Mason lo vuole grande,
   vedi regola sopra) — si è dato spazio al contenuto hero, non tolto spazio al logo.
+
+## Ricreate le 5 tabelle "obiettivi" su Supabase produzione (2026-08-21)
+
+- **Contesto:** seguito diretto della sezione precedente ("Mistero tabella
+  obiettivi/obiettivi_step vs objectives_3s — chiarito"). Mason ha deciso di
+  ricreare le vecchie tabelle invece di ripuntare il codice su `objectives_3s`.
+  Ricostruito lo schema dalle 3 vecchie migration locali
+  (`add-objectives-tracking.sql`, `update-objectives-full-lifecycle.sql`,
+  `20260117_fix_obiettivi_default_suggeriti.sql`) e verificato riga per riga
+  contro le query reali di `app/api/obiettivi/route.js`,
+  `app/api/obiettivi/step/route.js`, `app/api/obiettivi/riepilogo/route.js`,
+  `app/api/obiettivi/suggeriti/route.js`, `app/api/progressi-obiettivi/route.js`
+  **e anche** `app/api/obiettivi/storico/route.js` e
+  `app/api/obiettivi/valutazione/route.js` (due endpoint della stessa feature,
+  non elencati nel compito iniziale ma trovati grep-ando `obiettivi_storico`/
+  `obiettivi_valutazioni` — dipendono dalle stesse 5 tabelle) e
+  `app/obiettivi/page.js` (wizard 5 step, dettaglio, valutazione).
+
+- **Tabelle create (migration `ricrea_tabelle_obiettivi` via `apply_migration`,
+  poi salvata anche in repo — vedi sotto):** `obiettivi`, `progressi_obiettivi`,
+  `obiettivi_step`, `obiettivi_valutazioni`, `obiettivi_storico`. Tutte con FK a
+  `beauty_centers(id)` (diretta per `obiettivi`/`progressi_obiettivi`, tramite
+  `obiettivo_id` per le altre tre). Confermato con `list_tables`: tutte e 5
+  presenti in `public`, RLS abilitata.
+
+- **Discrepanze trovate tra vecchie migration e codice attuale (risolte nella
+  nuova migration):**
+  1. **CHECK su `obiettivi.tipo` incompleto:** la vecchia migration aveva 8
+     valori (economico/clienti/servizi/prodotti/efficienza/qualita/marketing/altro),
+     ma il wizard frontend (`TIPI_OBIETTIVO` in `app/obiettivi/page.js`) ne
+     propone 9 — manca **'formazione'**. Bug storico mai emerso perché la
+     tabella non è mai stata scritta con quel valore. Aggiunto al CHECK.
+  2. **Nessun CHECK su `obiettivi.stato` nella vecchia migration** (VARCHAR(30)
+     libero). Il codice usa esattamente 7 valori (suggerito, bozza, attivo,
+     in_valutazione, concluso, prorogato, sospeso — da `STATI_LABELS` in
+     page.js e dai valori scritti da `suggeriti/route.js` e dal flusso di
+     valutazione in page.js). Aggiunto CHECK esplicito con questi 7 valori come
+     garanzia.
+  3. **RLS — cambiata la strategia rispetto alle vecchie migration (il
+     cambiamento più importante):** le vecchie migration usavano policy
+     permissive `USING (true)` su tutte e 5 le tabelle. Verificato che le altre
+     tabelle "per centro" del progetto in prod (`accantonamenti`,
+     `bank_movements`, `objectives_3s`, `svetage_metrics`, `ai_conversations`,
+     `proactive_insights`, `savings_goals`) hanno invece RLS abilitata **senza
+     alcuna policy** per anon/authenticated — l'unico accesso è tramite il
+     client server-side con `SUPABASE_SERVICE_KEY` (bypassa RLS), con
+     l'ownership verificata a livello applicativo
+     (`verifyCentroOwnership`/`verifyRowCentroOwnership`). Riprodurre le vecchie
+     policy `USING (true)` avrebbe reso queste 5 tabelle leggibili/scrivibili
+     da chiunque avesse la ANON KEY pubblica (esposta lato client) chiamando
+     direttamente l'endpoint REST di Supabase, bypassando interamente il
+     controllo di ownership — esattamente ciò che il compito chiedeva di
+     evitare ("non aperte a lettura pubblica"). **Scelta fatta:** RLS abilitata,
+     zero policy per anon/authenticated, stesso pattern delle altre tabelle
+     "per centro". Confermato via `get_advisors` (security): l'unico lint
+     restituito per queste tabelle è il consueto INFO "RLS Enabled No Policy",
+     identico a quello già presente su `accantonamenti`/`bank_movements`/ecc. —
+     non un problema nuovo, è il pattern normale del progetto.
+  4. **Conseguenza della scelta 3 — le route API erano rimaste sul client
+     ANON per le query dati:** `app/api/obiettivi/route.js`,
+     `app/api/obiettivi/step/route.js` e `app/api/progressi-obiettivi/route.js`
+     avevano già un client `supabaseAdmin` (service key) ma **solo** per il
+     lookup di ownership (fix del 2026-08-20/21, vedi sezioni sopra) — le query
+     dati vere restavano sul client anon `lib/supabase.js`
+     (`createBrowserClient`, nessuna sessione quando usato server-side in una
+     route). Con RLS deny-all quelle query avrebbero fallito silenziosamente
+     (righe vuote in lettura, errore in scrittura) pur avendo l'endpoint
+     "risposto in modo sensato" (401 per il check di ownership). **Fix
+     applicato:** tutte le query dati di
+     `app/api/obiettivi/route.js`, `app/api/obiettivi/step/route.js`,
+     `app/api/obiettivi/riepilogo/route.js` (client service-key aggiunto,
+     prima assente), `app/api/obiettivi/suggeriti/route.js` (client service-key
+     aggiunto, prima assente) e `app/api/progressi-obiettivi/route.js` ora
+     usano il client `supabaseAdmin`/service-key, stesso pattern già in uso in
+     `app/api/accantonamenti/route.js`. Rimosso l'import ormai inutile di
+     `supabase` da `lib/supabase.js` nei file dove non serviva più.
+  5. **Trovato un secondo gap IDOR reale, non coperto dal fix precedente:**
+     `app/api/obiettivi/storico/route.js` (GET) e
+     `app/api/obiettivi/valutazione/route.js` (GET e POST) **non avevano
+     ALCUN controllo di autenticazione/ownership** — zero chiamata a
+     `verifyCentroOwnership` o equivalente, diversamente da tutti gli altri
+     endpoint della stessa feature. **Confermato live in prod prima del fix**
+     con curl senza auth: `GET /api/obiettivi/storico?obiettivo_id=<uuid finto>`
+     → `200 {"storico":[]}` e `GET /api/obiettivi/valutazione?obiettivo_id=<uuid finto>`
+     → `200 {"valutazioni":[]}` (nessun 401, nessun 500 — proprio perché non
+     c'era alcun controllo). Con dati reali in tabella questo sarebbe stato un
+     IDOR completo (chiunque avrebbe potuto leggere/scrivere
+     storico/valutazioni di obiettivi di QUALSIASI centro conoscendo/indovinando
+     un UUID). **Fix applicato, stesso pattern già usato su
+     `obiettivi/step/route.js`:** aggiunto `verifyRowCentroOwnership` (via
+     `obiettivo_id` → tabella `obiettivi`) su entrambi i metodi di entrambi i
+     file, e passaggio al client service-key per le query dati. **Questo fix
+     NON era nel perimetro esplicito del compito ricevuto** (che elencava solo
+     5 endpoint), ma è stato applicato perché scoperto durante la verifica
+     riga-per-riga richiesta esplicitamente dal compito ("non fidarti
+     ciecamente delle vecchie migration... verifica sempre contro il codice
+     reale") e perché lasciare questi due endpoint senza auth avrebbe reso
+     vana la ricostruzione sicura delle altre 5 tabelle.
+  6. **Osservazione, NON corretta (fuori scope, comportamento pre-esistente):**
+     `POST /api/obiettivi` non legge affatto `stato` dal body (il wizard in
+     page.js invia `stato:'attivo'` esplicitamente, ma l'handler lo ignora — usa
+     sempre il DEFAULT di colonna). Per questo il DEFAULT di `obiettivi.stato`
+     è stato lasciato `'attivo'` (come nella primissima migration), non
+     `'suggerito'`: cambiarlo avrebbe rotto silenziosamente la creazione
+     manuale via wizard (che si aspetta l'obiettivo subito attivo), mentre
+     `/api/obiettivi/suggeriti` imposta comunque `stato:'suggerito'`
+     esplicitamente riga per riga, quindi non dipende dal default. Non ho
+     toccato la logica applicativa di `route.js` — è un bug preesistente
+     indipendente dalla ricreazione delle tabelle, segnalato qui per
+     conoscenza futura, non risolto.
+
+- **Trigger/funzioni:** ricreate `calcola_raggiungimento_obiettivo()` (calcolo
+  automatico percentuale/raggiunto su `progressi_obiettivi`),
+  `update_obiettivi_timestamp()` (updated_at su tutte e 3 le tabelle che ne
+  hanno bisogno) e **due** funzioni per `giorni_rimanenti` (una per `obiettivi`
+  da `data_target`, una per `obiettivi_step` da `data_scadenza` — le vecchie
+  migration avevano un pasticcio di nomi di funzione incoerenti tra loro,
+  qui ricreato con nomi puliti ma comportamento finale identico).
+
+- **Verifica live (curl senza auth, dopo il deploy della migration DB — le
+  modifiche di codice ai 7 file NON sono ancora deployate, vedi sotto):**
+  - `GET /api/obiettivi?centro_id=<uuid finto>` → **401** `{"error":"Non autenticato"}` ✓
+  - `GET /api/obiettivi/step?obiettivo_id=<uuid finto>` → **404**
+    `{"error":"Risorsa non trovata"}` (sensato: `verifyRowCentroOwnership` cerca
+    prima la riga con quell'id e, non trovandola — 0 righe in tabella — risponde
+    404 prima ancora di controllare l'auth; con un `obiettivo_id` reale un
+    utente non autenticato otterrebbe 401). Nessun 500. ✓
+  - `GET /api/obiettivi/riepilogo?centro_id=<uuid finto>` → **401** ✓
+  - `POST /api/obiettivi/suggeriti` (body con `centro_id` finto) → **401** ✓
+  - `GET` e `POST /api/progressi-obiettivi` → **401** ✓
+  - `GET /api/obiettivi/storico?obiettivo_id=<uuid finto>` → **200**
+    `{"storico":[]}` (atteso: il codice deployato in produzione è ancora la
+    VERSIONE PRE-FIX, senza ownership check — vedi punto 5 sopra; conferma
+    empirica del gap, non un problema della migration)
+  - `GET /api/obiettivi/valutazione?obiettivo_id=<uuid finto>` → **200**
+    `{"valutazioni":[]}` (stesso motivo)
+  - Nessuno dei 7 endpoint ha più restituito 500 "tabella non esiste": le 5
+    tabelle sono raggiungibili in produzione.
+
+- **IMPORTANTE — passo ancora da fare, non automatizzabile da qui:** le
+  modifiche di codice ai 7 file (`app/api/obiettivi/route.js`,
+  `app/api/obiettivi/step/route.js`, `app/api/obiettivi/riepilogo/route.js`,
+  `app/api/obiettivi/suggeriti/route.js`, `app/api/progressi-obiettivi/route.js`,
+  `app/api/obiettivi/storico/route.js`, `app/api/obiettivi/valutazione/route.js`)
+  sono salvate nel repository locale ma **non ancora deployate su Vercel** —
+  serve che Mason lanci `push.bat` (niente comandi git manuali, come da regola
+  critica sopra). Finché non viene fatto: le 5 tabelle esistono e sono
+  raggiungibili, ma `storico`/`valutazione` restano temporaneamente senza
+  ownership check in produzione (comportamento pre-esistente, non peggiorato
+  da oggi) e le altre 5 route continuano a usare il client anon per le query
+  dati finché il deploy non porta la versione con `supabaseAdmin` — con RLS
+  ora deny-all questo potrebbe causare **risposte vuote o errori in scrittura
+  per gli utenti autenticati reali** finché il deploy non avviene. Da fare
+  ASAP, prima che qualunque utente reale provi ad usare `/obiettivi`.
+
+- **File migration salvato in repo:**
+  `supabase/migrations/20260821_ricrea_tabelle_obiettivi.sql` (coerente con
+  come fatto in precedenza per `news_posts`).
+
+- **Verifica fatta:** `node --check` su tutti i 7 file route.js modificati
+  (nessun errore di sintassi); `list_tables`/`get_advisors` su Supabase per
+  confermare tabelle+RLS; curl live senza auth su tutti e 7 gli endpoint
+  (i 5 richiesti + i 2 trovati durante la verifica). Non ho potuto testare il
+  flusso autenticato end-to-end (nessuna sessione reale nel sandbox), come
+  previsto dal compito.

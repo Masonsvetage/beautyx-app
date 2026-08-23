@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { verifyCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
+
+// Client con SERVICE_KEY: `obiettivi` è stata ricreata il 2026-08-21 con RLS
+// abilitata e nessuna policy per anon/authenticated (stesso pattern di
+// accantonamenti, bank_movements, ecc.). Il confine di sicurezza reale resta
+// applicativo, tramite verifyCentroOwnership sotto.
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
 /**
  * POST /api/obiettivi/suggeriti
@@ -146,7 +155,7 @@ export async function POST(request) {
     ]
 
     // Verifica quali obiettivi non esistono già
-    const { data: esistenti } = await supabase
+    const { data: esistenti } = await supabaseAdmin
       .from('obiettivi')
       .select('nome')
       .eq('centro_id', centro_id)
@@ -157,7 +166,7 @@ export async function POST(request) {
 
     // Inserisci solo i nuovi suggerimenti
     if (nuoviSuggerimenti.length > 0) {
-      const { data: inseriti, error: insertError } = await supabase
+      const { data: inseriti, error: insertError } = await supabaseAdmin
         .from('obiettivi')
         .insert(nuoviSuggerimenti)
         .select()
