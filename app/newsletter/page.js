@@ -228,12 +228,55 @@ export default function NewsletterPage() {
                 Ti alzi presto, vai a letto tardi, e in mezzo c&apos;è un centro che sembra reggersi tutto sulle tue spalle: agenda piena, mani sempre impegnate, clienti che aspettano il loro turno. Poi arriva la sera, ti fermi un attimo su quel conto a fine mese — e il numero racconta sempre la stessa storia, quella che fatica a tornare come vorresti. Conosci bene questa stanchezza: va ben oltre le ore di sonno perse, è la sensazione di correre tutto il giorno e restare comunque ferma, un passo indietro rispetto a dove vorresti essere. Ti sei convinta che la colpa sia tua — poca organizzazione, poco polso, poca qualcosa. Ecco la verità, ed è più semplice di quanto pensi: ti hanno insegnato alla perfezione il mestiere delle mani. La gestione, quella vera, è rimasta un capitolo bianco. Oggi però le cose possono prendere un&apos;altra direzione. Un metodo, dieci minuti due volte a settimana, e la gestione comincia a remare insieme a te, con un impegno piccolo e costante — altro che formule fotocopiate: è una visione del tuo lavoro che diventa finalmente tua. E quando il conto torna, cambia molto più del centro: cambia l&apos;umore quando rientri la sera, la testa leggera a cena con chi ami, una vacanza vissuta davvero, con la testa lì e basta. La serenità economica è anche la conferma che sei brava — ma soprattutto è la sicurezza che porti con te ovunque: a casa, in famiglia, anche in vacanza, quando finalmente stacchi.
               </p>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                <a href="#form-section" style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '16px 32px', borderRadius: '10px', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}>
-                  Iscriviti gratis →
-                </a>
-                <p style={{ fontSize: '13px', color: '#666' }}>Conferma l&apos;email e la miniguida è tua. Più: una domanda al mese a un consulente vero, gratis.</p>
-              </div>
+              {/* Form email compatto in hero — riusa STESSI state/handler del form completo
+                  più sotto (#form-section): stessa `email`/`setEmail`, stesso `status`,
+                  stesso `handleSubmit`. Nessuna logica duplicata (validazione, rate limit,
+                  chiamata a /api/newsletter/subscribe restano solo in handleSubmit). Essendo
+                  lo stesso `status` a pilotare anche il form completo più sotto, le due
+                  istanze non possono disallinearsi: se una mostra "successo" lo mostra
+                  anche l'altra, sempre in sincrono. Qui il messaggio di successo resta
+                  volutamente compatto (il dettaglio completo — link guida, spiegazione
+                  double opt-in — resta nel form pieno più sotto). */}
+              <form onSubmit={handleSubmit} style={{ marginBottom: '28px', maxWidth: '480px' }}>
+                {status === 'success' ? (
+                  <div style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.12)', borderRadius: '12px', padding: '18px 20px' }}>
+                    <p style={{ margin: 0, fontSize: '15px', color: '#fff' }}>
+                      <strong style={{ color: '#EC4899' }}>✓ Sei dentro!</strong>{' '}
+                      <span style={{ color: '#aaa' }}>Controlla l&apos;email per confermare.</span>
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <input
+                        type="email" value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="La tua email" required
+                        aria-label="La tua email"
+                        style={{ flex: '1 1 220px', padding: '14px 18px', border: '1.5px solid rgba(255,255,255,0.15)', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', fontSize: '15px', outline: 'none', color: '#fff', fontFamily: "var(--font-inter), sans-serif" }}
+                      />
+                      <button
+                        type="submit" disabled={status === 'loading'}
+                        style={{ padding: '14px 22px', background: '#EC4899', color: '#fff', fontWeight: 700, border: 'none', borderRadius: '10px', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontSize: '15px', opacity: status === 'loading' ? 0.6 : 1, fontFamily: "var(--font-inter), sans-serif", whiteSpace: 'nowrap' }}
+                      >
+                        {status === 'loading' ? 'Un attimo...' : 'Iscriviti gratis →'}
+                      </button>
+                    </div>
+                    {status === 'error' && (
+                      <p style={{ marginTop: '8px', color: '#ff8080', fontSize: '13px' }}>{errorMsg}</p>
+                    )}
+                  </>
+                )}
+              </form>
+
+              {status !== 'success' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                  <a href="#form-section" style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '16px 32px', borderRadius: '10px', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}>
+                    Iscriviti gratis →
+                  </a>
+                  <p style={{ fontSize: '13px', color: '#666' }}>Conferma l&apos;email e la miniguida è tua. Più: una domanda al mese a un consulente vero, gratis.</p>
+                </div>
+              )}
             </div>
 
           </div>
