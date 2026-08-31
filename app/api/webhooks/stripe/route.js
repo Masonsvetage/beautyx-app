@@ -81,9 +81,20 @@ async function handleCheckoutCompleted(session) {
   // Verifica se esiste già una subscription
   const { data: existingSub } = await supabaseAdmin
     .from('client_subscriptions')
-    .select('id, minuti_totali, minuti_usati')
+    .select('id, minuti_totali, minuti_usati, metadata')
     .eq('centro_id', centro_id)
     .maybeSingle()
+
+  // Guard idempotenza: questo branch non scrive su user_purchases (nessuna
+  // colonna stripe_checkout_session_id per questo flusso), quindi il marker
+  // vive in client_subscriptions.metadata (colonna JSONB già esistente, mai
+  // usata finora). Se la sessione Stripe corrente è già quella accreditata
+  // l'ultima volta, esci come no-op — evita il doppio accredito quando
+  // Stripe ritenta lo stesso webhook (timeout/5xx).
+  if (existingSub?.metadata?.stripe_checkout_session_id === session.id) {
+    console.log(`Checkout ${session.id} già processato per centro ${centro_id} — skip accredito duplicato`)
+    return
+  }
 
   if (existingSub) {
     // Aggiorna subscription esistente (aggiungi minuti)
@@ -96,6 +107,7 @@ async function handleCheckoutCompleted(session) {
         stato: 'attivo',
         stripe_subscription_id: session.subscription,
         stripe_customer_id: session.customer,
+        metadata: { ...(existingSub.metadata || {}), stripe_checkout_session_id: session.id },
         updated_at: new Date().toISOString()
       })
       .eq('id', existingSub.id)
@@ -123,7 +135,8 @@ async function handleCheckoutCompleted(session) {
         minuti_usati: 0,
         stato: 'attivo',
         stripe_subscription_id: session.subscription,
-        stripe_customer_id: session.customer
+        stripe_customer_id: session.customer,
+        metadata: { stripe_checkout_session_id: session.id }
       })
 
     if (error) {
@@ -137,6 +150,20 @@ async function handleCheckoutCompleted(session) {
 async function handleAddonCheckoutCompleted({ session, user_id, package_id, token_ai_bonus }) {
   if (!user_id || !token_ai_bonus) {
     console.error('Metadata addon mancanti:', { user_id, token_ai_bonus })
+    return
+  }
+
+  // Guard idempotenza: se questa stessa sessione Stripe è già stata loggata
+  // in user_purchases, l'accredito è già avvenuto — esci come no-op. Evita
+  // il doppio accredito quando Stripe ritenta lo stesso webhook (timeout/5xx).
+  const { data: existingPurchase } = await supabaseAdmin
+    .from('user_purchases')
+    .select('id')
+    .eq('stripe_checkout_session_id', session.id)
+    .maybeSingle()
+
+  if (existingPurchase) {
+    console.log(`Checkout ${session.id} già processato (user_purchases) — skip accredito addon duplicato`)
     return
   }
 

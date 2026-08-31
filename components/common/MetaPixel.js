@@ -1,44 +1,65 @@
 'use client'
 
-// Meta Pixel — PREDISPOSTO MA SPENTO (task #164).
+// Meta Pixel — PREDISPOSTO MA SPENTO finché mancano le env var (task #164).
 //
-// No-op totale finché non esiste un ID reale: se `NEXT_PUBLIC_META_PIXEL_ID`
-// è assente (com'è oggi, deliberatamente), il componente ritorna null e non
-// carica nulla — nessun ID hardcodato, nessuna chiamata a Facebook, nessun
-// cookie di profilazione. Stesso principio di gating già in uso per Plausible
-// in app/layout.js.
+// Doppio gate, entrambi obbligatori prima che lo script venga anche solo
+// caricato:
+// 1. `NEXT_PUBLIC_META_PIXEL_ID` presente (oggi assente deliberatamente —
+//    nessun ID hardcodato, nessuna chiamata a Facebook finché Mason non lo
+//    imposta su Vercel).
+// 2. Consenso marketing esplicito e ACCETTATO da CookieNotice.js
+//    (lib/consent.js, chiave localStorage `beautyx-cookie-consent`). Se
+//    l'utente non ha ancora scelto, o ha rifiutato, il componente resta
+//    no-op — anche quando l'ID pixel è presente. Il gate si aggiorna in
+//    tempo reale (evento CONSENT_CHANGE_EVENT) se l'utente accetta dal
+//    banner senza ricaricare la pagina.
 //
-// ⚠️ PRIMA DI IMPOSTARE L'ID IN PRODUZIONE (nota GDPR, non tecnica): il Meta
-// Pixel usa cookie di PROFILAZIONE — oggi il sito ha solo cookie tecnici e un
-// CookieNotice puramente informativo (memory/davide.md, sezione "Cookie e
-// GDPR"). Attivare il pixel richiede prima di trasformare quel banner in un
-// vero banner di CONSENSO (opt-in) e di far partire il pixel solo dopo il
-// consenso. Questo componente lascia il gancio `hasConsent` pronto proprio per
-// quello: finché non c'è un meccanismo di consenso, tenerlo su default (init
-// solo se ID presente E, in futuro, consenso dato).
+// Stesso principio di gating già in uso per Plausible in app/layout.js,
+// esteso col vincolo GDPR imposto dal Meta Pixel (cookie di profilazione).
 
 import Script from 'next/script'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { hasMarketingConsent, CONSENT_CHANGE_EVENT } from '@/lib/consent'
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID
 
 // Helper riusabile per tracciare eventi custom lato client, se e solo se il
-// pixel è realmente attivo (fbq definito). No-op silenzioso altrimenti.
+// pixel è realmente attivo (fbq definito). No-op silenzioso altrimenti — se
+// il consenso non è stato dato, fbq non esiste mai, quindi questo helper è
+// già al sicuro senza bisogno di un controllo consenso separato.
 export function trackMetaEvent(eventName, params) {
   if (typeof window === 'undefined' || typeof window.fbq !== 'function') return
   window.fbq('track', eventName, params || {})
 }
 
 export default function MetaPixel() {
-  // Gate primario: nessun ID → nessun rendering, nessuno script.
-  if (!PIXEL_ID) return null
+  const [consented, setConsented] = useState(false)
 
-  // PageView iniziale, solo dopo che lo script è pronto.
+  // Hook sempre chiamato, a prescindere da PIXEL_ID/consenso (regole degli
+  // hook React) — il no-op vero e proprio avviene dentro, non nell'ordine
+  // di chiamata degli hook.
   useEffect(() => {
+    if (!PIXEL_ID) return
+    setConsented(hasMarketingConsent())
+    const onConsentChange = () => setConsented(hasMarketingConsent())
+    window.addEventListener(CONSENT_CHANGE_EVENT, onConsentChange)
+    return () => window.removeEventListener(CONSENT_CHANGE_EVENT, onConsentChange)
+  }, [])
+
+  // PageView iniziale, solo dopo che script+consenso sono entrambi pronti.
+  useEffect(() => {
+    if (!PIXEL_ID || !consented) return
     if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
       window.fbq('track', 'PageView')
     }
-  }, [])
+  }, [consented])
+
+  // Gate 1: nessun ID → nessun rendering, nessuno script.
+  if (!PIXEL_ID) return null
+
+  // Gate 2: nessun consenso marketing esplicito → resta no-op anche con
+  // l'ID pixel presente.
+  if (!consented) return null
 
   return (
     <>
