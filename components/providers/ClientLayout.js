@@ -11,6 +11,22 @@ import LegalAcceptanceWall from '@/components/legal/LegalAcceptanceWall'
 import SubscriptionCountdownBanner from '@/components/common/SubscriptionCountdownBanner'
 
 // Route che non mostrano navbar e chat
+//
+// NOTA (collegamento questionario CURA, task #153): valutato di aggiungere
+// '/questionario' qui per un'esperienza a schermo intero (ha già una sua
+// topbar dedicata, vedi components/profiling/QuizScenario.js) — SCARTATO
+// perché questo blocco `isPublicRoute` è il primissimo controllo della
+// funzione ed esce con `return <>{children}</>` PRIMA del check profilo
+// bloccato e PRIMA del muro di accettazione documenti legali (più sotto in
+// questo stesso file). Escludere '/questionario' da qui avrebbe quindi
+// lasciato passare al questionario anche un utente con profilo bloccato
+// dall'admin o con documenti legali pendenti da accettare — una regressione
+// di sicurezza, non solo estetica. Il questionario resta quindi con Navbar +
+// BeautyxChatFooter standard (leggero doppione visivo con la topbar propria
+// del quiz, accettabile). Se in futuro si vuole davvero l'immersione a
+// schermo intero, va prima riordinata la logica qui sotto (spostare
+// `isPublicRoute` DOPO i check di blocco/legal, non solo aggiungere una
+// route alla lista) — segnalato a Mason, non deciso qui.
 const publicRoutes = ['/login', '/signup', '/reset-password']
 
 export default function ClientLayout({ children }) {

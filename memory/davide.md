@@ -438,13 +438,14 @@ come sostituite con la data (storico).
   nella prima stesura del piano del 28/08 mattina. Restano a complessità A
   solo il motore del questionario (3) e in parte l'analisi testo libero (6).
 
-## Task tecnici pendenti (aggiornato 24/07/2026)
+## Task tecnici pendenti (aggiornato 31/08/2026)
 
 1. ~~**Middleware redirect** — `/` → `/newsletter` per utenti non autenticati~~ ✓ IMPLEMENTATO 24/07/2026 — middleware unificato: `proxy.js` gestisce tutta la logica auth + redirect `/`, `middleware.js` lo re-esporta come `{ proxy as middleware, config }`
 2. **Homepage stats** — nascondere sezione metriche quando `centri_attivi === 0`
 3. ~~**Rate limiting Upstash** — sostituire rate limiting in-memory (inefficace su Vercel serverless) con Redis Upstash~~ ✓ IMPLEMENTATO 19/08/2026 (codice pronto, MA vedi sezione dedicata sotto: resta sul fallback in-memory finché Mason non crea il DB Upstash e le env var su Vercel — passo umano ancora da fare)
 4. **Error monitoring** — aggiungere Sentry per visibilità errori in produzione
 5. **Disconnettere vecchio repo** `beautyx-app` dal vecchio progetto Vercel
+6. **[NON urgente, da fare prima del lancio commerciale HPA] Doppio accredito minuti HPA sul flusso normale (non sui retry)** — trovato da Riccardo durante l'audit del 2026-08-31 (finding distinto dal fix di idempotenza in `58d0ed1`, non bloccante perché oggi zero clienti reali sul flusso pacchetti HPA). In `app/api/webhooks/stripe/route.js` righe 99-125 (branch update di `handleCheckoutCompleted` per subscription esistente), l'update JS fa già `minuti_totali: existingSub.minuti_totali + minuti` e subito dopo viene chiamata la RPC `add_bonus_minutes` (`supabase/migrations/20260205_04_subscriptions.sql`) che internamente fa **di nuovo** `UPDATE client_subscriptions SET minuti_totali = minuti_totali + p_minuti` sulla stessa riga — un acquisto legittimo di `minuti` finisce per accreditarne `2×minuti`. Va sistemato (rimuovere uno dei due incrementi) prima di vendere pacchetti HPA a clienti reali.
 
 ## Rate limiting Upstash Redis — migrazione da Map() in-memory (2026-08-19)
 
@@ -590,6 +591,11 @@ come sostituite con la data (storico).
 - **Commit locale, NON pushato** (convenzione team per bug di sicurezza/pagamenti — il push avviene dopo riconferma di Riccardo sul fix di idempotenza, vedi task del Coordinatore). File toccati: `app/api/webhooks/stripe/route.js`, `components/common/CookieNotice.js`, `components/common/MetaPixel.js`, `lib/consent.js` (nuovo).
 
 - **Nota per Riccardo:** da riconfermare con audit indipendente sul codice reale, come da convenzione del team, sia il fix di idempotenza sia — soprattutto — la scoperta collaterale del possibile doppio accredito sistematico (non solo sui retry) nel branch pacchetti HPA, prima di considerare il finding #154 chiuso.
+
+- **Aggiornamento 2026-08-31 — riconferma Riccardo, push TENTATO ma BLOCCATO:** Riccardo ha riconfermato in modo indipendente il fix di idempotenza sul commit locale `58d0ed1` (solido, pushabile, nessun bypass trovato) e ha confermato come bug separato e distinto — non bloccante per questo push — il doppio accredito minuti HPA sul flusso normale (vedi nuova voce in "Task tecnici pendenti" sotto). Branch locale `main` avanti di 2 commit su `origin/main` (`f1bfccb` preesistente + `58d0ed1`). **Il push NON è andato a buon fine:**
+  1. `git push origin main` dalla sandbox Linux fallisce (`fatal: could not read Username for 'https://github.com'`) — la sandbox non ha credenziali GitHub configurate (nessun credential helper, nessuna chiave SSH, nessun token in env). Il push va fatto dalla macchina Windows di Mason, dove Git Credential Manager ha le credenziali reali.
+  2. **Non ho eseguito `push.bat` così com'è.** Il file attuale in root non è un semplice wrapper di `git push`: contiene una sequenza `git add` di file specifici + un `git commit` con messaggio hardcoded riferito a un'altra modifica passata (hero /newsletter, 24/07), poi `git push`. Nella working directory ci sono oggi molte modifiche non committate e file non tracciati non legati al fix Stripe (endpoint report/profiling, migrazioni SQL nuove, pagine in corso, ecc. — lavoro WIP di altri task, non auditato). Eseguire `push.bat` invariato avrebbe creato un commit aggiuntivo NON revisionato con questi file sotto un messaggio fuorviante, prima del push — cosa che avrebbe contraddetto lo scope esplicitamente approvato (solo `58d0ed1` + `f1bfccb`, non altro). Ho fermato l'esecuzione automatica e segnalo qui invece di forzare.
+  - **Serve un'azione umana:** Mason deve pushare da Windows con un comando pulito (es. `git push origin main` diretto, senza passare dallo script `push.bat` così com'è — oppure aggiornare `push.bat` rimuovendo gli `add`/`commit` hardcoded prima di lanciarlo) per non trascinare in main modifiche non revisionate insieme al fix Stripe.
 
 ## Pulizia whitelist `COLONNE_SERVIZI` in `centro/servizi/route.js` POST (2026-08-21)
 
@@ -1692,3 +1698,105 @@ reale), `app/layout.js` (montaggio MetaPixel gated).
   `QuizScenario` dentro la chat; taratura soglie (`SOGLIA_SIGNIFICATIVITA`,
   `SOGLIA_AMBIGUITA`) con dati reali; `NEXT_PUBLIC_REPORT_LAUNCH_DATE` resta
   deliberatamente NON impostato.
+
+## 03/09/2026 — Collegamento end-to-end del questionario CURA (quiz → scoring → report)
+
+Su richiesta diretta di Mason ("procedi subito, esecuzione tecnica in un
+perimetro già deciso"): tutti i pezzi del report CURA esistevano ma erano
+scollegati (QuizScenario.js orfano, motore di scoring raggiungibile solo dai
+tool della chat, report chiuso nel DB, nessun percorso post-signup). Ora sono
+collegati.
+
+**Percorso URL scelto: `/questionario` (quiz) + `/questionario/risultato`
+(report).** Motivazione: NON `/report/*` come sembrava naturale (coerente col
+naming del prodotto) — scartato perché `proxy.js` ha `/report` nella sua
+`publicRoutes` con match `startsWith`, quindi qualunque sotto-path
+`/report/...` sarebbe stato accessibile SENZA login, bypassando
+`verifyCentroOwnership` a livello di pagina (le API restano comunque protette,
+ma la UI si sarebbe aperta ad anonimi). `/questionario` non è in nessuna
+publicRoutes: resta protetto dal login-redirect standard di `proxy.js`.
+
+**Come si collega:**
+1. **Nuovo endpoint deterministico `app/api/beautyx/profiling/route.js`**
+   (azioni `next`/`answer`/`generate`/`report`) che chiama DIRETTAMENTE
+   `getProssimoScenario`/`salvaRispostaScenario`/`generaReportProfiling` da
+   `lib/beautyx/profilingEngine.js` — NIENTE chiamata Anthropic per la parte a
+   scelta forzata (è già deterministica al 100%, passare da un LLM solo per
+   "impacchettare" testo sarebbe più lento/costoso/rischioso). Stesso identico
+   pattern di sicurezza di `/api/beautyx/chat`: `verifyCentroOwnership` prima
+   di tutto, `user_id` sempre dalla sessione (mai dal body), e lo stesso gate
+   `check_ai_limit`→`piano==='report_profiling'` replicato qui (obbligatorio:
+   bypassando la chat, questo diventa l'unico punto che decide l'accesso).
+   L'azione `report` fa eccezione al gate piano (un report già generato resta
+   leggibile anche se il piano cambia dopo).
+2. **`app/questionario/page.js`** monta `QuizScenario.js` (invariato, era già
+   pronto) per gli scenari a scelta forzata, chiamando l'endpoint sopra. Per la
+   **narrazione libera** (che richiede davvero una conversazione con
+   follow-up se la risposta è vaga) passa la mano a una mini-chat imbottita
+   nella stessa pagina che parla con `/api/beautyx/chat` esistente (già gated
+   su `isProfilingMode`); dopo ogni scambio ri-chiede `action:'next'` per
+   sapere se lo stato è avanzato. Quando il questionario segnala
+   `tipo:'completato'`, chiama `action:'generate'` (idempotente) e fa redirect
+   a `/questionario/risultato`. Nessuna logica di resume dedicata: lo stato
+   vive in `profiling_sessions`, riaprire `/questionario` in qualunque momento
+   riprende da solo dal punto giusto.
+3. **`app/questionario/risultato/page.js`** legge `profiling_reports` per il
+   centro dell'utente via la stessa action `report` (ownership verificata,
+   nessun nuovo meccanismo di auth) e renderizza `contenuto_html` con
+   `dangerouslySetInnerHTML` — sicuro perché la stringa è già sanitizzata a
+   monte in `reportAssembler.js` (`escapeHtml`, verificato da Riccardo), stesso
+   pattern già in uso in `app/newsletter/page.js` e `app/layout.js`.
+4. **Post-signup:** `app/impostazioni/page.js` (`handleCreaCentro`, dove
+   avviene la creazione centro dopo il login/onboarding) ora reindirizza a
+   `/questionario` invece che a `/` quando `registrazioneUnificata.reportProfiling`
+   è true (fallback su `/` se per qualunque motivo l'assegnazione piano non
+   fosse riuscita — è best-effort in `create-centro/route.js`, mai bloccante).
+5. **Ritorno dopo la prima volta:** nuovo `components/dashboard/ReportCuraCard.js`,
+   card sulla dashboard visibile solo se il piano attivo è `report_profiling`
+   (fetch dedicato a `/api/subscriptions/balance`, non `useBeautyx().tokenUsage`
+   perché quello si carica solo quando la chat viene aperta — troppo tardi per
+   il primo render dashboard). Copre chi torna più tardi o ha lasciato il
+   questionario a metà: il click porta sempre a `/questionario`, che da solo
+   capisce dove riprendere.
+
+**Scelta di design segnalata, non presa in silenzio:** ho valutato di rendere
+`/questionario` a schermo intero (niente Navbar/BeautyxChatFooter, coerente
+con la topbar "stile evento" già in `QuizScenario.js`) aggiungendolo alla
+lista `publicRoutes` di `components/providers/ClientLayout.js` — SCARTATO: quel
+blocco è il primissimo controllo della funzione e uscirebbe con
+`return <>{children}</>` PRIMA del check "profilo bloccato" e PRIMA del muro
+di accettazione documenti legali (`LegalAcceptanceWall`), più sotto nello
+stesso file. Avrebbe quindi fatto passare al questionario anche un utente
+bloccato dall'admin o con documenti legali pendenti — una regressione di
+sicurezza, non solo estetica. Ho lasciato il Navbar/chat standard (doppione
+visivo lieve con la topbar propria del quiz, accettabile) e commentato nel
+file cosa andrebbe riordinato per fare l'immersione a schermo intero in
+sicurezza in futuro, se Mason la vuole.
+
+**File creati:** `app/api/beautyx/profiling/route.js`, `app/questionario/page.js`,
+`app/questionario/risultato/page.js`, `components/dashboard/ReportCuraCard.js`.
+**File modificati:** `app/dashboard/page.js` (monta `ReportCuraCard`),
+`app/impostazioni/page.js` (redirect post-creazione centro),
+`components/providers/ClientLayout.js` (solo commento esplicativo, nessun
+cambio funzionale).
+
+**Verifica:** `node --check` OK sulle parti non-JSX; per i file JSX (impossibili
+da parsare con `node --check` puro, stesso limite già noto) ho usato
+`node_modules/.bin/biome lint`/`check` (il progetto ha Biome installato in
+`node_modules`, non lo sapevo disponibile finché non l'ho cercato — utile da
+ricordare per le prossime sessioni JSX-heavy in sandbox) che PARSA il JSX
+correttamente: zero errori di sintassi su tutti i file nuovi/toccati, solo
+avvisi di stile (quote/punteggiatura, ordine import, key su indice array in
+una lista chat append-only, `dangerouslySetInnerHTML` — quest'ultimo già un
+pattern accettato altrove nel progetto). Nessuna build Next reale nel sandbox:
+la build effettiva resta al deploy di Mason.
+
+**Non testato end-to-end con un utente reale** (nessuna creazione
+account/centro in questa sessione) — il primo utente che completa
+signup→create-centro→questionario→report sarà il vero collaudo. Suggerisco a
+Riccardo di ripetere l'audit di sicurezza (task #154) includendo il nuovo
+endpoint `/api/beautyx/profiling` (stesso pattern verifyCentroOwnership +
+gate piano, ma è codice nuovo).
+
+**Committato in locale, NON pushato** (convenzione delle sessioni precedenti —
+il push lo fa Mason da Windows).

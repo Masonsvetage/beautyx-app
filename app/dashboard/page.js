@@ -8,6 +8,7 @@ import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 import RegistroGiornataWidget from '@/components/dashboard/RegistroGiornataWidget'
 import ConsoleDatiWidget from '@/components/dashboard/ConsoleDatiWidget'
 import GamificationWidget from '@/components/dashboard/GamificationWidget'
+import ReportCuraCard from '@/components/dashboard/ReportCuraCard'
 import { useBeautyx } from '@/contexts/BeautyxContext'
 
 function CollapsibleOnboarding({ children }) {
@@ -118,6 +119,10 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Report CURA — entry point verso /questionario (visibile solo se
+            il piano attivo è report_profiling, controllato dal componente stesso) */}
+        {!isAdmin && !isHpa && <ReportCuraCard />}
 
         {/* Checklist onboarding — collassata di default */}
         {!isAdmin && !isHpa && (

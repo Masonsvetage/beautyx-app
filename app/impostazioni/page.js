@@ -296,9 +296,15 @@ export default function ImpostazioniPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setCentroMessage({ type: 'success', text: 'Centro creato! La pagina si aggiornerà.' })
-      // Ricarica per aggiornare centroId nel context
-      setTimeout(() => window.location.href = '/', 1500)
+      setCentroMessage({ type: 'success', text: 'Centro creato! Ti portiamo al questionario CURA.' })
+      // Registrazione unificata (create-centro) assegna anche il piano
+      // report_profiling gratuito — se è andata a buon fine, il posto giusto
+      // dove atterrare è il questionario, non la dashboard vuota (altrimenti
+      // l'utente non trova mai da solo il quiz). Fallback su '/' se per
+      // qualunque motivo l'assegnazione del piano non fosse riuscita (best-
+      // effort, vedi create-centro/route.js): niente redirect rotto.
+      const destinazione = data.registrazioneUnificata?.reportProfiling ? '/questionario' : '/'
+      setTimeout(() => window.location.href = destinazione, 1500)
     } catch (err) {
       setCentroMessage({ type: 'error', text: err.message })
     } finally {
