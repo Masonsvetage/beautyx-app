@@ -602,15 +602,12 @@ export default function SignupPage() {
               </div>
             ) : (
               /* Bug fix (03/09/2026, collaudo Mason — bug #6): la checkbox
-                 termini/privacy non aveva link cliccabili — l'utente doveva
-                 accettare "al buio". Aggiunto link reale a /privacy (pagina
-                 esistente). NOTA per Mason/Federica: non esiste ancora una
-                 pagina pubblica dedicata a "termini e condizioni d'uso" nel
-                 progetto (verificato: nessuna route /termini o simile) — il
-                 link sotto punta solo alla Privacy Policy, che esiste
-                 davvero. Finché non c'è una pagina termini reale non ne
-                 inventiamo una vuota: da creare come passo successivo se
-                 serve un documento contrattuale distinto dalla privacy. */
+                 privacy non aveva link cliccabile — l'utente doveva accettare
+                 "al buio". Aggiunto link reale a /privacy. Corretto anche
+                 il 04/09/2026 (indicazione di Mason): un'unica pagina legale
+                 basta, niente "termini" fantasma — l'etichetta ora nomina solo
+                 la Privacy Policy, che è l'unico documento che esiste ed è
+                 quello che serve davvero qui. */
               <div className="flex items-start">
                 <input
                   id="acceptTerms"
@@ -620,9 +617,9 @@ export default function SignupPage() {
                   className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded mt-1"
                 />
                 <label htmlFor="acceptTerms" className="ml-2 block text-sm text-gray-700">
-                  Accetto i{' '}
+                  Accetto la{' '}
                   <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-pink-600 underline hover:text-pink-700">
-                    termini e la privacy policy
+                    Privacy Policy
                   </Link>
                 </label>
               </div>
