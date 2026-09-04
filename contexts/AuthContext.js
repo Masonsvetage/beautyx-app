@@ -623,10 +623,21 @@ export function AuthProvider({ children }) {
 
   const signUp = async (email, password, datiExtra = {}) => {
     try {
+      // Bug fix (03/09/2026, collaudo Mason — bug #4): senza emailRedirectTo
+      // esplicito, il link di conferma nell'email usa il "Site URL" di
+      // default configurato su Supabase (dashboard), che spesso non punta
+      // affatto a una route capace di completare il login (nel progetto non
+      // esisteva proprio nessuna route di questo tipo, vedi
+      // app/auth/callback/route.js, creata in questo stesso giro). Passare
+      // qui l'origin corrente fa sì che il link email porti sempre alla
+      // nostra route di scambio sessione, sia in locale sia in produzione.
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { nome: datiExtra.nome, cognome: datiExtra.cognome } }
+        options: {
+          data: { nome: datiExtra.nome, cognome: datiExtra.cognome },
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
+        }
       })
 
       if (authError) throw authError

@@ -2,7 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 // Route pubbliche (accessibili senza autenticazione)
-const publicRoutes = ['/', '/login', '/signup', '/reset-password', '/api/public', '/newsletter', '/miniguida', '/guida', '/privacy']
+// '/auth' aggiunta (03/09/2026, collaudo Mason — bug #4): serve alla route
+// app/auth/callback/route.js che scambia il `code` PKCE dopo la conferma
+// email. Deve essere pubblica: al momento in cui il browser ci arriva
+// dal link nell'email l'utente non ha ancora una sessione (è proprio questa
+// route a crearla) — senza questa voce il middleware redirigeva a /login
+// PRIMA che lo scambio del code potesse avvenire, e il link appariva rotto.
+const publicRoutes = ['/', '/login', '/signup', '/reset-password', '/api/public', '/newsletter', '/miniguida', '/guida', '/report', '/privacy', '/auth']
 
 // Route per ruolo specifico
 const adminRoutes = ['/admin']

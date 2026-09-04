@@ -12,6 +12,43 @@ const TIPI_DOCUMENTO = [
   { value: 'patente', label: 'Patente di guida' }
 ]
 
+// =====================================================
+// INPUT HELPER — a livello di modulo, NON dentro SignupPage
+// =====================================================
+// Bug fix (03/09/2026, collaudo Mason — bug #2, il più urgente): prima questo
+// componente era definito CON `const InputField = (...) => (...)` DENTRO al
+// corpo di SignupPage(). Ogni render di SignupPage (cioè ogni carattere
+// digitato, perché onChange chiama setFormData) ricreava una nuova funzione/
+// nuovo "tipo" di componente React. React tratta un tipo diverso come un
+// elemento diverso: smontava il vecchio <input> DOM e ne montava uno nuovo,
+// perdendo il focus ad ogni lettera (bisognava ricliccare col mouse per
+// continuare a scrivere). Fix: componente a livello di modulo (identità
+// stabile tra i render) che riceve `formData`/`updateField` come prop
+// esplicite invece di chiuderli per closure sullo state del componente
+// padre — così anche i valori restano sempre aggiornati.
+const inputClass = "appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+const labelClass = "block text-sm font-medium text-gray-700 mb-1"
+
+function InputField({ id, label, required, type = 'text', placeholder, value, field, maxLength, className = '', formData, updateField }) {
+  return (
+    <div className={className}>
+      <label htmlFor={id} className={labelClass}>
+        {label} {required && '*'}
+      </label>
+      <input
+        id={id}
+        type={type}
+        required={required}
+        value={value !== undefined ? value : formData[field]}
+        onChange={(e) => updateField(field, e.target.value)}
+        maxLength={maxLength}
+        className={inputClass}
+        placeholder={placeholder}
+      />
+    </div>
+  )
+}
+
 export default function SignupPage() {
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
@@ -217,30 +254,6 @@ export default function SignupPage() {
   }
 
   // =====================================================
-  // INPUT HELPER
-  // =====================================================
-  const inputClass = "appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1"
-
-  const InputField = ({ id, label, required, type = 'text', placeholder, value, field, maxLength, className = '' }) => (
-    <div className={className}>
-      <label htmlFor={id} className={labelClass}>
-        {label} {required && '*'}
-      </label>
-      <input
-        id={id}
-        type={type}
-        required={required}
-        value={value !== undefined ? value : formData[field]}
-        onChange={(e) => updateField(field, e.target.value)}
-        maxLength={maxLength}
-        className={inputClass}
-        placeholder={placeholder}
-      />
-    </div>
-  )
-
-  // =====================================================
   // RENDER
   // =====================================================
   return (
@@ -255,7 +268,7 @@ export default function SignupPage() {
             Registra il tuo centro
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Inizia con la versione demo gratuita
+            Crea il tuo account gratuito
           </p>
         </div>
 
@@ -326,11 +339,11 @@ export default function SignupPage() {
             {isPersonaFisica && (
               <>
                 <div className="grid grid-cols-2 gap-4">
-                  <InputField id="nome" label="Nome" required field="nome" placeholder="Mario" />
-                  <InputField id="cognome" label="Cognome" required field="cognome" placeholder="Rossi" />
+                  <InputField id="nome" label="Nome" required field="nome" placeholder="Mario" formData={formData} updateField={updateField} />
+                  <InputField id="cognome" label="Cognome" required field="cognome" placeholder="Rossi" formData={formData} updateField={updateField} />
                 </div>
-                <InputField id="codice_fiscale" label="Codice Fiscale" field="codice_fiscale" placeholder="RSSMRA80A01H501Z" maxLength={16} />
-                <InputField id="partita_iva" label="P.IVA" field="partita_iva" placeholder="12345678901" maxLength={11} />
+                <InputField id="codice_fiscale" label="Codice Fiscale" field="codice_fiscale" placeholder="RSSMRA80A01H501Z" maxLength={16} formData={formData} updateField={updateField} />
+                <InputField id="partita_iva" label="P.IVA" field="partita_iva" placeholder="12345678901" maxLength={11} formData={formData} updateField={updateField} />
                 <p className="text-xs text-gray-500 -mt-3">Almeno uno tra Codice Fiscale e P.IVA e obbligatorio</p>
               </>
             )}
@@ -338,7 +351,7 @@ export default function SignupPage() {
             {/* Campi societa */}
             {!isPersonaFisica && (
               <>
-                <InputField id="ragione_sociale" label="Ragione Sociale" required field="ragione_sociale" placeholder="Beauty Center SRL" />
+                <InputField id="ragione_sociale" label="Ragione Sociale" required field="ragione_sociale" placeholder="Beauty Center SRL" formData={formData} updateField={updateField} />
                 <div>
                   <label htmlFor="tipo_societa" className={labelClass}>Tipo Societa *</label>
                   <select
@@ -353,17 +366,17 @@ export default function SignupPage() {
                     ))}
                   </select>
                 </div>
-                <InputField id="partita_iva_soc" label="P.IVA" field="partita_iva" placeholder="12345678901" maxLength={11} />
-                <InputField id="codice_fiscale_soc" label="Codice Fiscale" field="codice_fiscale" placeholder="12345678901" maxLength={16} />
+                <InputField id="partita_iva_soc" label="P.IVA" field="partita_iva" placeholder="12345678901" maxLength={11} formData={formData} updateField={updateField} />
+                <InputField id="codice_fiscale_soc" label="Codice Fiscale" field="codice_fiscale" placeholder="12345678901" maxLength={16} formData={formData} updateField={updateField} />
                 <p className="text-xs text-gray-500 -mt-3">Almeno uno tra P.IVA e Codice Fiscale e obbligatorio</p>
                 <div className="grid grid-cols-2 gap-4">
-                  <InputField id="nome_soc" label="Nome referente" field="nome" placeholder="Mario" />
-                  <InputField id="cognome_soc" label="Cognome referente" field="cognome" placeholder="Rossi" />
+                  <InputField id="nome_soc" label="Nome referente" field="nome" placeholder="Mario" formData={formData} updateField={updateField} />
+                  <InputField id="cognome_soc" label="Cognome referente" field="cognome" placeholder="Rossi" formData={formData} updateField={updateField} />
                 </div>
               </>
             )}
 
-            <InputField id="email" label="Email" required type="email" field="email" placeholder="nome@centro.it" />
+            <InputField id="email" label="Email" required type="email" field="email" placeholder="nome@centro.it" formData={formData} updateField={updateField} />
 
             <button
               type="submit"
@@ -383,17 +396,17 @@ export default function SignupPage() {
 
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
-                <InputField id="res_indirizzo" label="Indirizzo" required field="residenza_indirizzo" placeholder="Via Roma" />
+                <InputField id="res_indirizzo" label="Indirizzo" required field="residenza_indirizzo" placeholder="Via Roma" formData={formData} updateField={updateField} />
               </div>
-              <InputField id="res_civico" label="Civico" required field="residenza_civico" placeholder="42" />
+              <InputField id="res_civico" label="Civico" required field="residenza_civico" placeholder="42" formData={formData} updateField={updateField} />
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <InputField id="res_cap" label="CAP" required field="residenza_cap" placeholder="20100" maxLength={5} />
-              <InputField id="res_citta" label="Citta" required field="residenza_citta" placeholder="Milano" className="col-span-2" />
+              <InputField id="res_cap" label="CAP" required field="residenza_cap" placeholder="20100" maxLength={5} formData={formData} updateField={updateField} />
+              <InputField id="res_citta" label="Citta" required field="residenza_citta" placeholder="Milano" className="col-span-2" formData={formData} updateField={updateField} />
             </div>
 
-            <InputField id="res_provincia" label="Provincia" required field="residenza_provincia" placeholder="MI" maxLength={2} />
+            <InputField id="res_provincia" label="Provincia" required field="residenza_provincia" placeholder="MI" maxLength={2} formData={formData} updateField={updateField} />
 
             {/* Domicilio diverso */}
             <div className="border-t border-gray-200 pt-4">
@@ -416,15 +429,15 @@ export default function SignupPage() {
                 <h4 className="text-sm font-semibold text-gray-700">Domicilio</h4>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="col-span-2">
-                    <InputField id="dom_indirizzo" label="Indirizzo" required field="domicilio_indirizzo" placeholder="Via Verdi" />
+                    <InputField id="dom_indirizzo" label="Indirizzo" required field="domicilio_indirizzo" placeholder="Via Verdi" formData={formData} updateField={updateField} />
                   </div>
-                  <InputField id="dom_civico" label="Civico" required field="domicilio_civico" placeholder="10" />
+                  <InputField id="dom_civico" label="Civico" required field="domicilio_civico" placeholder="10" formData={formData} updateField={updateField} />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <InputField id="dom_cap" label="CAP" required field="domicilio_cap" placeholder="20100" maxLength={5} />
-                  <InputField id="dom_citta" label="Citta" required field="domicilio_citta" placeholder="Milano" className="col-span-2" />
+                  <InputField id="dom_cap" label="CAP" required field="domicilio_cap" placeholder="20100" maxLength={5} formData={formData} updateField={updateField} />
+                  <InputField id="dom_citta" label="Citta" required field="domicilio_citta" placeholder="Milano" className="col-span-2" formData={formData} updateField={updateField} />
                 </div>
-                <InputField id="dom_provincia" label="Provincia" required field="domicilio_provincia" placeholder="MI" maxLength={2} />
+                <InputField id="dom_provincia" label="Provincia" required field="domicilio_provincia" placeholder="MI" maxLength={2} formData={formData} updateField={updateField} />
               </div>
             )}
 
@@ -451,9 +464,9 @@ export default function SignupPage() {
           <form onSubmit={(e) => { e.preventDefault(); handleNextStep() }} className="mt-4 space-y-5">
             <h3 className="text-lg font-semibold text-gray-800">Recapiti</h3>
 
-            <InputField id="cellulare" label="Cellulare" required type="tel" field="cellulare" placeholder="+39 333 1234567" />
-            <InputField id="telefono_fisso" label="Telefono fisso" type="tel" field="telefono_fisso" placeholder="+39 02 1234567" />
-            <InputField id="pec" label="PEC" type="email" field="pec" placeholder="nome@pec.it" />
+            <InputField id="cellulare" label="Cellulare" required type="tel" field="cellulare" placeholder="+39 333 1234567" formData={formData} updateField={updateField} />
+            <InputField id="telefono_fisso" label="Telefono fisso" type="tel" field="telefono_fisso" placeholder="+39 02 1234567" formData={formData} updateField={updateField} />
+            <InputField id="pec" label="PEC" type="email" field="pec" placeholder="nome@pec.it" formData={formData} updateField={updateField} />
 
             <div className="border-t border-gray-200 pt-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Documento d'identita</h3>
@@ -474,8 +487,8 @@ export default function SignupPage() {
               </select>
             </div>
 
-            <InputField id="documento_numero" label="Numero documento" required field="documento_numero" placeholder="AX1234567" />
-            <InputField id="documento_scadenza" label="Data scadenza" required type="date" field="documento_data_scadenza" />
+            <InputField id="documento_numero" label="Numero documento" required field="documento_numero" placeholder="AX1234567" formData={formData} updateField={updateField} />
+            <InputField id="documento_scadenza" label="Data scadenza" required type="date" field="documento_data_scadenza" formData={formData} updateField={updateField} />
 
             <div className="flex space-x-4">
               <button
@@ -580,6 +593,7 @@ export default function SignupPage() {
                         />
                         <label htmlFor={fieldKey} className="text-sm text-gray-700">
                           Dichiaro di aver letto e accetto {doc.tipo === 'condizioni_contrattuali' ? 'le ' : "l'"}{tipoLabel}
+                          {' '}(leggibile qui sopra, versione {doc.versione})
                         </label>
                       </div>
                     </div>
@@ -587,6 +601,16 @@ export default function SignupPage() {
                 })}
               </div>
             ) : (
+              /* Bug fix (03/09/2026, collaudo Mason — bug #6): la checkbox
+                 termini/privacy non aveva link cliccabili — l'utente doveva
+                 accettare "al buio". Aggiunto link reale a /privacy (pagina
+                 esistente). NOTA per Mason/Federica: non esiste ancora una
+                 pagina pubblica dedicata a "termini e condizioni d'uso" nel
+                 progetto (verificato: nessuna route /termini o simile) — il
+                 link sotto punta solo alla Privacy Policy, che esiste
+                 davvero. Finché non c'è una pagina termini reale non ne
+                 inventiamo una vuota: da creare come passo successivo se
+                 serve un documento contrattuale distinto dalla privacy. */
               <div className="flex items-start">
                 <input
                   id="acceptTerms"
@@ -596,19 +620,28 @@ export default function SignupPage() {
                   className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded mt-1"
                 />
                 <label htmlFor="acceptTerms" className="ml-2 block text-sm text-gray-700">
-                  Accetto i termini e condizioni e la privacy policy
+                  Accetto i{' '}
+                  <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-pink-600 underline hover:text-pink-700">
+                    termini e la privacy policy
+                  </Link>
                 </label>
               </div>
             )}
 
-            {/* Demo info box */}
+            {/* Bug fix (03/09/2026, collaudo Mason — bug #8): questo box
+                parlava di "versione demo" e citava funzionalità della
+                piattaforma gestionale completa (chat AI, movimenti bancari,
+                consulente HPA) non legate a quanto promesso su /report (Report
+                CURA gratis nei primi 90 giorni). Corretto qui il minimo
+                indispensabile per non essere fuorviante (testo accurato,
+                nessuna funzione promessa che non sia garantita); la rifinitura
+                di tono/voce resta di competenza di Federica. */}
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-purple-800">Piano Demo Gratuito</h3>
+              <h3 className="text-sm font-medium text-purple-800">Il tuo account gratuito</h3>
               <ul className="mt-2 text-xs text-purple-700 space-y-1">
-                <li>- Accesso a tutte le funzionalita base</li>
-                <li>- Chat con Beautyx AI (limitata)</li>
-                <li>- Gestione movimenti bancari</li>
-                <li>- Un consulente HPA ti verra assegnato</li>
+                <li>- Accesso alla dashboard base</li>
+                <li>- Report CURA incluso gratis nei primi 90 giorni dal lancio</li>
+                <li>- Nessuna carta di credito richiesta</li>
               </ul>
             </div>
 

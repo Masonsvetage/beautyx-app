@@ -17,6 +17,7 @@ function LoginContent() {
 
   const redirect = searchParams.get('redirect') || '/dashboard'
   const errorParam = searchParams.get('error')
+  const messageParam = searchParams.get('message')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -89,6 +90,23 @@ function LoginContent() {
         {errorParam === 'session_expired' && (
           <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg">
             Sessione scaduta per inattività. Effettua nuovamente il login.
+          </div>
+        )}
+
+        {errorParam === 'confirm_failed' && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            Il link di conferma non è valido o è scaduto. Prova ad accedere con email e password, oppure registrati di nuovo.
+          </div>
+        )}
+
+        {/* Bug fix (03/09/2026, collaudo Mason): dopo la registrazione il
+            form faceva router.push('/login?message=check_email') ma questa
+            pagina non leggeva mai il parametro `message` — l'utente restava
+            su un form di login vuoto, senza nessuna indicazione di dover
+            controllare la posta per confermare l'account. */}
+        {messageParam === 'check_email' && (
+          <div className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-3 rounded-lg text-sm">
+            Registrazione quasi completata: controlla la tua email e clicca sul link di conferma per attivare l&apos;account, poi accedi qui.
           </div>
         )}
 

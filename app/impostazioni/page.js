@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -27,7 +27,17 @@ const PROVINCE_ITALIANE = [
   'TA', 'TE', 'TR', 'TO', 'TP', 'TN', 'TV', 'TS', 'UD', 'VA', 'VE', 'VB', 'VC', 'VR', 'VV', 'VI', 'VT'
 ]
 
-export default function ImpostazioniPage() {
+// Bug fix (03/09/2026, collaudo Mason): useSearchParams() qui sotto NON era
+// avvolto da <Suspense> — anti-pattern App Router che Next.js segnala come
+// "missing-suspense-with-csr-bailout" (stesso schema già corretto altrove nel
+// progetto, es. app/login/page.js e app/centro/page.js, ma NON qui né in
+// app/impostazioni/abbonamento/page.js, sistemato nello stesso giro). Questa
+// pagina è esattamente dove app/dashboard/page.js manda ogni utente appena
+// loggato senza centro_id (redirect automatico a /impostazioni?primo-accesso=1)
+// — cioè il primissimo posto in cui finisce un utente subito dopo login da
+// /report. Candidato concreto per la "pagina di errore generico" segnalata da
+// Mason dopo il login.
+function ImpostazioniContent() {
   const { profile, user, loading: authLoading, centroId, signOut } = useAuth()
   const searchParams = useSearchParams()
   const primoAccesso = searchParams.get('primo-accesso') === '1'
@@ -1251,5 +1261,13 @@ export default function ImpostazioniPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function ImpostazioniPage() {
+  return (
+    <Suspense fallback={null}>
+      <ImpostazioniContent />
+    </Suspense>
   )
 }

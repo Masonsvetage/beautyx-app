@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { tokensToChars, formatTokens, formatChars } from '@/lib/token-utils'
@@ -39,7 +39,13 @@ const STATO_BADGES = {
   cancellato: { label: 'Cancellato', color: 'bg-red-500/20 text-red-400 border-red-500/30' }
 }
 
-export default function AbbonamentoPage() {
+// Bug fix (03/09/2026, collaudo Mason): useSearchParams() in un componente
+// non avvolto da <Suspense> fa scattare "missing-suspense-with-csr-bailout"
+// nel build/runtime di Next.js App Router (stesso pattern già corretto in
+// app/login/page.js e app/centro/page.js) — a valle di un login da /report
+// il flusso passa proprio da qui (via /impostazioni), quindi è un candidato
+// concreto per la pagina di errore generico segnalata da Mason.
+function AbbonamentoContent() {
   const searchParams = useSearchParams()
   const { profile } = useAuth()
   const [subscription, setSubscription] = useState(null)
@@ -596,5 +602,13 @@ function AddonSection({ addons = [], onPurchase, purchasing }) {
         ))}
       </div>
     </div>
+  )
+}
+
+export default function AbbonamentoPage() {
+  return (
+    <Suspense fallback={null}>
+      <AbbonamentoContent />
+    </Suspense>
   )
 }

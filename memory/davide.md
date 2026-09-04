@@ -1800,3 +1800,248 @@ gate piano, ma è codice nuovo).
 
 **Committato in locale, NON pushato** (convenzione delle sessioni precedenti —
 il push lo fa Mason da Windows).
+
+## 03/09/2026 (notte) — Primo collaudo dal vivo di Mason: 8 bug reali sul funnel report — trovate e sistemate le cause reali
+
+Mason ha fatto il primo test end-to-end reale (report → signup → questionario)
+e ha trovato una serie di bug che rompevano il funnel quasi ovunque. Via
+libera esplicito a procedere senza fermarmi a chiedere conferma. Investigato
+a fondo PRIMA di applicare fix, incluso leggere i log Auth reali di Supabase
+(query_logs, progetto `scfumedmisbuxhdywwpb`) per la finestra esatta del test
+di Mason (03/09 22:50-22:55 UTC, referer `http://localhost:3000` — **il test
+di Mason è stato fatto in locale, non su beautyx.it**, cosa che spiega alcune
+apparenti incongruenze tra "sembrava pushato" e cosa gira davvero in prod).
+
+### SCOPERTA CENTRALE, causa condivisa di più bug: lavoro di sessioni precedenti mai committato
+
+`git status` all'inizio di questa sessione mostrava ~18 file modificati e 12
+file nuovi MAI committati, nonostante i log di `memory/davide.md` delle
+sessioni del 28-31/08 dicessero esplicitamente "committato in locale". `git
+log -p -- proxy.js` confermava che l'ultimo commit reale su quel file
+risaliva al 6 agosto (aggiunta `/guida`) — la riga che aggiunge `/report` a
+`publicRoutes` (che i log attribuivano al 28/08) non era MAI stata
+committata. Ipotesi più probabile: una sessione ha fatto le modifiche ma non
+ha eseguito `git commit` (o l'ha eseguito su file sbagliati), e le sessioni
+successive hanno continuato a scrivere codice sopra senza controllare lo
+stato reale di git, fidandosi del log testuale. **Lezione per il futuro:
+`git status`/`git diff --stat` a inizio sessione, non solo lettura di
+memory/davide.md, prima di dare per scontato cosa sia già live.**
+Recuperato con un commit dedicato (`f02e766`, vedi sopra la history di
+questo file per il messaggio completo) tutto il lavoro buono trovato:
+registrazione unificata (create-centro assegna piano report_profiling
+gratis), refactor `lib/newsletter/beehiiv.js`, countdown 90gg su
+/newsletter, modifiche sicurezza su `/api/beautyx/chat`.
+
+### Bug 1 — `/report` reindirizza al login
+
+**Causa reale confermata SIA da codice SIA dal vivo:** `/report` era già
+scritto in `publicRoutes` di `proxy.js` nella working tree, ma quella riga
+non era mai stata committata (vedi sopra) → in produzione `/report`
+mancava da `publicRoutes` per davvero. Confermato con `curl -I
+https://www.beautyx.it/report` PRIMA del fix: `307` → `location:
+/login?redirect=%2Freport`. Verificato anche che non c'è nessun problema di
+match path www/apex: `beautyx.it` fa `308` pulito verso `www.beautyx.it`
+(config dominio Vercel corretta) e il matcher `pathname === route ||
+pathname.startsWith(route + '/')` è host-agnostic (Next.js non include
+l'host nel pathname del middleware) — su `/newsletter`, già presente in
+prod, il match funziona bene con www. **Fix:** nessuna modifica di logica
+necessaria, solo commit (vedi `f02e766` + il commit di questa sessione)
++ push di Mason.
+
+### Bug 2 — Il form di signup perde il focus ad ogni carattere (IL PIÙ URGENTE)
+
+**Causa reale, confermata leggendo il codice:** in `app/signup/page.js` il
+componente `InputField` era definito con `const InputField = (...) => (...)`
+DENTRO al corpo di `SignupPage()`. Ogni render di `SignupPage` (cioè ogni
+`onChange` che chiama `setFormData`) ricreava una funzione/tipo React nuovo →
+React smontava il vecchio nodo DOM `<input>` e ne montava uno nuovo → focus
+perso, bisognava ricliccare col mouse dopo ogni lettera. Classico bug da
+"componente definito dentro il render".
+**Fix:** `InputField` spostato a livello di modulo (fuori da `SignupPage`),
+identità stabile tra i render; riceve `formData`/`updateField` come prop
+esplicite invece di chiuderli per closure (25 call site aggiornati con
+`formData={formData} updateField={updateField}`). `inputClass`/`labelClass`
+spostati anch'essi a livello di modulo (non dipendono da state).
+
+### Bug 3 — Email di conferma Supabase in inglese, anonima, senza branding
+
+**Non ho accesso diretto alla dashboard Supabase da questo ambiente** (nessun
+tool MCP espone i Email Templates o l'Authentication → Email settings — solo
+`execute_sql`/`query_logs`/gestione progetto, non i template GoTrue). Verificato che
+questi NON sono righe in una tabella Postgres interrogabile: sono config
+GoTrue, editabile solo da dashboard o Management API con token dedicato.
+**Passo esplicito per Mason (serve accesso dashboard):**
+1. Supabase Dashboard → progetto `beautyx` (`scfumedmisbuxhdywwpb`) →
+   Authentication → Email Templates.
+2. Il template "Confirm signup" (e idealmente anche "Reset password",
+   "Magic Link" per coerenza futura) vanno riscritti in italiano, con
+   mittente riconoscibile Beautyx. Il "From" di default è
+   `noreply@mail.app.supabase.io` (confermato nei log: `mail_from:
+   "noreply@mail.app.supabase.io"`) — per cambiarlo serve configurare SMTP
+   custom (Authentication → Settings → SMTP Settings) con un mittente tipo
+   `noreply@beautyx.it` (serve un provider SMTP transazionale, es. Resend/
+   Postmark/SES — non l'email Google esistente).
+3. Testo del template: contenuto libero da Federica/Elena per la voce, ma
+   il link deve restare `{{ .ConfirmationURL }}` (Supabase lo sostituisce
+   col link vero) — NON riscriverlo a mano.
+4. Legato al bug 4 sotto: perché il link funzioni, l'URL Configuration
+   (Authentication → URL Configuration → Redirect URLs) deve includere
+   `https://www.beautyx.it/auth/callback` (produzione) e, se si continua a
+   testare in locale, `http://localhost:3000/auth/callback` — altrimenti
+   Supabase ignora silenziosamente il redirect richiesto dal codice e torna
+   al Site URL di default.
+
+### Bug 4 — Link di conferma email dà errore, non si riesce ad accedere
+
+**Causa reale trovata leggendo il codice E confermata dai log Auth reali:**
+nel progetto non esisteva NESSUNA route `/auth/callback` (o equivalente), e
+`signUp()` in `contexts/AuthContext.js` non passava mai
+`options.emailRedirectTo`. Il client browser (`createBrowserClient` di
+`@supabase/ssr`, usato per compatibilità coi cookie letti dal middleware)
+usa di default il flow **PKCE**: dopo che GoTrue verifica il token
+dell'email, reindirizza con un parametro `?code=` da scambiare
+esplicitamente via `exchangeCodeForSession` — senza una route che lo faccia,
+il `code` restava inutilizzato nell'URL, nessuna sessione veniva creata.
+Confermato nei log (`query_logs`, source `auth_logs`, finestra 22:53-22:54
+UTC del 03/09): `GET /verify` → `200`/`303`, evento `user_signedup` — cioè
+**Supabase segnala che il link email funziona correttamente dal suo lato**;
+il problema era tutto lato nostra app (nessuna pagina sapeva cosa farci, col
+`code` in arrivo). 17 secondi dopo infatti Mason è riuscito ad entrare
+lo stesso ma con login manuale email+password (`POST /token` → `200`,
+evento `Login`), non cliccando il link.
+**Fix:**
+1. Creata `app/auth/callback/route.js` — riceve il `code`, chiama
+   `supabase.auth.exchangeCodeForSession(code)` con un client server-side
+   (cookie HttpOnly, letti anche dal middleware), poi redirige a
+   `/impostazioni?primo-accesso=1` (o a `?error=confirm_failed` su `/login`
+   se lo scambio fallisce).
+2. `proxy.js`: aggiunta `/auth` a `publicRoutes` — senza questo il
+   middleware avrebbe rimandato a `/login` PRIMA che la route potesse
+   scambiare il code (stesso identico bug in un altro punto).
+3. `contexts/AuthContext.js`, `signUp()`: aggiunto
+   `options.emailRedirectTo: ${window.location.origin}/auth/callback` così
+   il link nell'email punta sempre alla nostra route, sia in locale sia in
+   produzione.
+4. `app/login/page.js`: aggiunto il caso `error=confirm_failed` (messaggio
+   esplicito invece di errore generico) e — bug collaterale trovato
+   controllando questo flusso — aggiunto anche il caso `message=check_email`
+   che PRIMA non veniva letto affatto: dopo la registrazione l'utente
+   arrivava su un login vuoto senza nessuna indicazione di dover controllare
+   la posta.
+**Resta da fare (serve dashboard Supabase, non disponibile da qui):**
+verificare/aggiungere `https://www.beautyx.it/auth/callback` (e
+`http://localhost:3000/auth/callback` per i test) in Authentication → URL
+Configuration → Redirect URLs — se non è nella allow-list Supabase ignora
+`emailRedirectTo` e il fix di codice da solo non basta.
+
+### Bug 5 — Dopo il login da /report, la pagina chiede di nuovo la registrazione
+
+**Causa reale trovata:** NON è un bug di sessione non riconosciuta in senso
+stretto. `app/dashboard/page.js` (riga 44-49) reindirizza SEMPRE un utente
+loggato senza `centro_id` a `/impostazioni?primo-accesso=1` — ma
+`/impostazioni` con quel parametro è a tutti gli effetti un ALTRO modulo di
+registrazione (tab "Il mio centro": nome centro, indirizzo, P.IVA...),
+distinto dal form di `/signup` appena completato (dati anagrafici personali).
+Chi si registra su `/signup` NON ha ancora "un centro" nel modello dati: è
+un secondo step per design, non un bug del redirect — ma agli occhi di chi
+lo prova sembra letteralmente "un'altra registrazione", perché non c'è nessun
+messaggio che spieghi "stai completando lo step 2, non stai ricominciando".
+**Non ho riscritto il flusso** (è una decisione di prodotto/UX, non un bug
+tecnico isolato) — segnalo esplicitamente a Mason/Federica: o si fonde
+`/signup` + creazione centro in un unico flusso, o almeno si etichetta
+chiaramente "Ultimo passo: il tuo centro" invece di presentarlo come pagina
+impostazioni generica. **Ho però trovato e sistemato un secondo problema
+concreto sulla STESSA pagina** — vedi bug 7, sono collegati.
+
+### Bug 6 — Checkbox privacy/termini senza link cliccabili
+
+**Trovato:** in `app/signup/page.js`, quando l'endpoint `/api/user/legal-public`
+non restituisce documenti (`legalDocs.length === 0`, es. se la tabella è
+vuota o l'endpoint fallisce), la checkbox finale diceva "Accetto i termini e
+condizioni e la privacy policy" senza nessun link — accettazione "al buio".
+**Fix:** aggiunto link vero a `/privacy` (pagina esistente, verificata con
+`Glob`). **Verificato esplicitamente:** non esiste nel progetto nessuna
+pagina "termini e condizioni d'uso" separata (`Glob` su `app/**/termini*`,
+`app/**/condizioni*` ecc.: zero risultati) — non ho inventato un link a una
+pagina vuota, il link punta solo a Privacy. **Segnalo a Mason:** se serve un
+documento contrattuale/termini d'uso distinto dalla privacy policy, va
+creato come pagina reale — quando `legalDocs.length > 0` (flusso con
+documenti legali gestiti da admin) il contenuto pieno è già mostrato inline
+in un box scrollabile, quindi quel percorso non ha lo stesso problema.
+
+### Bug 7 — "Accedi" da /report con account esistente apre una pagina di errore generico
+
+**Non riproducibile dal vivo in questo ambiente** (i tool browser
+(`mcp__Claude_Browser__*`) sono andati in timeout su ogni tentativo di
+navigazione verso beautyx.it — provato più volte). Analisi statica +
+incrociata coi log reali di Supabase (nessun errore Postgres/RLS nella
+finestra del test, il login stesso è riuscito con `200`) mi porta a un
+**candidato concreto e ad alta probabilità, sistemato preventivamente:**
+`app/impostazioni/page.js` e `app/impostazioni/abbonamento/page.js`
+chiamavano `useSearchParams()` SENZA avvolgere il componente in
+`<Suspense>` — anti-pattern noto dell'App Router di Next.js
+("missing-suspense-with-csr-bailout"), già corretto correttamente altrove
+nello stesso progetto (`app/login/page.js`, `app/centro/page.js` lo fanno
+bene) ma non in questi due file. `/impostazioni` è ESATTAMENTE dove
+`app/dashboard/page.js` manda ogni utente loggato senza centro (vedi bug 5)
+— cioè il primissimo posto dove finisce chi ha appena fatto login da
+/report. **Fix:** entrambi i file spezzati in `<Nome>Content()` (logica
+originale invariata) + wrapper `export default function <Nome>Page() {
+return <Suspense fallback={null}><...Content /></Suspense> }`, stesso
+identico pattern già in uso in `login/page.js`.
+**Da riverificare dal vivo** (non ho potuto testarlo in questo giro): se
+dopo il deploy l'errore generico persiste ancora dopo login con account
+esistente, il prossimo passo è configurare `NEXT_PUBLIC_ERROR_WEBHOOK_URL`
+(già predisposto in `lib/monitoring/reportError.js`, task #42/#165, mai
+attivato) per avere lo stack reale invece di dover indovinare.
+
+### Bug 8 — Messaggio finale post-registrazione parla di "versione demo" con funzionalità non pertinenti
+
+**Trovato:** in `app/signup/page.js`, sottotitolo header ("Inizia con la
+versione demo gratuita") e box finale step 4 ("Piano Demo Gratuito": chat AI
+limitata, gestione movimenti bancari, consulente HPA) — copy pensato per il
+signup della piattaforma gestionale completa, riusato senza modifiche anche
+per chi arriva da `/report` (dove la promessa è "Report CURA gratis nei
+primi 90 giorni", niente affatto quello che il box racconta). Per chi arriva
+da `/report` sembra un cambio di prodotto a sorpresa.
+**Fix minimo e onesto** (non è una riscrittura di voce, resta a Federica se
+serve tono più caldo — vedi nota nel codice): sottotitolo cambiato in "Crea
+il tuo account gratuito", box aggiornato con 3 righe accurate e verificabili
+(dashboard base, Report CURA incluso gratis nei primi 90 giorni, nessuna
+carta richiesta) — nessuna funzione promessa che non sia garantita per
+davvero a chi si registra oggi.
+
+### File toccati in questa sessione (oltre al recupero backlog del commit precedente)
+`app/signup/page.js` (riscritto: InputField a livello di modulo, link
+privacy, copy demo), `app/login/page.js` (messaggi `message=check_email` e
+`error=confirm_failed`), `app/impostazioni/page.js` +
+`app/impostazioni/abbonamento/page.js` (Suspense), `contexts/AuthContext.js`
+(`emailRedirectTo`), `proxy.js` (`/auth` in publicRoutes), `app/auth/callback/route.js`
+(nuovo).
+
+### Verifica fatta
+`node --check` pulito su tutti i file server (`.route.js`), `node_modules/.bin/biome
+lint`/`check` sui file JSX (zero errori di parsing, solo warning di stile
+preesistenti non legati a questa sessione), conteggio bilanciamento
+parentesi/graffe/quadre via `python3` su tutti i file toccati (tutti
+in pareggio). **Nessuna build Next reale** nel sandbox (limite noto, già
+segnalato nelle sessioni precedenti) — verificare con un deploy reale prima
+di considerare tutto definitivo. Log Auth reali di Supabase consultati per
+capire cosa È SUCCESSO DAVVERO nel test di Mason (non solo lettura statica
+del codice), come richiesto esplicitamente.
+
+### Cosa resta aperto (serve Mason)
+1. Push (`push.bat`, io ho solo committato in locale).
+2. Dashboard Supabase: email template "Confirm signup" in italiano +
+   branding + eventuale SMTP custom (bug 3); verificare Redirect URLs
+   include `/auth/callback` per produzione e locale (bug 4).
+3. Decisione prodotto/UX su come presentare lo step "crea il tuo centro"
+   dopo il signup, per non sembrare una seconda registrazione (bug 5) — di
+   competenza Federica/Mason, non tecnica pura.
+4. Verifica dal vivo del bug 7 dopo il deploy (il fix Suspense è il
+   candidato più solido trovato, ma non ho potuto riprodurlo io stesso in
+   questo ambiente — browser tool irraggiungibile).
+5. Se serve una pagina "termini e condizioni" distinta dalla privacy
+   (bug 6), va creata da zero — non esiste.
+6. Riccardo: riverificare `/auth/callback` nell'audit di sicurezza (nuovo
+   endpoint, anche se non tocca dati di centro — solo scambio sessione).
