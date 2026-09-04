@@ -26,6 +26,17 @@ function CollapsibleOnboarding({ children }) {
   )
 }
 
+// Piani che sbloccano davvero i widget gestionali (incassi, obiettivi,
+// accantonamenti, import dati). Qualunque altro caso — nessun piano, o il
+// piano report_profiling (assegnato gratis a chi ha comprato solo il Report
+// CURA, livello 2 dell'ecosistema, vedi memory/generale.md 04/09/2026) — NON
+// deve mai vedere questi widget: sono costruiti per centri con dati reali di
+// incasso/obiettivi/accantonamenti, che un account solo-report non ha mai
+// avuto modo di popolare. Prima di questo fix la dashboard mostrava questi
+// widget a chiunque avesse un centro_id, a prescindere dal piano — un utente
+// report_profiling-only li vedeva comunque, con fetch su dati inesistenti.
+const NON_PIATTAFORMA_PLAN_CODICI = new Set(['report_profiling'])
+
 export default function Home() {
   const { currentCentro, profile, loading: authLoading, centriAccess, switchCentro, isAdmin, isHpa, isGlobalView } = useAuth()
   const { openSidebar, sendMessage } = useBeautyx()
@@ -34,6 +45,30 @@ export default function Home() {
 
   const centroId = currentCentro?.centro_id || profile?.centro_id || null
 
+  // Piano attivo dell'utente — nessun context espone oggi questo dato
+  // (verificato: useAuth()/useBeautyx() non hanno un campo piano/plan), quindi
+  // lo recuperiamo dallo stesso endpoint già usato da ReportCuraCard.js.
+  // planLoaded distingue "ancora non so" da "so che non ha piano piattaforma":
+  // finché non è true i widget gestionali restano nascosti, per non fare un
+  // flash della dashboard piena seguito da uno sparire.
+  const [planCodice, setPlanCodice] = useState(null)
+  const [planLoaded, setPlanLoaded] = useState(false)
+
+  useEffect(() => {
+    if (isAdmin || isHpa) { setPlanLoaded(true); return }
+    if (!centroId) return
+    let cancelled = false
+    fetch('/api/subscriptions/balance')
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => { if (!cancelled) setPlanCodice(data?.plan?.codice || null) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setPlanLoaded(true) })
+    return () => { cancelled = true }
+  }, [isAdmin, isHpa, centroId])
+
+  const hasPiattaformaPlan = planLoaded && !!planCodice && !NON_PIATTAFORMA_PLAN_CODICI.has(planCodice)
+  const showWidgetGestionali = !isAdmin && !isHpa && centroId && hasPiattaformaPlan
+
   // Admin/HPA in vista globale: redirect alla loro dashboard
   useEffect(() => {
     if (!authLoading && isGlobalView) {
@@ -41,16 +76,27 @@ export default function Home() {
     }
   }, [authLoading, isGlobalView, router])
 
-  // Utente senza centro: redirect a impostazioni per configurarlo
+  // Utente senza centro: redirect a impostazioni per configurarlo.
+  // Nota (verifica 05/09/2026): questo effetto scatta solo se `profile` è
+  // valorizzato — un utente autenticato ma SENZA alcuna riga in user_profiles
+  // (onboarding mai completato: create-centro non chiamato) non rientra in
+  // questo ramo e resta sullo spinner di caricamento più sotto, invece di
+  // essere rimandato all'onboarding. Segnalato, non ancora deciso se estendere
+  // la condizione anche a `profile === null`: cambierebbe il comportamento per
+  // un caso che va verificato con Mason (potrebbe sovrapporsi al redirect già
+  // gestito da proxy.js per utenti non autenticati).
   useEffect(() => {
     if (!authLoading && !isAdmin && !isHpa && profile && !centroId) {
       router.push('/impostazioni?primo-accesso=1')
     }
   }, [authLoading, isAdmin, isHpa, profile, centroId, router])
 
+  // Solo se i widget gestionali sono davvero visibili: un account senza piano
+  // piattaforma (es. solo report_profiling) non deve innescare fetch su dati
+  // di incasso che non ha mai potuto avere.
   useEffect(() => {
-    if (centroId) loadDailyRevenue()
-  }, [centroId])
+    if (showWidgetGestionali) loadDailyRevenue()
+  }, [showWidgetGestionali])
 
   async function loadDailyRevenue() {
     try {
@@ -136,8 +182,10 @@ export default function Home() {
           </CollapsibleOnboarding>
         )}
 
-        {/* ROW 1 — Incassi settimana: full width, compatto */}
-        {!isAdmin && !isHpa && centroId && (
+        {/* ROW 1 — Incassi settimana: full width, compatto.
+            Gestionale: visibile SOLO con piano piattaforma reale (non
+            report_profiling, non nessun piano) — vedi hasPiattaformaPlan. */}
+        {showWidgetGestionali && (
           <WeeklyRevenueChart
             centroId={centroId}
             taxRate={25}
@@ -147,7 +195,7 @@ export default function Home() {
         )}
 
         {/* ROW 2 — Sfide & Obiettivi | Accantonamenti (50/50) */}
-        {!isAdmin && !isHpa && centroId && (
+        {showWidgetGestionali && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <GamificationWidget />
             <AccantonamentiQuickView centroId={centroId} />
@@ -155,7 +203,7 @@ export default function Home() {
         )}
 
         {/* ROW 3 — Importazione Dati (3/4) | Registro Oggi (1/4) */}
-        {!isAdmin && !isHpa && centroId && (
+        {showWidgetGestionali && (
           <div className="flex flex-col lg:flex-row gap-3">
             <div className="flex-[3] min-w-0 bg-slate-800/40 rounded-2xl border border-slate-700/50 p-3">
               <p className="text-xs font-semibold text-white mb-2">Importazione Dati</p>
