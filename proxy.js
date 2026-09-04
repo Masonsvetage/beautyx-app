@@ -61,10 +61,19 @@ export async function proxy(req) {
       }
       return supabaseResponse
     }
-    // Login/signup: se già loggato vai alla dashboard
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+    // Login/signup: se già loggato vai alla dashboard.
+    // SOLO queste due route pubbliche fanno questo redirect — tutte le altre
+    // route pubbliche (/report, /newsletter, /miniguida, /guida, /privacy,
+    // /auth, /reset-password) restano navigabili sia da loggati sia da non
+    // loggati. Fix 04/09/2026: prima questa condizione si applicava a
+    // QUALUNQUE route pubblica diversa da '/', mandando in redirect a
+    // /dashboard anche chi (già loggato) visitava /report — segnalato da
+    // Mason ("la pagina /report non è accessibile").
+    if (pathname === '/login' || pathname === '/signup') {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+      }
     }
     return supabaseResponse
   }
