@@ -53,13 +53,19 @@ export async function proxy(req) {
     if (pathname.startsWith('/reset-password/update')) {
       return supabaseResponse
     }
-    // La landing '/': se non autenticato → /newsletter; se autenticato resta in homepage
+    // La landing '/': se non autenticato → /newsletter (invariato).
+    // Fix 04/09/2026 (bug segnalato da Mason in collaudo live): il livello 3
+    // (piattaforma/abbonamenti) non è ancora un livello offerto agli utenti,
+    // quindi la vecchia landing SaaS generica di app/page.js (piani Demo/
+    // Starter/Professional/Enterprise) non va più mostrata a nessuno, nemmeno
+    // a chi è loggato. Un utente autenticato va quindi in /dashboard, che
+    // mostra solo ciò che ha davvero attivo (es. ReportCuraCard).
     if (pathname === '/') {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         return NextResponse.redirect(new URL('/newsletter', req.url))
       }
-      return supabaseResponse
+      return NextResponse.redirect(new URL('/dashboard', req.url))
     }
     // Login/signup: se già loggato vai alla dashboard.
     // SOLO queste due route pubbliche fanno questo redirect — tutte le altre
