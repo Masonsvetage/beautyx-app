@@ -12,29 +12,50 @@
 // i 90 giorni partono dal LANCIO PUBBLICO REALE del report, che NON è la data
 // di oggi — il motore/UI del questionario (task #151-153) non sono ancora
 // pronti. La data di lancio è quindi configurabile via env var
-// NEXT_PUBLIC_REPORT_LAUNCH_DATE (formato 'YYYY-MM-DD'), MAI hardcoded.
-// Finché quella env var non è impostata su Vercel, questo componente non
-// renderizza nulla (fallback silenzioso, non un countdown finto/sbagliato) —
-// vale per ENTRAMBE le varianti (pill e prominent), stesso `computeCountdown`.
+// NEXT_PUBLIC_REPORT_LAUNCH_DATE (formato 'YYYY-MM-DD'), e quando è impostata
+// ha SEMPRE la priorità sul fallback qui sotto.
 //
-// Quando fissare la data: solo quando il motore del questionario (#151-153)
-// è pronto E collaudato end-to-end — è Davide stesso a doverlo segnalare al
-// Coordinatore/Mason, come da istruzione ricevuta. Non è stata fissata oggi.
+// *** AGGIORNAMENTO 05/09/2026 — istruzione diretta di Mason, sovrascrive la
+// regola precedente ("nessun countdown finché la env var non è impostata") ***
+// Mason vuole il countdown visibile SUBITO su /newsletter, senza aspettare che
+// qualcuno configuri NEXT_PUBLIC_REPORT_LAUNCH_DATE su Vercel. Finché quella
+// env var reale non viene impostata, questo componente usa un fallback
+// PLACEHOLDER calcolato a runtime come `new Date() + 60 giorni` (mai una data
+// scritta a mano) — il countdown mostra quindi sempre "~60 giorni" finché
+// nessuno fissa la data di lancio reale. Non è una scadenza vera: è un
+// riempitivo per non lasciare la sezione vuota, ed è chiaramente segnalato
+// come tale qui e nel commento a bordo pagina in app/newsletter/page.js.
+// NON è ancora stato verificato che il motore del questionario (#151-153) sia
+// pronto end-to-end: quando la data reale di lancio sarà nota, va impostata la
+// env var reale su Vercel — a quel punto questo fallback smette di essere
+// usato automaticamente (priorità: env var reale > fallback placeholder).
 
 const FREE_PERIOD_DAYS = 90
 const MS_PER_DAY = 24 * 60 * 60 * 1000
+const PLACEHOLDER_FALLBACK_DAYS = 60 // istruzione Mason 05/09/2026, vedi nota sopra
 
 function computeCountdown() {
   const launchDateRaw = process.env.NEXT_PUBLIC_REPORT_LAUNCH_DATE
-  if (!launchDateRaw) return null
 
-  const launch = new Date(`${launchDateRaw}T00:00:00`)
-  if (Number.isNaN(launch.getTime())) {
-    console.warn('[ReportCountdownBanner] NEXT_PUBLIC_REPORT_LAUNCH_DATE non è una data valida:', launchDateRaw)
-    return null
+  let deadline
+
+  if (launchDateRaw) {
+    const launch = new Date(`${launchDateRaw}T00:00:00`)
+    if (Number.isNaN(launch.getTime())) {
+      console.warn('[ReportCountdownBanner] NEXT_PUBLIC_REPORT_LAUNCH_DATE non è una data valida:', launchDateRaw)
+      // data reale malformata: non blocchiamo la UI, ripieghiamo comunque sul
+      // placeholder invece di nascondere tutto il banner.
+      deadline = new Date(Date.now() + PLACEHOLDER_FALLBACK_DAYS * MS_PER_DAY)
+    } else {
+      deadline = new Date(launch.getTime() + FREE_PERIOD_DAYS * MS_PER_DAY)
+    }
+  } else {
+    // PLACEHOLDER in attesa della data reale di lancio (nessuna env var
+    // impostata su Vercel): sempre "60 giorni da adesso", ricalcolato a ogni
+    // render con new Date() — mai una data fissa scritta a mano.
+    deadline = new Date(Date.now() + PLACEHOLDER_FALLBACK_DAYS * MS_PER_DAY)
   }
 
-  const deadline = new Date(launch.getTime() + FREE_PERIOD_DAYS * MS_PER_DAY)
   const now = new Date()
   const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / MS_PER_DAY)
 
@@ -48,9 +69,9 @@ function computeCountdown() {
 export default function ReportCountdownBanner({ className = '', variant = 'pill' }) {
   const countdown = computeCountdown()
 
-  // Nessuna env var configurata (caso normale finché il lancio non è fissato)
-  // o periodo già scaduto: niente banner, mai un countdown finto o rotto.
-  // Vale per entrambe le varianti.
+  // Con env var reale scaduta (daysLeft <= 0): niente banner, mai un countdown
+  // negativo/rotto. Col fallback placeholder invece `expired` non scatta mai
+  // (si ricalcola sempre a ~60gg da adesso) — vale per entrambe le varianti.
   if (!countdown || countdown.expired) return null
 
   const { daysLeft } = countdown
