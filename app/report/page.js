@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import GuidaFooterLink from '@/components/common/GuidaFooterLink'
+import ReportCountdownBanner from '@/components/common/ReportCountdownBanner'
 
 // Pagina pubblica del Report di profiling CURA (nome rinominato da CARE il
 // 03/09/2026 per collisione di marchio — vedi nome-metodo-CARE.md) — vera
@@ -101,10 +102,9 @@ export default function ReportPage() {
               display: 'block',
               fontSize: 'clamp(32px, 7vw, 52px)',
               fontWeight: 700,
-              fontStyle: 'italic',
               color: '#EC4899',
             }}>
-              Chi si prende cura di te?
+              Chi si prende CURA di te?
             </span>
           </h1>
 
@@ -151,6 +151,10 @@ export default function ReportPage() {
             </Link>
           </p>
 
+          <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+            Con l'account arriva anche la newsletter gratuita di Beautyx, ogni martedì e venerdì.
+          </p>
+
           {/* Nota di onestà: il questionario è in arrivo, non live oggi */}
           <p style={{
             fontSize: '13px',
@@ -184,40 +188,47 @@ export default function ReportPage() {
             Cosa trovi nel report
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {[
               {
                 titolo: 'Dove il centro è bloccato',
-                desc: 'Non un voto generico: il punto preciso — clienti, personale o spese — dove stai spendendo più energia di quella che ti torna indietro.',
+                desc: 'Il punto preciso — clienti, personale o spese — dove stai spendendo più energia di quella che ti torna indietro.',
               },
               {
                 titolo: 'La leva giusta da muovere per prima',
-                desc: 'Una sola priorità concreta, non dieci consigli tutti uguali. Quella che oggi sblocca davvero il resto.',
+                desc: 'Una priorità concreta, quella che oggi sblocca davvero il resto.',
               },
               {
                 titolo: 'Un punto di partenza per parlarne con noi',
-                desc: 'Il report è la base della domanda mensile gratuita al consulente — non resta un PDF chiuso in un cassetto.',
+                desc: 'La base della tua domanda mensile gratuita al consulente: un percorso che continua con te.',
               },
             ].map((v, i) => (
               <div
                 key={i}
                 style={{
-                  background: '#1a1a0f',
-                  borderRadius: '14px',
-                  padding: '22px 24px',
+                  background: '#fff',
+                  border: '1.5px solid rgba(26,26,15,0.08)',
+                  boxShadow: '0 2px 14px rgba(26,26,15,0.05)',
+                  borderRadius: '16px',
+                  padding: '24px 26px',
                   display: 'flex',
-                  gap: '16px',
+                  gap: '18px',
                   alignItems: 'flex-start',
                 }}
               >
                 <span style={{
                   fontFamily: "var(--font-playfair), serif",
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  color: '#EC4899',
+                  fontWeight: 800,
+                  fontSize: '15px',
+                  color: '#1a1a0f',
+                  background: '#FFE44D',
+                  borderRadius: '50%',
+                  width: '34px',
+                  height: '34px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   flexShrink: 0,
-                  marginTop: '2px',
-                  minWidth: '20px',
                 }}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
@@ -225,14 +236,14 @@ export default function ReportPage() {
                   <h3 style={{
                     fontFamily: "var(--font-playfair), serif",
                     fontWeight: 700,
-                    fontSize: '15px',
-                    color: '#f5f1ea',
-                    marginBottom: '6px',
-                    lineHeight: 1.35,
+                    fontSize: '19px',
+                    color: '#1a1a0f',
+                    marginBottom: '8px',
+                    lineHeight: 1.3,
                   }}>
                     {v.titolo}
                   </h3>
-                  <p style={{ fontSize: '13px', color: '#aaa', lineHeight: 1.6 }}>
+                  <p style={{ fontSize: '15.5px', color: '#555', lineHeight: 1.7 }}>
                     {v.desc}
                   </p>
                 </div>
@@ -259,20 +270,27 @@ export default function ReportPage() {
             }}>
               Gratis ora. Mai un doppio pagamento dopo.
             </h3>
-            <p style={{ color: '#555', fontSize: '15px', lineHeight: 1.7, marginBottom: '10px' }}>
-              Per i primi 90 giorni dal lancio il Report CURA è completamente
-              gratuito. Passato questo periodo costa <strong>60€</strong> —
-              ma se poi scegli di proseguire con l'abbonamento alla
-              piattaforma Beautyx, quei 60€ diventano credito pieno
-              sull'abbonamento: non paghi due volte.
-            </p>
-            <p style={{ color: '#999', fontSize: '12.5px', lineHeight: 1.6 }}>
-              Nessun limite di posti: il vantaggio è nel farlo ora, mentre è gratis.
+
+            {/* Countdown visibile dei 90 giorni (richiesta di Mason dopo il
+                collaudo dal vivo del 04/09/2026). Si nasconde da solo finché
+                NEXT_PUBLIC_REPORT_LAUNCH_DATE non è impostata su Vercel — vedi
+                components/common/ReportCountdownBanner.js. NON ancora
+                impostata oggi: il motore del questionario (task #152/#153)
+                non è ancora pronto/collaudato end-to-end, quindi qui non
+                comparirà nulla finché quella condizione non è soddisfatta —
+                segnalato esplicitamente a Mason, non un bug silenzioso. */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
+              <ReportCountdownBanner variant="prominent" />
+            </div>
+
+            <p style={{ color: '#555', fontSize: '15px', lineHeight: 1.7 }}>
+              Passato il periodo gratuito, il Report CURA costa 60€ — e
+              diventano credito pieno sull'abbonamento se continui con noi.
             </p>
           </div>
         </section>
 
-        {/* ── ALTERNATIVA PER CHI NON CI CONOSCE ANCORA (traffico freddo) ── */}
+        {/* ── OMAGGIO: miniguida come bonus, non alternativa al report ── */}
         <section style={{ maxWidth: '560px', margin: '0 auto', padding: '0 24px 56px' }}>
           <div style={{
             background: 'rgba(26,26,15,0.05)',
@@ -282,11 +300,11 @@ export default function ReportPage() {
             textAlign: 'center',
           }}>
             <p style={{ fontSize: '13.5px', color: '#666', lineHeight: 1.7, marginBottom: '10px' }}>
-              Preferisci un primo passo più leggero? La miniguida gratuita sui
-              10 errori più comuni è un buon punto di partenza, senza impegno.
+              Un regalo che arriva comunque: la miniguida gratuita sui 10
+              errori più comuni, tua da subito, mentre il report prende forma.
             </p>
             <Link href="/miniguida" style={{ color: '#EC4899', fontWeight: 700, fontSize: '13.5px', textDecoration: 'none' }}>
-              Scarica la miniguida gratuita →
+              Ricevi la miniguida gratuita →
             </Link>
           </div>
         </section>

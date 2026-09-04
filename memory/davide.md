@@ -2045,3 +2045,92 @@ del codice), come richiesto esplicitamente.
    (bug 6), va creata da zero — non esiste.
 6. Riccardo: riverificare `/auth/callback` nell'audit di sicurezza (nuovo
    endpoint, anche se non tocca dati di centro — solo scambio sessione).
+
+## Redesign copy /report — 3 card "Cosa trovi" + countdown 90gg prominente (2026-09-04)
+
+**Contesto:** Federica ha aggiornato il copy di `app/report/page.js` (gate
+Elena superato, non ancora committato da lei). Mason, nel test dal vivo,
+ha bocciato i 3 blocchi scuri "Cosa trovi nel report" ("bruttissimi") e ha
+chiesto un countdown dei 90 giorni ben visibile — Federica aveva già tolto
+i paragrafi lunghi e lasciato un TODO nel punto esatto.
+
+**Fix 1 — redesign 3 card "Cosa trovi nel report":** sostituito lo sfondo
+nero (`#1a1a0f`) con card bianche (`#fff`, bordo `1.5px solid
+rgba(26,26,15,0.08)`, `box-shadow` leggera) coerenti con lo stile già in
+uso nella sezione "PREZZO" della stessa pagina. Numero progressivo: da
+testo piccolo rosa su sfondo nero a badge circolare oro (`#FFE44D`, stesso
+colore del badge eyebrow in hero) con cifra in Playfair scura — lega
+visivamente le card al resto della pagina. Font ingranditi per leggibilità
+reale: titolo card `15px→19px` (Playfair 700), testo `13px→15.5px` (colore
+`#555` invece di `#aaa` su nero, molto più leggibile). Palette cream/oro/
+pink e font Playfair/Inter invariati, solo applicati coerentemente anche
+qui.
+
+**Fix 2 — `components/common/ReportCountdownBanner.js`, nuova variante
+`prominent`:** il componente esisteva già (creato per l'hero di
+`/newsletter`, dove resta con lo stile "pill" originale, invariato — vedi
+`app/newsletter/page.js` riga ~223, nessuna modifica lì). Aggiunta una
+`variant="prominent"` (prop, default resta `"pill"` per non rompere l'uso
+esistente): numero dei giorni in grande evidenza (Playfair 900,
+`clamp(40px,10vw,56px)`, colore pink `#EC4899`) + etichetta sotto in
+maiuscolo, dentro un riquadro con bordo/sfondo pink tenue. Integrata in
+`app/report/page.js` nel punto esatto lasciato da Federica col TODO (dentro
+la card "Gratis ora. Mai un doppio pagamento dopo.", sopra il paragrafo
+breve che Federica ha lasciato — affiancati, non sostituiti, come da nota
+nel TODO). **Corretto anche il refuso segnalato:** il copy interno del
+componente diceva ancora "report CARE" (variante pill, unico punto rimasto
+col nome vecchio) — cambiato in "report CURA".
+
+**Countdown NON funzionante oggi — segnalazione esplicita, non un bug
+silenzioso:** `NEXT_PUBLIC_REPORT_LAUNCH_DATE` resta non impostata su
+Vercel (deliberato, vedi voce countdown 90gg su `/newsletter` sopra) — il
+componente si comporta esattamente come progettato (nessun countdown finto:
+se la env var manca, `computeCountdown()` ritorna `null` e il componente
+non renderizza nulla, per ENTRAMBE le varianti). Risultato pratico: oggi su
+`/report` nel punto dove ho integrato `ReportCountdownBanner
+variant="prominent"` **non compare visivamente nulla** finché quella env
+var non viene impostata. Come da istruzione ricevuta, non fingo che
+funzioni: **la condizione per fissare la data non è cambiata** — serve che
+il motore del questionario sia pronto E collaudato end-to-end (task #152
+scoring engine e #153 assemblaggio report sono ancora `pending`/
+`in_progress`, non completati). Segnalo di nuovo qui, come richiesto
+esplicitamente da Mason nel task di oggi.
+
+**Riverifica dal vivo del bug 7 (login→errore generico, fix Suspense su
+`app/impostazioni/page.js`/`abbonamento/page.js`) — tentata seriamente,
+ancora bloccata, causa diversa da prima:** in questo giro il browser tool
+non era il problema — ho provato `npm run dev` + `curl` in locale, 4
+avviamenti separati del server (con/senza `NODE_OPTIONS`
+`--max-old-space-size`, su `/`, `/login`, `/impostazioni`,
+`/impostazioni/abbonamento`). Il server compila e si mette in ascolto
+correttamente ("✓ Ready" confermato nel log ogni volta), ma **l'intero
+processo Next.js muore in modo silenzioso — nessuno stack trace, nessun
+errore in stdout/stderr — circa 8-9 secondi dopo la prima richiesta HTTP
+reale** (`curl` riceve "Recv failure: Connection reset by peer" o
+`exit code 56`; `ps aux` conferma che `next-server` non esiste più subito
+dopo). Comportamento identico e ripetibile su tutte e 4 le route provate,
+comprese quelle che non toccano `/impostazioni` — quindi **non è il fix
+Suspense stesso a causare il crash** (se lo fosse, solo quelle due route
+fallirebbero, non anche `/` e `/login`). Ipotesi più probabile: il sandbox
+di questo ambiente blocca o interrompe le chiamate di rete in uscita che
+`proxy.js`/middleware fa verso Supabase per leggere la sessione a ogni
+richiesta — coerente con l'8-9s di attesa prima del reset (timeout di
+rete), non un crash istantaneo da eccezione di codice. **Non risolvibile
+da qui**: resta da verificare con un deploy reale su Vercel o un test
+diretto sul browser di Mason, non un problema che la verifica statica
+avrebbe potuto anticipare. Il fix Suspense in sé resta verificato
+staticamente come corretto (pattern identico a `login/page.js`, già
+live e funzionante).
+
+**Verifica:** bilanciamento parentesi (script Python) OK su entrambi i
+file JSX toccati. `node_modules/.bin/biome check` sui due file: 5 warning,
+tutti preesistenti/non legati a queste modifiche (quote style del
+formatter, `noArrayIndexKey` sul `.map((v,i))` già presente prima del mio
+intervento, `useSemanticElements` su `role="status"` già presente nel
+componente originale) — zero errori di parsing o di logica introdotti.
+Nessuna build Next.js completa eseguibile nel sandbox per questo task
+(vedi crash del dev server sopra).
+
+**File modificati:** `app/report/page.js` (redesign 3 card + integrazione
+countdown), `components/common/ReportCountdownBanner.js` (nuova variante
+`prominent` + fix copy CARE→CURA).
