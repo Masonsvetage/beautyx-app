@@ -216,9 +216,14 @@ export default function NewsletterPage() {
             style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: '80px 32px 96px', display: 'flex', alignItems: 'center', gap: '60px' }}
           >
             <div style={{ maxWidth: '640px' }}>
-              {/* Countdown reale periodo gratuito report CARE (90gg dal lancio).
-                  Si nasconde da solo finché NEXT_PUBLIC_REPORT_LAUNCH_DATE non è
-                  configurata su Vercel — vedi components/common/ReportCountdownBanner.js */}
+              {/* Countdown periodo gratuito report CURA (90gg dal lancio).
+                  Istruzione diretta di Mason (05/09/2026): visibile subito, anche
+                  prima che NEXT_PUBLIC_REPORT_LAUNCH_DATE sia configurata su Vercel.
+                  Finché la env var reale non è impostata, il componente mostra un
+                  fallback PLACEHOLDER (~60gg, ricalcolato a runtime, mai una data
+                  fissa) — vedi commento dettagliato in
+                  components/common/ReportCountdownBanner.js. Quando la env var reale
+                  verrà impostata, prende automaticamente il sopravvento. */}
               <div style={{ marginBottom: '16px' }}>
                 <ReportCountdownBanner />
               </div>
@@ -287,6 +292,51 @@ export default function NewsletterPage() {
               )}
             </div>
 
+          </div>
+        </section>
+
+        {/* ── REPORT CURA (livello 2 dell'ecosistema, gratuito nei primi 90gg dal lancio) ──
+            Sezione ad alta visibilità richiesta da Mason (04/09/2026): la pagina newsletter
+            è il "portone d'ingresso" e prima d'ora non nominava mai il Report né linkava
+            /report da nessuna parte. Posizionata subito dopo la hero, prima di "Chi siamo",
+            perché è il primo posto dove chi arriva sulla pagina può scoprire che esiste un
+            livello successivo gratuito, prima ancora di leggere il resto.
+            Il countdown (ReportCountdownBanner, variant="prominent") è il componente di
+            Davide: si nasconde da solo finché NEXT_PUBLIC_REPORT_LAUNCH_DATE non è
+            configurata, quindi il testo intorno è scritto per restare sensato sia quando
+            mostra un numero (60, 84, qualunque sia) sia nell'eventualità che non mostri
+            nulla — non dipende mai dal valore esatto. */}
+        <section id="report-cura" style={{ background: '#fdf2f7', padding: '72px 32px', borderTop: '1px solid #f6dce9', borderBottom: '1px solid #f6dce9' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '16px' }}>
+              Un passo più in là · Report CURA
+            </p>
+            <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 38px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.2, marginBottom: '20px' }}>
+              Se la newsletter ti ha già conquistata, il Report va più a fondo.
+            </h2>
+            <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85, marginBottom: '16px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
+              Qui parliamo di gestione due volte a settimana, in generale. Il Report CURA prende in mano il tuo centro — quello vero, con i suoi numeri e le sue clienti — e ne restituisce un profilo scritto solo per te, costruito secondo il metodo CURA: Consapevolezza, Unisono degli Elementi, Risveglio del Potenziale, Ascesa Strategica.
+            </p>
+            <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85, marginBottom: '32px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
+              Per i primi 90 giorni dal lancio pubblico è gratuito, senza pagare nulla e senza impegno. Se un giorno vorrai proseguire, quello che emerge qui diventa già la base della tua consulenza vera — niente lavoro rifatto due volte.
+            </p>
+
+            <div style={{ marginBottom: '32px' }}>
+              <ReportCountdownBanner variant="prominent" />
+              <p style={{ marginTop: '12px', fontSize: '13px', color: '#8a7a80', lineHeight: 1.6, maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
+                Il numero conta i giorni di questa finestra gratuita: 90 dal lancio pubblico del report, poi si richiude.
+              </p>
+            </div>
+
+            <Link
+              href="/report"
+              style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '16px 34px', borderRadius: '10px', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}
+            >
+              Scopri il Report CURA →
+            </Link>
+            <p style={{ marginTop: '16px', fontSize: '13px', color: '#8a7a80', lineHeight: 1.6 }}>
+              Bastano pochi minuti e un account completo — se più avanti scegli la piattaforma, non dovrai registrarti una seconda volta.
+            </p>
           </div>
         </section>
 
