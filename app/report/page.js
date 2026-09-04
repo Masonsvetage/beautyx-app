@@ -120,7 +120,8 @@ export default function ReportPage() {
             Il Report CURA è una fotografia onesta di dove il tuo centro è
             bloccato — e di cosa puoi far ripartire per prima, subito. Nasce
             da un metodo che guardiamo insieme a te, non un test online
-            generico: risponde a te, titolare, non alla tua cliente.
+            generico: guarda dritto a te, titolare, alle tue scelte e alla
+            guida del tuo centro.
           </p>
 
           {/* ── CTA PRINCIPALE ── */}
@@ -316,7 +317,7 @@ export default function ReportPage() {
           textAlign: 'center',
         }}>
           <p style={{ fontSize: '12px', color: '#bbb' }}>
-            © 2025 Beautyx ·{' '}
+            © {new Date().getFullYear()} Beautyx ·{' '}
             <Link href="/privacy" style={{ color: '#bbb', textDecoration: 'none' }}>Privacy</Link>
             <GuidaFooterLink style={{ color: '#bbb', textDecoration: 'none' }} separator=" · " />
           </p>
