@@ -1,12 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
-import crypto from 'crypto'
 import dns from 'dns'
 import { isRateLimited } from '@/lib/rateLimit'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+import { subscribeToBeehiiv, ensureGuidaAccessToken, GUIDA_ALLOWED_STATUSES } from '@/lib/newsletter/beehiiv'
 
 // Rate limiting distribuito via Upstash Redis (lib/rateLimit.js), con
 // fallback automatico a Map() in-memory se le env var Upstash non sono
@@ -28,7 +22,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 // tramite il gate su /guida (app/api/guida/access/route.js), che verifica lo
 // stato reale via lookup live su Beehiiv prima di emettere il token.
 // Vedi doc ufficiale: https://developers.beehiiv.com/api-reference/subscriptions/create
-const GUIDA_ALLOWED_STATUSES = new Set(['active'])
+// (GUIDA_ALLOWED_STATUSES ora condiviso da lib/newsletter/beehiiv.js — 29/08/2026,
+// stessa costante riusata da create-centro per la registrazione unificata)
 
 const MX_CHECK_TIMEOUT_MS = 3500
 
@@ -58,42 +53,6 @@ async function hasValidMxRecord(email) {
   }
 }
 
-// Genera (o riusa se già esiste) il token di accesso alla guida interattiva /guida.
-// Gating leggero: non deve mai bloccare l'iscrizione newsletter se fallisce.
-async function ensureGuidaAccessToken(email) {
-  try {
-    const normalizedEmail = email.trim().toLowerCase()
-
-    const { data: existing, error: selectError } = await supabase
-      .from('guida_access')
-      .select('token')
-      .eq('email', normalizedEmail)
-      .maybeSingle()
-
-    if (selectError) {
-      console.error('guida_access select error:', selectError)
-      return null
-    }
-
-    if (existing) return existing.token // token già presente, non duplicare
-
-    const token = crypto.randomBytes(24).toString('hex')
-    const { error: insertError } = await supabase
-      .from('guida_access')
-      .insert({ email: normalizedEmail, token })
-
-    if (insertError) {
-      console.error('guida_access insert error:', insertError)
-      return null
-    }
-
-    return token
-  } catch (err) {
-    console.error('Errore generazione token guida:', err)
-    return null
-  }
-}
-
 export async function POST(request) {
   try {
     const body = await request.json()
@@ -120,46 +79,20 @@ export async function POST(request) {
       return Response.json({ error: 'Email non valida o dominio inesistente' }, { status: 400 })
     }
 
-    const apiKey = process.env.BEEHIIV_API_KEY
-    const publicationId = process.env.BEEHIIV_PUBLICATION_ID
+    const subscribeResult = await subscribeToBeehiiv(email, { utmMedium: 'newsletter-page' })
 
-    if (!apiKey || !publicationId) {
-      console.error('Variabili BEEHIIV mancanti')
-      return Response.json({ error: 'Configurazione mancante' }, { status: 500 })
-    }
-
-    const res = await fetch(
-      `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({
-          email,
-          reactivate_existing: true,
-          send_welcome_email: true,
-          double_opt_override: "on",
-          utm_source: 'beautyx-app',
-          utm_medium: 'newsletter-page',
-          utm_campaign: 'organic',
-        }),
-      }
-    )
-
-    const data = await res.json()
-
-    if (!res.ok) {
-      console.error('Beehiiv error:', data)
-      return Response.json({ error: data.message || 'Errore iscrizione' }, { status: res.status })
+    if (!subscribeResult.ok) {
+      return Response.json({ error: subscribeResult.error || 'Errore iscrizione' }, { status: subscribeResult.httpStatus || 500 })
     }
 
     // Iscrizione Beehiiv andata a buon fine (HTTP 2xx): questo NON basta a
     // concedere l'accesso alla guida. Beehiiv risponde 200 anche con status
     // "pending"/"validating" (conferma double opt-in non ancora cliccata) —
-    // bisogna leggere data.data.status ed emettere il token SOLO se è già
+    // bisogna leggere lo status ed emettere il token SOLO se è già
     // "active" ora. Il caso normale (email appena iscritta, non ancora
     // confermata) non crea alcun token qui: niente scappatoia via
     // /api/guida/access, che ricontrolla Beehiiv live prima di crearne uno.
-    const subscriptionStatus = data?.data?.status
+    const subscriptionStatus = subscribeResult.status
     if (!GUIDA_ALLOWED_STATUSES.has(subscriptionStatus)) {
       console.log('Iscrizione Beehiiv non ancora confermata (nessun token guida emesso ora):', subscriptionStatus, 'per', email)
     }

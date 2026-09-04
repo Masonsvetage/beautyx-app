@@ -5,6 +5,13 @@
 #
 # Uso:  bash scripts/health-check.sh
 # Legge le credenziali da .env.local (BEEHIIV_*, VERCEL_TOKEN).
+#
+# NOTA (2026-08-29): frequenza ridotta da 3x/giorno a 1x/giorno (06:00) su richiesta
+# di Mason — poco traffico reale non giustificava 3 controlli/giorno. Contestualmente
+# arricchito con /report + /api/public/news, perché un check di sola disponibilità
+# ("il sito risponde 200") non aveva intercettato il bug reale del giorno (tabelle di
+# produzione mancanti): quel tipo di problema lo intercetta il check tabelle Supabase
+# nel prompt del task schedulato (query reale sulle tabelle critiche), non questo script.
 
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
@@ -20,7 +27,7 @@ warn(){ printf '\xf0\x9f\x9f\xa1 %s\n' "$1"; }
 echo "== BEAUTYX HEALTH CHECK — $(date '+%Y-%m-%d %H:%M %Z') =="
 
 # 1) Pagine pubbliche (GET, senza seguire redirect)
-for path in newsletter miniguida; do
+for path in newsletter miniguida report; do
   code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/$path")
   if [ "$code" = "200" ]; then ok "/$path -> 200"
   elif [ "$code" = "307" ] || [ "$code" = "302" ]; then warn "/$path -> $code (redirect, es. login gate)"
@@ -33,6 +40,12 @@ resp=$(curl -s -X POST "$BASE/api/newsletter/subscribe" \
   -d '{"email":"healthcheck-beautyx@test.com","website":""}')
 if echo "$resp" | grep -q '"success":true'; then ok "API subscribe -> $resp"
 else bad "API subscribe -> $resp"; fi
+
+# 2b) API pubblica /public/news (GET, sola lettura — endpoint chiave usato dalla home)
+news_resp=$(curl -s -w '\n%{http_code}' "$BASE/api/public/news")
+news_code=$(echo "$news_resp" | tail -1)
+if [ "$news_code" = "200" ]; then ok "API public/news -> 200"
+else bad "API public/news -> $news_code"; fi
 
 # 3) Beehiiv (GET publication + stats, sola lettura)
 if [ -n "${BEEHIIV_API_KEY:-}" ] && [ -n "${BEEHIIV_PUBLICATION_ID:-}" ]; then

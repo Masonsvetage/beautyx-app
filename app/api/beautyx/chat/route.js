@@ -10,6 +10,13 @@ import { loadAgentPrompt } from '@/lib/beautyx/agentPrompts'
 import { syncKoibox } from '@/lib/koibox/sync'
 import { isKoiboxConfigured } from '@/lib/koibox/apiClient'
 import {
+  getProssimoScenario,
+  salvaRispostaScenario,
+  salvaNarrazioneLibera,
+  verificaProfiloDefinito,
+  generaReportProfiling
+} from '@/lib/beautyx/profilingEngine'
+import {
   fetchMetaData,
   fetchFinancialsData,
   fetchDipendentiData,
@@ -279,6 +286,99 @@ Dopo la sync, usa get_koibox per leggere i dati aggiornati e fare le analisi.`,
     }
   }
 ]
+
+// ============================================
+// TOOL PROFILING CARE (task #151, piano-sviluppo-report-care.md punto 3)
+// Attivi SOLO quando il piano dell'utente è 'report_profiling' — mai passati
+// insieme a BEAUTYX_TOOLS. Il gating è sull'array (assenza dei tool
+// gestionali dalla chiamata Anthropic), MAI per istruzione a prompt — stesso
+// principio di sicurezza già applicato altrove nel progetto (mai fidarsi di
+// un "non usare questo tool" scritto nel prompt).
+// ============================================
+
+const PROFILING_TOOLS = [
+  {
+    name: 'get_prossimo_scenario',
+    description: 'Recupera il prossimo passo del questionario di profiling CARE per il centro corrente: uno scenario a scelta forzata (5 opzioni da ordinare), oppure il segnale di passare alla narrazione libera per l\'ambito corrente, oppure il segnale che il questionario è completo. Chiamalo per iniziare o proseguire il questionario, e ogni volta che serve sapere cosa proporre dopo.',
+    input_schema: { type: 'object', properties: {}, required: [] }
+  },
+  {
+    name: 'salva_risposta_scenario',
+    description: 'Salva la risposta a uno scenario a scelta forzata: l\'ordinamento completo delle 5 opzioni dato dall\'utente, dalla più alla meno vicina al proprio modo di agire. I punteggi vengono ricalcolati e verificati server-side. Chiamalo subito dopo che l\'utente ha ordinato le opzioni nella UI del quiz.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        scenario_code: { type: 'string', description: 'Codice dello scenario appena risposto (es. "C1", "P4", "S2"), ricevuto da get_prossimo_scenario' },
+        ordinamento: {
+          type: 'object',
+          description: 'Posizione (1=più propria, 5=meno propria) -> elemento scelto per quella posizione. Esempio: {"1":"fuoco","2":"metallo","3":"acqua","4":"terra","5":"aria"}. Deve contenere tutti e 5 gli elementi, una sola volta ciascuno.'
+        }
+      },
+      required: ['scenario_code', 'ordinamento']
+    }
+  },
+  {
+    name: 'salva_narrazione_libera',
+    description: 'Salva la narrazione libera (racconto di un episodio reale) più le 3 risposte di controllo per l\'ambito corrente (clienti, personale o spese). Chiamalo dopo che l\'utente ha risposto sia alla domanda di apertura sia alle 3 domande di controllo che gli hai posto una alla volta in conversazione.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        ambito: { type: 'string', enum: ['clienti', 'personale', 'spese'], description: 'Ambito a cui appartiene questa narrazione' },
+        narrazione_libera: { type: 'string', description: 'Il racconto reale dell\'episodio, con un fatto concreto — non un giudizio generico. Se la risposta dell\'utente resta vaga, NON chiamare questo tool: fai prima domande di follow-up per far emergere un episodio ancorato a un fatto vero.' },
+        risposta_controllo_1: { type: 'string', description: 'Risposta alla prima domanda di controllo fissa per questo ambito' },
+        risposta_controllo_2: { type: 'string', description: 'Risposta alla seconda domanda di controllo fissa per questo ambito' },
+        risposta_controllo_3: { type: 'string', description: 'Risposta alla terza domanda di controllo fissa per questo ambito' }
+      },
+      required: ['ambito', 'narrazione_libera']
+    }
+  },
+  {
+    name: 'verifica_profilo_definito',
+    description: 'Controlla i punteggi correnti per un ambito e se il profilo su quell\'ambito è già abbastanza chiaro. Usa questo tool solo se vuoi dare un aggiornamento all\'utente su come sta andando — la decisione se somministrare altri scenari (banco di riserva) è già presa automaticamente da get_prossimo_scenario, non serve chiamarlo per quello.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        ambito: { type: 'string', enum: ['clienti', 'personale', 'spese'], description: 'Ambito da verificare (default: ambito corrente della sessione)' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'genera_report_profiling',
+    description: 'Genera il report finale di profiling CARE. Chiamalo SOLO quando get_prossimo_scenario ha segnalato che il questionario è completo per tutti e 3 gli ambiti (clienti, personale, spese) — mai prima.',
+    input_schema: { type: 'object', properties: {}, required: [] }
+  },
+  {
+    name: 'update_memory',
+    description: 'Aggiorna la memoria persistente di BeautyX per questo centro (stessa funzione della modalità gestionale). Usa solo per informazioni davvero durature emerse dal questionario, non per lo stato di avanzamento (che vive già in profiling_sessions).',
+    input_schema: {
+      type: 'object',
+      properties: { contenuto: { type: 'string', description: 'Testo della memoria aggiornata, formato libero, max ~1500 caratteri' } },
+      required: ['contenuto']
+    }
+  }
+]
+
+// Prompt statico di fallback per la modalità profiling — usato solo se
+// agent_prompts non ha ancora una riga attiva 'beautyx_profiling' (da
+// inserire in DB, vedi supabase/migrations/20260828_profiling_report_care.sql
+// e nota in memory/davide.md 29/08/2026 sull'inserimento della riga prompt).
+const PROFILING_FALLBACK_PROMPT = `Sei Beautyx, in modalità QUESTIONARIO DI PROFILING CARE.
+
+# IDENTITÀ E MISSIONE
+- In questa modalità NON sei la consulente gestionale: stai accompagnando la titolare attraverso il questionario di profiling CARE, uno strumento che la aiuta a far emergere da sola dove il suo modo di gestire il centro è già forte e dove invece "si blocca".
+- Il metodo CARE NON va mai spiegato o nominato nei suoi meccanismi interni (elementi, cicli, acronimo esteso) — si fa solo intravedere. Resta concentrata sull'esperienza della titolare, mai su "come funziona il sistema".
+- Approccio maieutico SEMPRE: non dai consigli diretti, aiuti a far emergere consapevolezza. Vale anche per le domande di follow-up quando una narrazione libera resta vaga.
+
+# FLUSSO DEL QUESTIONARIO
+1. Chiama get_prossimo_scenario per sapere cosa proporre.
+2. Se torna uno scenario a scelta forzata: presenta il testo e le opzioni, l'utente le ordina nella UI dedicata del quiz. Quando arriva l'ordinamento, chiama salva_risposta_scenario.
+3. Se torna narrazione_libera: fai la domanda di apertura indicata. Se la risposta è vaga o generica, fai domande di follow-up per arrivare a un episodio concreto (chi, cosa è successo, reazione) — non accettare risposte tipo "va tutto bene con le clienti". Solo con un episodio concreto, fai le 3 domande di controllo (una alla volta, aspettando la risposta). Poi chiama salva_narrazione_libera con tutto.
+4. Se torna completato: chiama genera_report_profiling e comunica alla titolare che il report è in lavorazione.
+5. Ripeti chiamando get_prossimo_scenario dopo ogni salvataggio, finché non arriva "completato".
+
+# TONO
+Caldo, curioso, mai giudicante — ogni risposta della titolare è "giusta" per come rivela il suo modo di agire, non c'è una risposta corretta da indovinare. Non affrettare: è un percorso, non un modulo da compilare in fretta.`
 
 // ============================================
 // SYSTEM PROMPT CORTO (~1.500 token)
@@ -744,6 +844,57 @@ async function executeToolsInParallel(toolUseBlocks, centro_id) {
 }
 
 // ============================================
+// TOOL EXECUTOR — MODALITÀ PROFILING CARE
+// Analogo a executeToolsInParallel ma instrada verso lib/beautyx/profilingEngine.js
+// invece dei fetcher gestionali di dataHub.js. Separato per intero
+// (nessun tool condiviso tranne update_memory, già gestito qui in modo
+// identico all'esecutore gestionale) — coerente col principio "il gating è
+// sull'array passato al modello", che vale anche per l'esecuzione lato server.
+// ============================================
+async function executeProfilingToolsInParallel(toolUseBlocks, centro_id, user_id) {
+  const toolFunctions = {
+    'get_prossimo_scenario':      () => getProssimoScenario(centro_id, user_id),
+    'salva_risposta_scenario':    (input) => salvaRispostaScenario(centro_id, user_id, input),
+    'salva_narrazione_libera':    (input) => salvaNarrazioneLibera(centro_id, user_id, input),
+    'verifica_profilo_definito':  (input) => verificaProfiloDefinito(centro_id, user_id, input),
+    'genera_report_profiling':    () => generaReportProfiling(centro_id, user_id),
+    'update_memory':              async (input) => {
+      try {
+        await supabase
+          .from('beautyx_memory')
+          .upsert(
+            { centro_id, contenuto: input.contenuto, updated_at: new Date().toISOString() },
+            { onConflict: 'centro_id' }
+          )
+        return { saved: true }
+      } catch (err) {
+        console.error('[BeautyX profiling] update_memory error:', err.message)
+        return { saved: false, error: err.message }
+      }
+    }
+  }
+
+  const results = await Promise.all(
+    toolUseBlocks.map(async tool => {
+      const fn = toolFunctions[tool.name]
+      if (!fn) {
+        console.warn(`[BEAUTYX PROFILING TOOL USE] Tool sconosciuto: ${tool.name}`)
+        return { id: tool.id, data: { error: `Tool ${tool.name} non disponibile in modalità profiling` } }
+      }
+      try {
+        const data = await fn(tool.input || {})
+        return { id: tool.id, data }
+      } catch (err) {
+        console.error(`[BEAUTYX PROFILING TOOL USE] Errore ${tool.name}:`, err.message)
+        return { id: tool.id, data: { error: err.message } }
+      }
+    })
+  )
+
+  return Object.fromEntries(results.map(r => [r.id, r.data]))
+}
+
+// ============================================
 // PROCESS & RETURN
 // Elabora la risposta finale: MONITOR, INSIGHT, token tracking
 // ============================================
@@ -854,7 +1005,13 @@ export async function POST(request) {
     // utente ai fini di rate limiting/tracking token AI.
     const user_id = ownershipCheck.user.id
 
-    // === 1. CHECK LIMITE TOKEN AI ===
+    // === 1. CHECK LIMITE TOKEN AI + PIANO ATTIVO ===
+    // Il piano attivo (letto qui, non da un flag passato dal client) decide
+    // anche se questa chiamata gira in modalità PROFILING CARE — stesso
+    // principio di sicurezza già usato per l'auth: il gating vive lato
+    // server, mai su un dato dichiarato dal client. Vedi piano-sviluppo-
+    // report-care.md, punto 4 ("Tool-gating modalità profiling").
+    let isProfilingMode = false
     if (user_id) {
       try {
         const { data: limitCheck } = await supabase.rpc('check_ai_limit', { p_user_id: user_id })
@@ -869,29 +1026,39 @@ export async function POST(request) {
             }
           })
         }
+        // Default-deny se il piano non è riconosciuto/nullo: isProfilingMode
+        // resta false, si passa comunque nella modalità gestionale normale
+        // (nessun accesso ai tool profiling senza un piano riconosciuto).
+        isProfilingMode = limitCheck?.piano === 'report_profiling'
       } catch (err) {
         console.log('[BEAUTYX] check_ai_limit non disponibile, skip:', err.message)
       }
     }
 
     // === 2. FETCH META LEGGERO + MEMORIA PERSISTENTE ===
+    // In modalità profiling si salta il fetch dei dati gestionali (non
+    // servono e non devono nemmeno essere raggiungibili da quella modalità,
+    // coerente col fatto che i tool gestionali sono del tutto assenti
+    // dall'array passato al modello in quel caso — vedi sotto).
     const oggi = new Date().toISOString().split('T')[0]
-    const [metaData, memoryRes, creditiRes, koiboxConfigured] = await Promise.all([
-      fetchMetaData(centro_id),
-      centro_id
-        ? supabase.from('beautyx_memory').select('contenuto').eq('centro_id', centro_id).maybeSingle()
-        : Promise.resolve({ data: null }),
-      centro_id
-        ? supabase.from('registro_crediti')
-            .select('nome_cliente, servizio, residuo, data_attesa_saldo')
-            .eq('centro_id', centro_id)
-            .eq('saldato', false)
-            .lte('data_attesa_saldo', oggi)
-            .order('data_attesa_saldo', { ascending: true })
-            .limit(10)
-        : Promise.resolve({ data: null }),
-      centro_id ? isKoiboxConfigured(centro_id) : Promise.resolve(false)
-    ])
+    const [metaData, memoryRes, creditiRes, koiboxConfigured] = isProfilingMode
+      ? [null, { data: null }, { data: null }, false]
+      : await Promise.all([
+          fetchMetaData(centro_id),
+          centro_id
+            ? supabase.from('beautyx_memory').select('contenuto').eq('centro_id', centro_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+          centro_id
+            ? supabase.from('registro_crediti')
+                .select('nome_cliente, servizio, residuo, data_attesa_saldo')
+                .eq('centro_id', centro_id)
+                .eq('saldato', false)
+                .lte('data_attesa_saldo', oggi)
+                .order('data_attesa_saldo', { ascending: true })
+                .limit(10)
+            : Promise.resolve({ data: null }),
+          centro_id ? isKoiboxConfigured(centro_id) : Promise.resolve(false)
+        ])
     const memoria = memoryRes?.data?.contenuto || null
     const crediti_scaduti = creditiRes?.data || []
 
@@ -904,20 +1071,34 @@ export async function POST(request) {
       { role: 'user', content: message }
     ]
 
-    // Carica prompt statico da DB (con cache 2min), fallback su hardcoded
-    const staticPrompt = await loadAgentPrompt('beautyx') || BEAUTYX_FALLBACK_PROMPT
-    const dynamicSections = buildDynamicSections({
-      pagina_corrente,
-      metaData,
-      insights_attivi,
-      dati_contesto,
-      memoria,
-      crediti_scaduti,
-      koibox_api_attiva: koiboxConfigured,
-    })
+    // Carica prompt statico da DB (con cache 2min), fallback su hardcoded.
+    // Prompt dedicato 'beautyx_profiling' in modalità profiling (nuova riga
+    // agent_prompts, vedi memory/davide.md 29/08/2026) — mai il prompt
+    // gestionale 'beautyx' in quella modalità.
+    const staticPrompt = isProfilingMode
+      ? (await loadAgentPrompt('beautyx_profiling') || PROFILING_FALLBACK_PROMPT)
+      : (await loadAgentPrompt('beautyx') || BEAUTYX_FALLBACK_PROMPT)
 
-    const systemPrompt = `${staticPrompt}\n${dynamicSections}`
-    console.log('[BEAUTYX TOOL USE] System prompt length:', systemPrompt.length)
+    // Le sezioni dinamiche (dati business, monitor, koibox, ecc.) non hanno
+    // senso in modalità profiling — niente concatenazione in quel caso.
+    const systemPrompt = isProfilingMode
+      ? staticPrompt
+      : `${staticPrompt}\n${buildDynamicSections({
+          pagina_corrente,
+          metaData,
+          insights_attivi,
+          dati_contesto,
+          memoria,
+          crediti_scaduti,
+          koibox_api_attiva: koiboxConfigured,
+        })}`
+    console.log('[BEAUTYX TOOL USE] System prompt length:', systemPrompt.length, isProfilingMode ? '(modalità profiling)' : '')
+
+    // Array di tool passato al modello: gating per ASSENZA, mai per istruzione
+    // a prompt. In modalità profiling i tool gestionali (registra_incasso,
+    // get_financials, sync_koibox, ecc.) semplicemente non esistono per
+    // questa chiamata Anthropic.
+    const activeTools = isProfilingMode ? PROFILING_TOOLS : BEAUTYX_TOOLS
 
     // === 4. PRIMA CHIAMATA LEGGERA: Claude sceglie quali tool usare ===
     const firstResponse = await anthropic.messages.create({
@@ -925,7 +1106,7 @@ export async function POST(request) {
       max_tokens: 1500,
       system: systemPrompt,
       messages,
-      tools: BEAUTYX_TOOLS
+      tools: activeTools
     })
 
     console.log('[BEAUTYX TOOL USE] Prima call - stop_reason:', firstResponse.stop_reason, '| tokens in:', firstResponse.usage.input_tokens, 'out:', firstResponse.usage.output_tokens)
@@ -965,7 +1146,9 @@ export async function POST(request) {
       allToolsUsed.push(...toolUseBlocks.map(t => t.name))
       console.log(`[BEAUTYX TOOL USE] Round ${round + 1} — Tool richiesti:`, toolUseBlocks.map(t => t.name).join(', '))
 
-      const toolResults = await executeToolsInParallel(toolUseBlocks, centro_id)
+      const toolResults = isProfilingMode
+        ? await executeProfilingToolsInParallel(toolUseBlocks, centro_id, user_id)
+        : await executeToolsInParallel(toolUseBlocks, centro_id)
       console.log(`[BEAUTYX TOOL USE] Round ${round + 1} — Tool completati`)
 
       conversationMessages = [
@@ -986,7 +1169,7 @@ export async function POST(request) {
         max_tokens: 2000,
         system: systemPrompt,
         messages: conversationMessages,
-        tools: BEAUTYX_TOOLS
+        tools: activeTools
       })
 
       totalTokensIn += currentResponse.usage.input_tokens

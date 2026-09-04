@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import GuidaFooterLink from '@/components/common/GuidaFooterLink'
+import ReportCountdownBanner from '@/components/common/ReportCountdownBanner'
 
 // Tassonomia tag per l'archivio "Newsletter già uscite" (/api/public/newsletter-archive).
 // Tassonomia definitiva Alessia (8 categorie) — i valori salvati nel DB devono
@@ -215,6 +216,13 @@ export default function NewsletterPage() {
             style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: '80px 32px 96px', display: 'flex', alignItems: 'center', gap: '60px' }}
           >
             <div style={{ maxWidth: '640px' }}>
+              {/* Countdown reale periodo gratuito report CARE (90gg dal lancio).
+                  Si nasconde da solo finché NEXT_PUBLIC_REPORT_LAUNCH_DATE non è
+                  configurata su Vercel — vedi components/common/ReportCountdownBanner.js */}
+              <div style={{ marginBottom: '16px' }}>
+                <ReportCountdownBanner />
+              </div>
+
               <div className="bx-nl-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(236,72,153,0.15)', border: '1px solid rgba(236,72,153,0.3)', color: '#EC4899', fontWeight: 700, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '100px', marginBottom: '32px' }}>
                 Newsletter gratuita · Beautyx
               </div>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beautyx — Concept: Scenario di profiling (stile evento)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Palette Beautyx (riusata 1:1 da /guida) */
+    --gold:#c9a34a;
+    --gold-light:#e8c874;
+    --ink:#1a1a0f;
+    --body-text:#4a4636;
+    --cream:#faf3df;
+    --cream-2:#faf7ef;
+    --border:#e3d9c2;
+    --muted:#8a6d1f;
+    --muted-2:#a97e1f;
+    --muted-3:#a29c8a;
+    --muted-4:#6b6555;
+    --track:#f5f1ea;
+
+    /* Nuovo: palette "stage/evento", solo per questa schermata */
+    --stage-1:#120f0a;
+    --stage-2:#241d10;
+    --stage-3:#2f2412;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:'Inter', system-ui, sans-serif;
+    color:var(--body-text);
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(201,163,74,0.20), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 85% 10%, rgba(201,163,74,0.08), transparent 55%),
+      linear-gradient(180deg, var(--stage-1) 0%, var(--stage-2) 55%, var(--stage-1) 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ── Barra superiore / branding coerente ─────────────────────────────── */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 20px;
+    background:rgba(18,15,10,0.75);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(201,163,74,0.25);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Playfair Display', Georgia, serif;
+    font-weight:900; font-style:italic;
+    color:var(--gold-light);
+    font-size:1.05rem;
+    letter-spacing:0.02em;
+  }
+  .brand .dot{ width:7px; height:7px; border-radius:50%; background:var(--gold); box-shadow:0 0 10px 2px rgba(201,163,74,0.7); }
+  .brand small{
+    display:block; font-family:'Inter',sans-serif; font-style:normal; font-weight:600;
+    font-size:0.62rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted-3);
+    margin-top:1px;
+  }
+  .exit-link{
+    font-size:0.78rem; color:var(--muted-3); text-decoration:none; font-weight:500;
+    border:1px solid rgba(201,163,74,0.25); padding:6px 12px; border-radius:999px;
+    transition:all .15s;
+  }
+  .exit-link:hover{ color:var(--gold-light); border-color:var(--gold); }
+
+  /* ── Tensione: barra segmenti + indicatore ambito ────────────────────── */
+  .tension-wrap{ max-width:640px; margin:12px auto 0; padding:0 20px; }
+  .ambito-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:0.68rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--stage-1); background:linear-gradient(135deg, var(--gold-light), var(--gold));
+    padding:4px 12px; border-radius:999px; margin-bottom:8px;
+  }
+  .segments{ display:flex; gap:5px; margin-bottom:6px; }
+  .seg{
+    height:6px; flex:1; border-radius:99px; background:rgba(255,255,255,0.08);
+    position:relative; overflow:hidden;
+  }
+  .seg.done{ background:linear-gradient(90deg,var(--gold),var(--gold-light)); box-shadow:0 0 8px rgba(201,163,74,0.6); }
+  .seg.current{ background:rgba(201,163,74,0.28); }
+  .seg.current::after{
+    content:''; position:absolute; inset:0; width:40%;
+    background:linear-gradient(90deg, transparent, rgba(232,200,116,0.9), transparent);
+    animation:sweep 1.6s ease-in-out infinite;
+  }
+  @keyframes sweep{ 0%{ transform:translateX(-120%);} 100%{ transform:translateX(340%);} }
+  .step-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:0.72rem; color:var(--muted-3); font-weight:600;
+  }
+  .step-label b{ color:var(--gold-light); font-weight:800; }
+
+  /* ── Palco / scena della domanda ──────────────────────────────────────── */
+  .stage{
+    max-width:640px; margin:14px auto 0; padding:0 20px;
+    position:relative;
+  }
+  .spotlight-glow{
+    position:absolute; top:-40px; left:50%; transform:translateX(-50%);
+    width:520px; height:260px; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 0%, rgba(232,200,116,0.22), transparent 70%);
+    filter:blur(2px);
+  }
+  .question-card{
+    position:relative;
+    background:linear-gradient(180deg, var(--stage-3), var(--stage-2));
+    border:1px solid rgba(201,163,74,0.35);
+    border-radius:22px;
+    padding:20px 24px 18px;
+    text-align:center;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.4),
+      0 20px 60px -20px rgba(0,0,0,0.7),
+      0 0 40px -12px rgba(201,163,74,0.25);
+  }
+  .question-kicker{
+    font-size:0.7rem; font-weight:800; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:8px;
+  }
+  .question-text{
+    font-family:'Playfair Display', Georgia, serif;
+    font-weight:700; font-style:italic;
+    color:#fdf8ec;
+    font-size:1.32rem; line-height:1.32;
+    text-shadow:0 2px 24px rgba(201,163,74,0.15);
+    margin:0 0 4px;
+  }
+  .question-sub{
+    font-size:0.78rem; color:var(--muted-3); margin-top:6px; font-style:italic;
+  }
+
+  /* ── Le 4 tessere risposta (griglia 2x2, stile "Chi vuol essere milionario") ─ */
+  .tiles{
+    max-width:640px; margin:14px auto 0; padding:0 20px;
+    display:grid; grid-template-columns:1fr 1fr; gap:10px 12px;
+    align-items:stretch;
+  }
+  .tile{
+    position:relative;
+    display:flex; align-items:flex-start; gap:10px;
+    background:var(--cream-2);
+    border:2px solid var(--border);
+    border-radius:14px;
+    padding:11px 12px;
+    text-align:left;
+    cursor:pointer;
+    user-select:none;
+    transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .tile:hover{ border-color:rgba(201,163,74,0.6); transform:translateY(-2px); }
+  .tile:active{ transform:translateY(0) scale(0.99); }
+
+  .tile-rank{
+    flex:0 0 auto;
+    width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display', Georgia, serif; font-weight:900;
+    font-size:0.82rem; color:var(--muted-3);
+    background:#fff; border:2px solid var(--border);
+    transition:all .22s cubic-bezier(.34,1.56,.64,1);
+  }
+  .tile-letter{
+    flex:0 0 auto;
+    font-size:0.64rem; font-weight:800; letter-spacing:0.06em;
+    color:var(--muted-3); text-transform:uppercase;
+  }
+  .tile-text{ font-size:0.8rem; line-height:1.36; color:var(--ink); flex:1; }
+
+  .tile.ranked{
+    border-color:var(--gold);
+    background:var(--cream);
+    box-shadow:0 6px 22px -8px rgba(201,163,74,0.45);
+  }
+  .tile.ranked .tile-rank{
+    background:linear-gradient(135deg, var(--gold-light), var(--gold));
+    color:var(--stage-1); border-color:var(--gold);
+    transform:scale(1.08);
+  }
+  .tile.just-ranked{ animation:pop .38s ease; }
+  @keyframes pop{
+    0%{ transform:scale(1); }
+    35%{ transform:scale(1.035); }
+    100%{ transform:scale(1); }
+  }
+
+  .tile.rank-1{ box-shadow:0 8px 26px -8px rgba(201,163,74,0.65), 0 0 0 1px rgba(201,163,74,0.4) inset; }
+
+  /* La 5ª tessera (opzione E) occupa l'intera riga sotto le prime 4 in coppia:
+     evita lo squilibrio di un 2x2 con un buco, senza spezzare lo stile a schede. */
+  .tile.tile-wide{
+    grid-column:1 / -1;
+    align-items:center;
+  }
+
+  .hint-row{
+    max-width:640px; margin:0 auto 0; padding:0 22px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .hint-text{ font-size:0.72rem; color:var(--muted-3); }
+  .hint-reset{
+    font-size:0.72rem; color:var(--muted-2); background:none; border:none; cursor:pointer;
+    font-weight:700; text-decoration:underline; text-underline-offset:2px; padding:4px;
+  }
+
+  /* ── Riepilogo ordine scelto (sotto le tessere) ───────────────────────── */
+  .order-strip{
+    max-width:640px; margin:10px auto 0; padding:0 20px;
+    display:flex; gap:8px; align-items:center; justify-content:center;
+    flex-wrap:wrap;
+  }
+  .order-chip{
+    display:flex; align-items:center; gap:6px;
+    background:rgba(201,163,74,0.12); border:1px dashed rgba(201,163,74,0.4);
+    border-radius:999px; padding:5px 10px 5px 5px;
+    font-size:0.7rem; color:var(--gold-light); font-weight:600;
+    min-width:36px; justify-content:center;
+    transition:all .2s;
+  }
+  .order-chip.empty{ color:rgba(255,255,255,0.25); border-color:rgba(255,255,255,0.15); background:rgba(255,255,255,0.03); }
+  .order-chip .n{
+    width:16px; height:16px; border-radius:50%; background:var(--gold); color:var(--stage-1);
+    display:flex; align-items:center; justify-content:center; font-size:0.64rem; font-weight:900;
+    flex:0 0 auto;
+  }
+
+  /* ── CTA di conferma (appare a ranking completo) ─────────────────────── */
+  .cta-wrap{ max-width:640px; margin:12px auto 18px; padding:0 20px; text-align:center; }
+  .confirm-btn{
+    display:inline-flex; align-items:center; gap:10px;
+    background:linear-gradient(135deg, var(--gold-light), var(--gold));
+    color:var(--stage-1); font-weight:800; font-size:0.94rem;
+    padding:11px 28px; border-radius:14px; border:none; cursor:pointer;
+    opacity:0; transform:translateY(10px) scale(0.97); pointer-events:none;
+    transition:all .3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow:0 10px 30px -8px rgba(201,163,74,0.6);
+  }
+  .confirm-btn.ready{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+  .confirm-btn:hover{ filter:brightness(1.06); }
+  .confirm-note{ margin-top:8px; font-size:0.7rem; color:var(--muted-3); }
+
+  @media (max-width:480px){
+    .topbar{ padding:8px 16px; }
+    .tension-wrap{ margin-top:10px; }
+    .stage{ margin-top:10px; }
+    .question-text{ font-size:1.12rem; line-height:1.3; }
+    .question-sub{ font-size:0.74rem; }
+    .question-card{ padding:16px 16px 14px; }
+    .tiles{ margin-top:10px; padding:0 14px; gap:8px 8px; }
+    .tile{ padding:9px 9px; gap:8px; }
+    .tile-rank{ width:22px; height:22px; font-size:0.72rem; }
+    .tile-letter{ font-size:0.6rem; }
+    .tile-text{ font-size:0.72rem; line-height:1.3; }
+    .hint-row{ padding:0 16px; }
+    .hint-text{ font-size:0.66rem; }
+    .cta-wrap{ margin:10px auto 14px; }
+    .confirm-btn{ padding:10px 24px; font-size:0.88rem; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        Beautyx
+        <small>Report di profiling</small>
+      </div>
+    </div>
+    <a href="#" class="exit-link">Esci e continua dopo</a>
+  </div>
+
+  <div class="tension-wrap">
+    <span class="ambito-tag">Ambito · Clienti</span>
+    <div class="segments">
+      <div class="seg done"></div>
+      <div class="seg done"></div>
+      <div class="seg current"></div>
+      <div class="seg"></div>
+      <div class="seg"></div>
+      <div class="seg"></div>
+    </div>
+    <div class="step-label">
+      <span>Scenario <b>3</b> di 6</span>
+      <span>Nucleo base — Ambito Clienti</span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="spotlight-glow"></div>
+    <div class="question-card">
+      <div class="question-kicker">Come reagiresti davvero</div>
+      <p class="question-text">
+        Scopri per caso che una cliente storica, che veniva da anni, è passata a un altro centro senza dirti nulla.
+      </p>
+      <p class="question-sub">Ordina le 5 reazioni: dalla più vicina a come faresti tu, alla più lontana.</p>
+    </div>
+  </div>
+
+  <div class="tiles" id="tiles">
+    <div class="tile" data-id="A">
+      <div class="tile-rank">—</div>
+      <div>
+        <div class="tile-letter">A</div>
+        <div class="tile-text">Le scrivi subito un messaggio diretto per chiederle perché se n'è andata senza dirti niente.</div>
+      </div>
+    </div>
+    <div class="tile" data-id="B">
+      <div class="tile-rank">—</div>
+      <div>
+        <div class="tile-letter">B</div>
+        <div class="tile-text">Ripensi con calma agli ultimi appuntamenti insieme, cercando di capire se c'è stato un momento preciso in cui qualcosa si è incrinato.</div>
+      </div>
+    </div>
+    <div class="tile" data-id="C">
+      <div class="tile-rank">—</div>
+      <div>
+        <div class="tile-letter">C</div>
+        <div class="tile-text">Ti chiedi se è il momento di rivedere l'intera esperienza che offri alle clienti di lunga data, non solo il suo caso.</div>
+      </div>
+    </div>
+    <div class="tile" data-id="D">
+      <div class="tile-rank">—</div>
+      <div>
+        <div class="tile-letter">D</div>
+        <div class="tile-text">Continui a lavorare come sempre, sapendo che nel tempo qualche cliente va e qualcuna torna.</div>
+      </div>
+    </div>
+    <div class="tile tile-wide" data-id="E">
+      <div class="tile-rank">—</div>
+      <div>
+        <div class="tile-letter">E</div>
+        <div class="tile-text">Ripensi a cosa negli ultimi tempi potresti aver lasciato scivolare nella cura dei dettagli con le clienti di lunga data, e decidi cosa alzare di livello da subito.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint-row">
+    <span class="hint-text" id="hintText">Tocca le risposte nell'ordine: dalla più tua alla meno tua.</span>
+    <button class="hint-reset" id="resetBtn" style="display:none;">Ricomincia ordine</button>
+  </div>
+
+  <div class="order-strip" id="orderStrip">
+    <div class="order-chip empty" data-slot="0">1°</div>
+    <div class="order-chip empty" data-slot="1">2°</div>
+    <div class="order-chip empty" data-slot="2">3°</div>
+    <div class="order-chip empty" data-slot="3">4°</div>
+    <div class="order-chip empty" data-slot="4">5°</div>
+  </div>
+
+  <div class="cta-wrap">
+    <button class="confirm-btn" id="confirmBtn">Conferma e vai avanti →</button>
+    <p class="confirm-note">Nessuna risposta è giusta o sbagliata: conta solo quanto ti somiglia.</p>
+  </div>
+
+<script>
+  const tiles = Array.from(document.querySelectorAll('.tile'));
+  const hintText = document.getElementById('hintText');
+  const resetBtn = document.getElementById('resetBtn');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const chips = Array.from(document.querySelectorAll('.order-chip'));
+  let order = []; // array di data-id nell'ordine di tap
+
+  function render(){
+    tiles.forEach(t => {
+      const id = t.dataset.id;
+      const rankIdx = order.indexOf(id);
+      const rankEl = t.querySelector('.tile-rank');
+      if(rankIdx === -1){
+        t.classList.remove('ranked','rank-1');
+        rankEl.textContent = '—';
+      } else {
+        t.classList.add('ranked');
+        t.classList.toggle('rank-1', rankIdx === 0);
+        rankEl.textContent = rankIdx + 1;
+      }
+    });
+    chips.forEach((c, i) => {
+      if(order[i]){
+        c.classList.remove('empty');
+        c.innerHTML = '<span class="n">' + (i+1) + '</span> ' + order[i];
+      } else {
+        c.classList.add('empty');
+        c.innerHTML = (i+1) + '°';
+      }
+    });
+    resetBtn.style.display = order.length ? 'inline-block' : 'none';
+    if(order.length === tiles.length){
+      hintText.textContent = 'Ordine completo — controlla e conferma quando vuoi.';
+      confirmBtn.classList.add('ready');
+    } else {
+      const rest = tiles.length - order.length;
+      hintText.textContent = order.length === 0
+        ? 'Tocca le risposte nell\'ordine: dalla più tua alla meno tua.'
+        : 'Ancora ' + rest + (rest === 1 ? ' tessera' : ' tessere') + ' da ordinare.';
+      confirmBtn.classList.remove('ready');
+    }
+  }
+
+  tiles.forEach(t => {
+    t.addEventListener('click', () => {
+      const id = t.dataset.id;
+      const idx = order.indexOf(id);
+      if(idx !== -1){
+        // ri-tap su una tessera già ordinata: la toglie e fa scalare le altre
+        order.splice(idx, 1);
+      } else if(order.length < tiles.length){
+        order.push(id);
+        t.classList.remove('just-ranked');
+        void t.offsetWidth;
+        t.classList.add('just-ranked');
+      }
+      render();
+    });
+  });
+
+  resetBtn.addEventListener('click', () => { order = []; render(); });
+
+  confirmBtn.addEventListener('click', () => {
+    if(order.length !== tiles.length) return;
+    alert('Concept — qui si passerebbe allo scenario successivo.\nOrdine dato: ' + order.join(' → '));
+  });
+
+  render();
+</script>
+
+</body>
+</html>
