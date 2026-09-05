@@ -242,7 +242,10 @@ export default function SignupPage() {
           }).catch(() => {}) // Non bloccare la registrazione se fallisce
         }
 
-        router.push('/login?message=check_email')
+        // Fix messaggio ambiguo (05/09/2026): distinguiamo i due casi reali
+        // invece di mandare sempre lo stesso messaggio "paracadute" — vedi
+        // AuthContext.signUp per come alreadyRegistered viene calcolato.
+        router.push(result.alreadyRegistered ? '/login?message=already_registered' : '/login?message=check_email')
       } else {
         setError(result.error || 'Errore durante la registrazione')
       }

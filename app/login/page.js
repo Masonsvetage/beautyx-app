@@ -104,18 +104,27 @@ function LoginContent() {
             pagina non leggeva mai il parametro `message` — l'utente restava
             su un form di login vuoto, senza nessuna indicazione di dover
             controllare la posta per confermare l'account. */}
-        {/* Fix anti account-enumeration (05/09/2026, segnalazione Mason):
-            Supabase risponde 200 alla signup anche se l'email esiste già
-            (logga internamente `user_repeated_signup`, non manda email, non
-            tocca l'account) — comportamento voluto per non rivelare quali
-            email sono registrate. Questo messaggio quindi va mostrato SEMPRE
-            uguale, sia per email nuova sia già esistente: NON deve mai
-            confermare né negare l'esistenza dell'account. Per chi ha già un
-            account, offre subito le due vie d'uscita (login / reset
-            password) senza dirglielo esplicitamente. */}
+        {/* Fix messaggio ambiguo (05/09/2026, segnalazione Mason: "che
+            cazzo ne so se ho già un account se non me lo dice il
+            sistema?"). Supabase risponde 200 alla signup anche se l'email
+            esiste già (per non permettere l'enumerazione email lato server),
+            ma espone un segnale distinguibile lato client:
+            `authData.user.identities` è un array VUOTO per un'email già
+            registrata, non vuoto per un account davvero nuovo. AuthContext
+            (funzione signUp) calcola questo in `alreadyRegistered` e
+            app/signup/page.js sceglie il parametro `message` di conseguenza
+            — quindi qui possiamo finalmente mostrare due messaggi assertivi
+            invece di un unico messaggio "paracadute" che scaricava sull'utente
+            la responsabilità di indovinare la propria situazione. */}
         {messageParam === 'check_email' && (
           <div className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-3 rounded-lg text-sm">
-            Controlla la tua email per confermare l&apos;account. Hai già un account con questa email? Nessun problema: prova ad accedere subito con la tua password qui sotto, oppure clicca su «Password dimenticata?» se ti serve una mano a recuperarla.
+            Controlla la tua email per confermare l&apos;account.
+          </div>
+        )}
+
+        {messageParam === 'already_registered' && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg text-sm">
+            Esiste già un account con questa email. Prova ad accedere con la tua password qui sotto, oppure clicca su «Password dimenticata?» se ti serve una mano a recuperarla.
           </div>
         )}
 

@@ -578,6 +578,23 @@ export function AuthProvider({ children }) {
         updateLastActivity()
         await loadUserData(session.user.id)
         startInactivityMonitor(session.user)
+      } else if (event === 'PASSWORD_RECOVERY' && session?.user) {
+        // Fix redirect prematuro reset-password (05/09/2026, segnalazione
+        // Mason): il link di recovery Supabase fa arrivare l'utente con una
+        // sessione temporanea e questo listener riceve l'evento
+        // `PASSWORD_RECOVERY` (non `SIGNED_IN`). Prima di questo fix
+        // l'evento non era gestito affatto: `user` restava `null`, e il
+        // guard in app/reset-password/update/page.js ("se dopo 3s non c'è
+        // user, torna a /reset-password") rimandava indietro l'utente prima
+        // che potesse digitare la nuova password. Qui NON si applica il
+        // guard `initDoneRef` usato per SIGNED_IN (quel guard serve solo ad
+        // evitare un doppio caricamento al mount per sessioni già
+        // esistenti — questo evento arriva sempre e solo dal link di
+        // recovery, mai al mount normale).
+        setUser(session.user)
+        updateLastActivity()
+        await loadUserData(session.user.id)
+        startInactivityMonitor(session.user)
       } else if (event === 'SIGNED_OUT') {
         clearInterval(inactivityTimerRef.current)
         setUser(null)
@@ -642,8 +659,27 @@ export function AuthProvider({ children }) {
 
       if (authError) throw authError
 
-      // Salva i dati anagrafici in user_profiles (upsert)
-      if (authData.user) {
+      // Fix messaggio ambiguo post-signup (05/09/2026, segnalazione Mason):
+      // Supabase risponde 200 alla signup anche se l'email esiste già, ma
+      // espone un segnale distinguibile lato client: per un utente DAVVERO
+      // nuovo `authData.user.identities` contiene almeno un elemento, per
+      // un'email già registrata (e già confermata) torna un array VUOTO
+      // `[]` sullo stesso `authData.user` (nessun errore esplicito, per non
+      // permettere l'enumerazione email). Usiamo questo per dire la verità
+      // alla persona invece di un messaggio "paracadute" ambiguo.
+      const alreadyRegistered = !!(
+        authData.user &&
+        Array.isArray(authData.user.identities) &&
+        authData.user.identities.length === 0
+      )
+
+      // Salva i dati anagrafici in user_profiles SOLO per un account
+      // davvero nuovo: se alreadyRegistered è true, authData.user è
+      // l'utente ESISTENTE (stesso id) e fare comunque l'upsert qui
+      // sovrascriverebbe silenziosamente l'anagrafica già salvata di
+      // quell'account con i dati del nuovo tentativo di signup — bug
+      // di integrità dati scoperto insieme al fix del messaggio.
+      if (authData.user && !alreadyRegistered) {
         const profileData = {
           id: authData.user.id,
           email: email,
@@ -689,7 +725,7 @@ export function AuthProvider({ children }) {
         }
       }
 
-      return { success: true, user: authData.user }
+      return { success: true, user: authData.user, alreadyRegistered }
     } catch (error) {
       console.error('Errore registrazione:', error)
       return { success: false, error: error.message }

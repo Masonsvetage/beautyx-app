@@ -2134,3 +2134,344 @@ Nessuna build Next.js completa eseguibile nel sandbox per questo task
 **File modificati:** `app/report/page.js` (redesign 3 card + integrazione
 countdown), `components/common/ReportCountdownBanner.js` (nuova variante
 `prominent` + fix copy CARE→CURA).
+
+## 04/09/2026 — Retest live E2E su produzione (commit 9d6965d), dopo la regola "Definizione di Fatto"
+
+Compito del Coordinatore: collaudo dal vivo reale su `www.beautyx.it`
+(non locale) dell'intero funnel report→signup→email→login→questionario,
+distinguendo esplicitamente "verificato dal vivo" da "non verificabile da
+qui". **Limite dichiarato prima di iniziare, non scoperto in corsa:** per
+policy dell'ambiente in cui giro oggi non posso creare un account reale
+(email+password) né digitare una password in un campo di login/signup, su
+nessun sito, incluso il nostro — è un vincolo categorico, non una scelta
+mia. Questo blocca strutturalmente i punti "registrazione reale" e "login
+utente esistente" del collaudo: non li ho aggirati né simulati, li segnalo
+come non eseguibili da questa sessione specifica (un'altra sessione/Mason
+stesso può farlo).
+
+**Commit verificato in prima persona, non solo riportato:** `git log -1` +
+`git log -1 origin/main` nel repo montato → entrambi puntano a
+`9d6965d6f247c628e7e14ab7c8fabcc90150e290` ("fix: un'unica pagina legale...",
+2026-09-04 13:26:50 +0200), branch allineato, working tree pulita salvo una
+modifica non di codice (`memory/elena.md`, +9 righe). Coerente con la regola
+"Definizione di Fatto": hash confermato con un comando git eseguito da me,
+non ricopiato dal prompt.
+
+**Test dal vivo eseguiti su `https://www.beautyx.it` (browser reale, non
+localhost — niente crash dopo 8-9s come nel sandbox dev precedente):**
+
+1. **`/report` pubblico senza redirect — VERIFICATO DAL VIVO.**
+   `window.location.href` dopo la navigazione resta `https://www.beautyx.it/report`
+   (nessun redirect a `/login`), contenuto REPORT CURA visibile.
+2. **Fix focus-loss signup (Bug 2) — VERIFICATO DAL VIVO, RISOLTO.** Cliccato
+   il campo "Nome" su `/signup` e digitata la stringa
+   "Testverificafocus" (17 caratteri) in un colpo solo. Risultato letto via
+   JS subito dopo: `input.value === "Testverificafocus"` (stringa intera,
+   non troncata), `document.activeElement === quello stesso input`,
+   `selectionStart: 17` (cursore a fine testo). Prima del fix ogni carattere
+   smontava/rimontava il nodo e il focus sarebbe saltato al primo tasto:
+   qui l'intera stringa è arrivata senza reclick. Nessun invio del form,
+   nessun account creato — solo digitazione, per restare dentro il limite
+   sopra.
+3. **Redesign 3 card "Cosa trovi nel report" (punto 6) — VERIFICATO DAL
+   VIVO.** Letto lo stile calcolato reale (non il codice sorgente) del
+   badge "01"/"02"/"03" e del suo contenitore: card `background-color:
+   rgb(255,255,255)` (bianco, non più nero), bordo `1px solid
+   rgba(26,26,15,0.08)`, `border-radius:16px`, `box-shadow` leggera; badge
+   numero `background: rgb(255,228,77)` (oro) con testo scuro. Combacia
+   esattamente con la descrizione del redesign in memoria.
+4. **Registrazione reale con email verificabile (punto 3) — NON ESEGUITA,
+   per il limite di policy sopra, non per limite tecnico della sandbox.**
+   Nessuna email di test è stata usata, nessun account creato. Resta il
+   collaudo più critico ancora da fare da un umano (Mason) o da un'altra
+   sessione con permessi diversi.
+5. **Link di conferma email → completamento login reale (punto 4) — NON
+   VERIFICABILE**, dipende interamente dal punto 3 mai eseguito. Ho potuto
+   solo verificare che la route `app/api/.../auth/callback` esiste dal vivo
+   e che, chiamata SENZA un `code` valido, reindirizza puliti a
+   `/login?error=confirm_failed` (nessun crash/500) — copre solo il ramo di
+   errore, non lo scambio PKCE reale con un `code` valido, che resta il
+   punto più critico mai confermato in produzione.
+6. **Login utente esistente / pagina di errore generico (Bug 7, punto 5) —
+   NON VERIFICABILE fino in fondo, stesso limite password.** Verificato
+   però indirettamente quanto possibile senza autenticarmi:
+   `/impostazioni` e `/impostazioni/abbonamento` visitate da anonimo
+   reindirizzano entrambe puliti a `/login?redirect=...` con risposta
+   `200` (letto da `read_network_requests`), nessuna pagina di errore
+   generico, nessun 500 — il fix Suspense almeno non rompe il rendering
+   per il caso anonimo. **Non è la prova richiesta**: il bug si manifestava
+   DOPO login riuscito, scenario che non ho potuto riprodurre. Resta il
+   secondo punto più critico non confermato.
+7. **Messaggi login `check_email`/`confirm_failed` (sotto-fix del Bug 4) —
+   VERIFICATO DAL VIVO.** `/login?message=check_email` mostra
+   "Registrazione quasi completata: controlla la tua email...";
+   `/login?error=confirm_failed` mostra "Il link di conferma non è valido o
+   è scaduto...". Entrambi i rami di testo confermati renderizzati
+   correttamente in produzione (non solo letti nel codice).
+
+**Non testato per niente in questo giro:** checkbox privacy/link (Bug 6,
+già corretto in precedenza) — non ho proseguito nel wizard di signup oltre
+lo step 1 per non avvicinarmi a un invio reale del form; questionario
+CURA (richiede login, stesso limite).
+
+**Nessuna modifica di codice fatta oggi** — solo collaudo. Nessun nuovo
+commit da parte mia in questa sessione.
+
+**Riepilogo onesto per il Coordinatore/Mason, bug per bug:**
+- Bug 1 (`/report` redirect login): **risolto, verificato dal vivo.**
+- Bug 2 (focus-loss signup): **risolto, verificato dal vivo.**
+- Bug 3 (email Supabase in inglese/no branding): invariato, resta un passo
+  dashboard Supabase per Mason (non testabile/agibile da qui, come già
+  segnalato il 03/09).
+- Bug 4 (link conferma email → login rotto): **parzialmente verificato** —
+  il ramo di errore e i messaggi funzionano dal vivo; lo scambio PKCE reale
+  (il cuore del bug) resta NON verificato per il limite di policy sopra.
+  Serve un test con un'email reale, fatto da un umano o da una sessione con
+  permessi diversi dai miei.
+- Bug 5 (decisione prodotto "sembra un'altra registrazione"): non affrontato
+  oggi, non era nello scope del retest tecnico.
+- Bug 6 (checkbox privacy senza link): già risolto in precedenza (commit
+  9d6965d), non ri-testato oggi (non necessario, non toccato nel frattempo).
+- Bug 7 (login → errore generico): **non verificabile fino in fondo** —
+  solo il comportamento anonimo (redirect pulito, 200) confermato dal vivo;
+  lo scenario reale (utente che fa login con successo e arriva su
+  `/impostazioni`) resta non riprodotto. Fix Suspense verificato solo
+  staticamente come corretto, come già scritto il 03/09.
+- Bug 8 (copy "versione demo" fuorviante): testo già corretto nel codice
+  (commit 9d6965d), non ri-controllato visivamente oggi sullo step 4 del
+  wizard (non raggiunto per lo stesso motivo del punto 4 sopra).
+- Redesign 3 card + countdown: **card confermate live** (vedi punto 3
+  sopra); countdown resta deliberatamente non attivo (`NEXT_PUBLIC_REPORT_LAUNCH_DATE`
+  non impostata), invariato rispetto al 03/09.
+
+**Cosa serve ancora, esplicitamente, prima del weekend:** qualcuno con la
+possibilità di creare un account reale e leggere una vera casella email
+deve completare almeno una volta punti 3+4 (registrazione + click sul link
+di conferma vero) e il login con quell'account per vedere se arriva su
+`/impostazioni` senza errore generico. Questo resta l'unico modo per
+chiudere davvero Bug 4 e Bug 7 — nessuna verifica statica o parziale può
+sostituirlo, coerente con la regola "Definizione di Fatto".
+
+## 05/09/2026 — "Password dimenticata" → link porta su localhost (Mason bloccato dal vivo)
+
+Mason, mentre provava a recuperare l'accesso, ha cliccato "Password
+dimenticata?", ricevuto la stessa email anonima in inglese già nota (Bug 3,
+03/09) e cliccando sul link è finito su una pagina "localhost" con errore
+di connessione — identico pattern del Bug 4 (conferma email), ma sul flusso
+di reset password.
+
+**Ipotesi di partenza (ragionevole mail non verificata):** `resetPasswordForEmail()`
+chiamata senza `redirectTo` esplicito. **Verificata e SMENTITA leggendo il
+codice + `git blame`:**
+- `contexts/AuthContext.js` righe 713-724, funzione `resetPassword(email)`:
+  `redirectTo: \`${window.location.origin}/reset-password/update\`` è
+  già presente, esplicito. `git blame` → commit `0a64cf9` (Mason,
+  15/07/2026, commit iniziale "Full Beautyx app - versione completa"),
+  **mai toccata da allora**.
+- `proxy.js`: `/reset-password` è in `publicRoutes` e c'è già un'eccezione
+  dedicata (`if (pathname.startsWith('/reset-password/update')) { return
+  supabaseResponse }`) che salta anche il redirect "loggato→dashboard".
+  Anche questa riga viene da `0a64cf9` (era in `middleware.js`, il
+  predecessore di `proxy.js`), mai modificata.
+- `app/reset-password/update/page.js` esiste, è completo e corretto: form
+  nuova password + conferma, validazione lunghezza/match, chiama
+  `updatePassword()` (→ `supabase.auth.updateUser({password})`), redirect a
+  `/` dopo successo. Anche questa da `0a64cf9`, mai toccata.
+- Verificato anche il possibile problema collaterale "serve uno scambio
+  PKCE esplicito come per `/auth/callback`?": no — a differenza del Bug 4
+  (dove il link di conferma non aveva ALCUN `redirectTo` e quindi non
+  raggiungeva mai una pagina dell'app), qui il link raggiunge una pagina
+  pubblica della nostra app con `createBrowserClient` (che di default ha
+  `detectSessionInUrl: true` + flow PKCE), che scambia il `?code=` in
+  automatico lato client al caricamento — non serve una route server
+  dedicata come `/auth/callback`, perché qui il problema non è "nessuna
+  pagina sa gestire il code", ma un livello prima.
+
+**Conclusione: nessun bug di codice.** Il codice per il reset password è
+corretto ed è così da sempre (mai stato il sospettato giusto). La causa è
+quasi certamente identica al Bug 3/4: la allow-list "Redirect URLs" in
+Supabase Dashboard (Authentication → URL Configuration, progetto
+`scfumedmisbuxhdywwpb`) non include l'URL di produzione del reset
+(`https://www.beautyx.it/reset-password/update`), quindi Supabase ignora
+silenziosamente il `redirectTo` passato dal codice e ripiega sul "Site URL"
+di default — che con ogni probabilità è ancora `http://localhost:3000`,
+residuo della configurazione iniziale mai aggiornata. Stesso identico
+sintomo ("pagina localhost, errore di connessione") già documentato per la
+conferma email.
+
+**Nessuna modifica di codice fatta, nessun commit** — non c'era nulla da
+correggere lato applicazione.
+
+**Serve Mason sulla dashboard Supabase (non verificabile né risolvibile da
+qui):**
+1. Authentication → URL Configuration → **Site URL**: verificare se è
+   ancora `http://localhost:3000` e, se sì, cambiarlo nel dominio reale
+   (`https://www.beautyx.it`).
+2. Authentication → URL Configuration → **Redirect URLs** (allow-list):
+   deve includere `https://www.beautyx.it/reset-password/update` (e se si
+   testa anche in locale, `http://localhost:3000/reset-password/update`).
+   Senza questa voce il fix di codice — che qui esiste già — non basta:
+   Supabase scarta il redirect richiesto e torna al Site URL di default,
+   esattamente come già successo e spiegato per `/auth/callback` nel Bug 4
+   del 03/09.
+3. Mentre è lì, vale la pena controllare anche il template email "Reset
+   password" (stesso problema di branding/lingua del Bug 3 sul "Confirm
+   signup": mittente anonimo `noreply@mail.app.supabase.io`, testo in
+   inglese) — già segnalato come "da fare anche per Reset password" nella
+   nota del 03/09 (Bug 3) ma a quanto pare non ancora sistemato.
+
+## 05/09/2026 — Bug report urgente Mason: messaggio signup ambiguo + email reset illeggibile + redirect prematuro reset password
+
+Tre segnalazioni distinte arrivate insieme da Mason (produzione, utenti
+reali bloccati). Per ciascuna: causa reale trovata leggendo il codice, fix
+applicato, come verificato.
+
+### 1. Messaggio post-signup ambiguo ("che cazzo ne so se ho già un account")
+
+**Causa reale (letta nel codice, non ipotizzata):** `app/login/page.js`,
+messaggio mostrato per `messageParam === 'check_email'`, e
+`contexts/AuthContext.js` funzione `signUp` (riga ~624). Prima del fix,
+`signUp` faceva `return { success: true, user: authData.user }` SENZA MAI
+controllare `authData.user.identities` — quindi il chiamante (`app/signup/page.js`
+riga 245) faceva sempre `router.push('/login?message=check_email')`, stesso
+messaggio sia per email nuova sia per email già registrata, con un testo
+"paracadute" che chiedeva all'utente di indovinare la propria situazione
+("Hai già un account con questa email? Nessun problema: prova ad
+accedere..."). Un commento nel file (datato erroneamente "05/09/2026")
+giustificava questo come scelta voluta anti-enumerazione — ma verificato
+che il pattern `identities` (documentato da Supabase: array vuoto `[]` per
+un'email già registrata e confermata, non vuoto per un account davvero
+nuovo) non veniva usato da nessuna parte nel codice, quindi la scelta
+"stesso messaggio sempre" non era necessaria: si può distinguere i due casi
+lato client senza che il server riveli nulla di per sé (Supabase risponde
+comunque sempre 200).
+
+**Fix applicato:**
+- `contexts/AuthContext.js`, `signUp`: dopo la chiamata a
+  `supabase.auth.signUp`, calcolato `const alreadyRegistered = !!(authData.user
+  && Array.isArray(authData.user.identities) && authData.user.identities.length
+  === 0)`; la funzione ora ritorna anche `alreadyRegistered` nell'oggetto di
+  successo. **Bug collaterale scoperto e corretto nello stesso punto:**
+  l'upsert su `user_profiles` con i dati anagrafici del form veniva
+  eseguito SEMPRE quando `authData.user` esisteva, anche per un'email già
+  registrata — dato che per un utente esistente `authData.user` è l'utente
+  ESISTENTE (stesso id), questo avrebbe silenziosamente sovrascritto
+  l'anagrafica già salvata di quell'account con i dati del nuovo tentativo
+  di signup. Ora l'upsert è condizionato a `authData.user && !alreadyRegistered`.
+- `app/signup/page.js`, dopo `signUp(...)`: `router.push(result.alreadyRegistered
+  ? '/login?message=already_registered' : '/login?message=check_email')`
+  invece del solo `check_email` fisso.
+- `app/login/page.js`: il messaggio per `check_email` ora dice solo
+  "Controlla la tua email per confermare l'account." (nessun'ambiguità,
+  perché ora è mostrato SOLO per un account davvero nuovo). Aggiunto un
+  blocco nuovo per `already_registered`: "Esiste già un account con questa
+  email. Prova ad accedere con la tua password qui sotto, oppure clicca su
+  «Password dimenticata?» se ti serve una mano a recuperarla." Sostituito
+  anche il commento che descriveva la vecchia scelta "messaggio sempre
+  uguale" con uno che spiega il nuovo meccanismo.
+
+**Limite onesto sul pattern `identities`:** è un comportamento noto e
+documentato di Supabase Auth quando la conferma email è attiva (lo è in
+questo progetto, vedi `emailRedirectTo` nello stesso `signUp`), ma
+Supabase non garantisce contrattualmente questo dettaglio per sempre — se
+in futuro cambia la configurazione (es. autoconfirm attivo, o un
+cambiamento lato Supabase), andrebbe ri-verificato. Non è stato possibile
+testarlo dal vivo con due email reali in questa sandbox (nessun accesso
+browser/casella email/Supabase live) — verificato solo staticamente
+leggendo il codice e la logica, coerente con la documentazione Supabase su
+questo pattern.
+
+### 2a. Email di reset password — bottone bianco su bianco (segnalato illeggibile)
+
+**Causa reale verificata:** letto per intero
+`email-templates/email-template-conferma-e-reset-supabase.md`, sezione "2.
+Reset Password". Il CSS del bottone è corretto: `color:#ffffff` su
+`background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%)` (rosa→viola)
+— testo bianco su sfondo colorato saturo, NON bianco su bianco. Il file
+sorgente non ha il bug descritto.
+Cercato nel progetto (migrations `supabase/`, config, env, script di
+provisioning) un modo per sincronizzare/verificare via codice quale
+template sia effettivamente attivo lato Supabase Auth: **non esiste** — i
+template email di Supabase Auth si gestiscono solo dalla Dashboard, non
+c'è alcuna API o config-as-code nel repo per questo. Coerente con la nota
+già in memoria (sezione sopra, stesso giorno) sul problema gemello
+"Site URL/Redirect URLs" — stesso pattern ricorrente: il codice/i testi
+pronti in questo progetto sono corretti, ma la Dashboard Supabase non
+riflette (o riflette solo in parte) quanto preparato.
+
+**Nessuna modifica di codice possibile per questo punto** (fuori dal
+perimetro codice). Messaggio pronto per Mason, verificabile in 30 secondi:
+
+> Vai su Supabase Dashboard → Authentication → Email Templates → **Reset
+> Password** → campo "Message body". Confronta il testo lì dentro con il
+> punto 2 ("Reset Password") di
+> `email-templates/email-template-conferma-e-reset-supabase.md`. Se il
+> campo è vuoto, contiene ancora il template di default in inglese, o è
+> diverso anche solo in parte dal contenuto del file .md → è quella la
+> causa del bottone illeggibile: il file corretto preparato da Federica non
+> è mai stato incollato lì (o solo in parte). Basta incollare per intero il
+> blocco HTML del punto 2 nel campo "Message body" e salvare.
+
+### 2b. Reset password — redirect prematuro prima di poter digitare la nuova password
+
+**Causa reale trovata (non la sola ipotesi di partenza):** letti per intero
+`app/reset-password/page.js`, `app/reset-password/update/page.js` e
+`contexts/AuthContext.js`.
+- `app/reset-password/update/page.js` righe 17-24: `useEffect` con
+  `setTimeout(..., 3000)` che fa `router.push('/reset-password')` se `user`
+  (da `useAuth()`) è falsy — questo guard esiste da sempre (commit
+  `0a64cf9`) ed è di per sé corretto nell'intento.
+- La causa reale è in `contexts/AuthContext.js`, listener
+  `supabase.auth.onAuthStateChange` (righe ~570-601 prima del fix): gestiva
+  SOLO gli eventi `SIGNED_IN` e `SIGNED_OUT`. Quando si arriva dal link di
+  recovery Supabase, la libreria client spara l'evento **`PASSWORD_RECOVERY`**
+  (non `SIGNED_IN`) — questo evento non aveva NESSUN branch dedicato, quindi
+  veniva silenziosamente ignorato: `setUser()` non veniva mai chiamato per
+  quella sessione temporanea. Risultato: `user` restava `null` nel contesto
+  React, il guard di `update/page.js` scattava dopo 3 secondi e rimandava
+  l'utente a `/reset-password` prima che potesse impostare la password.
+  Non era un problema di `profile`/`centro_id` mancante come da ipotesi
+  iniziale di Mason (il codice non arriva nemmeno a quel punto: il blocco
+  scatta molto prima, per mancanza di `user` tout court) — ma l'effetto
+  finale (rimbalzo prematuro) e la causa di fondo (evento di recovery non
+  gestito correttamente) sono esattamente quelli sospettati.
+  Verificato anche che non è un problema di routing/middleware: in
+  `proxy.js`, `/reset-password/update` è già in `publicRoutes` con
+  un'eccezione dedicata (riga ~53, `return supabaseResponse` immediato) —
+  il middleware non è la causa.
+
+**Fix applicato:** in `contexts/AuthContext.js`, aggiunto un branch
+esplicito `else if (event === 'PASSWORD_RECOVERY' && session?.user)` nel
+listener `onAuthStateChange`, che rispecchia il branch `SIGNED_IN` (
+`setUser(session.user)`, `updateLastActivity()`, `loadUserData(session.user.id)`,
+`startInactivityMonitor(session.user)`), MA senza il guard `initDoneRef`
+usato per `SIGNED_IN` (quel guard serve solo a evitare un doppio
+caricamento al mount per sessioni già esistenti — l'evento
+`PASSWORD_RECOVERY` arriva sempre e solo dal link di recovery, mai al mount
+normale, quindi non va filtrato). Così `user` viene impostato subito
+quando arriva l'evento, ben prima che scatti il timeout di 3 secondi nella
+pagina di update.
+
+**Come verificato:** rilettura riga per riga del file modificato dopo la
+modifica (non fidandosi della sola scrittura). Sintassi di tutti i file
+toccati (`app/login/page.js`, `app/signup/page.js`, `contexts/AuthContext.js`,
+più `app/reset-password/page.js` e `app/reset-password/update/page.js` letti
+ma non modificati) verificata con un parser JS/JSX reale (Babel bundlato
+dentro `node_modules/next`, con `plugin-syntax-jsx`, non `node --check` che
+non capisce JSX e fallisce sempre su questi file) — tutti OK, nessun errore
+di sintassi.
+**Limite onesto, esplicito:** NON è stato possibile fare un collaudo dal
+vivo end-to-end (nessun browser, nessuna casella email reale, nessun
+ambiente Supabase live raggiungibile in questa sandbox) — coerente con la
+regola generale "Collaudo dal vivo obbligatorio prima di dichiarare
+'fatto' un flusso cliente": qui il flusso NON va dichiarato "risolto e
+provato", va dichiarato "causa reale trovata e corretta nel codice,
+verificata solo staticamente (lettura + parser di sintassi)". Serve un test
+reale (Mason o altra sessione con accesso a browser/email/Supabase) prima
+di considerare il fix definitivamente chiuso per il Bug 2b, e in ogni caso
+per il Bug 2a (dashboard, vedi messaggio sopra).
+
+**File modificati oggi:** `app/login/page.js`, `app/signup/page.js`,
+`contexts/AuthContext.js`. Nessuna modifica a
+`email-templates/email-template-conferma-e-reset-supabase.md` (già
+corretto) né a `proxy.js` (non è la causa).
