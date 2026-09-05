@@ -117,8 +117,17 @@ const MONO_STACK = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, mo
 // box grandi ben leggibili) e "sm" (variante pill, versione compatta inline).
 // Stile "countdown classico": numeri monospace, separatori netti tra i blocchi,
 // niente testo in prosa al posto dei numeri.
-function CountdownDigits({ days, hours, minutes, seconds, size = 'lg' }) {
+function CountdownDigits({ days, hours, minutes, seconds, size = 'lg', theme = 'dark' }) {
   const isLg = size === 'lg'
+  // theme "dark" (default, invariato): chip rosa translucido/nero translucido
+  // su sfondo scuro (#1a1a0f) — uso hero pill, richiamo di chiusura, sezione
+  // Report CURA, /report.
+  // theme "onBrand" (nuovo, 05/09/2026): per la variant "topbar", montata su
+  // uno sfondo pieno e CHIARO (gradiente oro→rosa) — un chip translucido chiaro
+  // sparirebbe. Chip scuro OPACO con cifre oro: stesso principio "display
+  // digitale autosufficiente" della variante "lg", solo con i colori invertiti
+  // per restare leggibile sul suo sfondo specifico invece di dipendere da esso.
+  const isOnBrand = theme === 'onBrand'
 
   const numStyle = {
     fontFamily: MONO_STACK,
@@ -131,8 +140,8 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg' }) {
     // e nel richiamo di chiusura, entrambi su sfondo #1a1a0f) stanno su sfondo
     // scuro — testo chiaro in entrambi i casi (bug di contrasto testo scuro
     // su scuro nella versione precedente della pill, corretto qui).
-    color: '#fff',
-    background: isLg ? 'rgba(0,0,0,0.32)' : 'rgba(236,72,153,0.28)',
+    color: isOnBrand ? '#FFE44D' : '#fff',
+    background: isOnBrand ? '#1a1a0f' : (isLg ? 'rgba(0,0,0,0.32)' : 'rgba(236,72,153,0.28)'),
     borderRadius: isLg ? '10px' : '5px',
     padding: isLg ? '10px 8px' : '3px 6px',
     minWidth: isLg ? '54px' : '28px',
@@ -146,7 +155,7 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg' }) {
     fontWeight: 700,
     letterSpacing: '0.09em',
     textTransform: 'uppercase',
-    color: 'rgba(255,255,255,0.65)',
+    color: isOnBrand ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.65)',
     marginTop: isLg ? '6px' : '2px',
     textAlign: 'center',
   }
@@ -155,7 +164,11 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg' }) {
     fontFamily: MONO_STACK,
     fontWeight: 800,
     fontSize: isLg ? 'clamp(20px, 4vw, 28px)' : '13px',
-    color: 'rgba(255,255,255,0.4)',
+    // Il separatore, a differenza dei numeri, sta DIRETTAMENTE sullo sfondo
+    // del genitore (non dentro il chip scuro) — su "onBrand" quello sfondo è
+    // il gradiente chiaro oro→rosa, quindi serve un tono scuro per restare
+    // visibile; su "dark" resta lo sfondo scuro esistente, tono chiaro.
+    color: isOnBrand ? 'rgba(26,26,15,0.55)' : 'rgba(255,255,255,0.4)',
     alignSelf: 'flex-start',
     marginTop: isLg ? '8px' : '2px',
   }
@@ -187,6 +200,18 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg' }) {
 // variant "prominent": blocchi countdown grandi in evidenza (uso /report e
 // sezione Report CURA su /newsletter), richiesta esplicita di Mason dopo il
 // collaudo dal vivo — "countdown VISIBILE" in stile classico DD:HH:MM:SS.
+//
+// variant "topbar" (05/09/2026, terzo giro di feedback sulla visibilità di
+// questa sezione — vedi memory/davide.md): NON è la "pill" ridipinta. Mason ha
+// bocciato la pill in testa hero perché contenuta nella colonna centrale
+// (max-width 640px) su sfondo scuro poco diverso dal resto — "invisibile e
+// incomprensibile". "topbar" è pensata per essere un elemento a sé: barra a
+// piena larghezza pagina, sfondo pieno (gradiente oro→rosa brand, MAI un tint
+// trasparente), un solo claim breve + countdown incorporato nella stessa
+// riga. Va montata dal chiamante FUORI da qualsiasi contenitore con
+// max-width (vedi app/newsletter/page.js, subito sotto l'header, prima
+// dell'intera sezione hero) — qui non applichiamo noi stessi un max-width
+// perché lo scopo è occupare la larghezza intera del viewport.
 export default function ReportCountdownBanner({ className = '', variant = 'pill' }) {
   const countdown = useReportCountdown()
 
@@ -236,6 +261,88 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
         }}>
           rimasti per il report gratis
         </span>
+      </div>
+    )
+  }
+
+  if (variant === 'topbar') {
+    return (
+      <div
+        className={`bx-report-countdown bx-report-countdown--topbar ${className}`}
+        role="note"
+        aria-label={readableLabel}
+        style={{ width: '100%' }}
+      >
+        {/* Stile scoped qui invece che nel <style> globale di page.js: il
+            componente deve restare autosufficiente (può finire su qualunque
+            pagina). SCELTA DELL'EFFETTO DI RICHIAMO (uno solo, come richiesto):
+            pulse/glow discreto sul SOLO blocco countdown (non su tutta la
+            barra). Motivo della scelta rispetto a shimmer o entrata animata:
+            il countdown è l'unico elemento che comunica un'urgenza reale (i
+            secondi scendono davvero) — fargli respirare un alone luminoso
+            attira l'occhio esattamente lì invece di far "lampeggiare" l'intera
+            barra (che rischierebbe l'effetto banner pubblicitario). Ciclo
+            lento (2.6s) e ampiezza contenuta = percepibile ma signorile;
+            rispetta prefers-reduced-motion (si disattiva del tutto). */}
+        <style>{`
+          @keyframes bx-topbar-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(26,26,15,0), 0 2px 6px rgba(26,26,15,0.35); }
+            50% { box-shadow: 0 0 0 5px rgba(26,26,15,0.12), 0 2px 6px rgba(26,26,15,0.35); }
+          }
+          .bx-topbar-pulse { animation: bx-topbar-pulse 2.6s ease-in-out infinite; border-radius: 8px; }
+          @media (prefers-reduced-motion: reduce) {
+            .bx-topbar-pulse { animation: none; }
+          }
+          @media (max-width: 560px) {
+            .bx-topbar-row { padding: 10px 16px !important; gap: 8px !important; }
+            .bx-topbar-claim { font-size: 12.5px !important; }
+          }
+        `}</style>
+        <div
+          className="bx-topbar-row"
+          style={{
+            width: '100%',
+            // Sfondo PIENO a contrasto forte (gradiente oro→rosa brand), non un
+            // tint pallido: richiesta esplicita di Mason dopo la bocciatura
+            // della pill ("deve saltare all'occhio nel primo mezzo secondo").
+            background: 'linear-gradient(90deg, #FFE44D 0%, #EC4899 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            rowGap: '6px',
+            columnGap: '10px',
+            padding: '11px 24px',
+          }}
+        >
+          <span
+            className="bx-topbar-claim"
+            style={{
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontSize: '14px',
+              fontWeight: 800,
+              color: '#1a1a0f',
+              textAlign: 'center',
+            }}
+          >
+            Report CURA gratis — ancora
+          </span>
+          <span className="bx-topbar-pulse" style={{ display: 'inline-flex' }}>
+            <CountdownDigits days={days} hours={hours} minutes={minutes} seconds={seconds} size="sm" theme="onBrand" />
+          </span>
+          <span
+            className="bx-topbar-claim"
+            style={{
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontSize: '14px',
+              fontWeight: 800,
+              color: '#1a1a0f',
+              textAlign: 'center',
+            }}
+          >
+            per assicurartelo
+          </span>
+        </div>
       </div>
     )
   }

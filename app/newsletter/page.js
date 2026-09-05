@@ -203,6 +203,22 @@ export default function NewsletterPage() {
           </a>
         </header>
 
+        {/* ── TOPBAR COUNTDOWN REPORT CURA ──
+            Terzo giro di feedback di Mason sulla visibilità di questa sezione
+            (05/09/2026, sera — vedi memory/generale.md "Durante i 90 giorni di
+            lancio, il report va spinto al massimo" e memory/davide.md): la
+            "pill" dentro la colonna della hero (max-width 640px, su sfondo
+            scuro) è stata bocciata come "invisibile e incomprensibile".
+            RICOSTRUITA da zero come variant "topbar" dedicata (vedi
+            components/common/ReportCountdownBanner.js): barra a piena
+            larghezza pagina — per questo è montata QUI, fuori da qualunque
+            contenitore con max-width, subito sotto l'header/logo e PRIMA di
+            ogni contenuto della hero (immagine, eyebrow, H1) — non più dentro
+            "hero-split". Si nasconde da sola (torna null) se il countdown non
+            è ancora montato lato client o è scaduto, esattamente come le altre
+            varianti del componente. */}
+        <ReportCountdownBanner variant="topbar" />
+
         {/* ── HERO ── */}
         <section style={{ background: '#1a1a0f', position: 'relative', overflow: 'hidden' }}>
           <div style={{
@@ -216,18 +232,11 @@ export default function NewsletterPage() {
             style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: '80px 32px 96px', display: 'flex', alignItems: 'center', gap: '60px' }}
           >
             <div style={{ maxWidth: '640px' }}>
-              {/* Countdown periodo gratuito report CURA (90gg dal lancio).
-                  Istruzione diretta di Mason (05/09/2026): visibile subito, anche
-                  prima che NEXT_PUBLIC_REPORT_LAUNCH_DATE sia configurata su Vercel.
-                  Finché la env var reale non è impostata, il componente mostra un
-                  fallback PLACEHOLDER (~60gg, ricalcolato a runtime, mai una data
-                  fissa) — vedi commento dettagliato in
-                  components/common/ReportCountdownBanner.js. Quando la env var reale
-                  verrà impostata, prende automaticamente il sopravvento. */}
-              <div style={{ marginBottom: '16px' }}>
-                <ReportCountdownBanner />
-              </div>
-
+              {/* Il countdown report CURA non vive più qui dentro (era la "pill"
+                  bocciata da Mason come "invisibile e incomprensibile" — terzo
+                  giro di feedback, 05/09/2026 sera): ora è la barra a piena
+                  larghezza subito sopra questa sezione (variant "topbar", vedi
+                  poco più in alto in questo file). */}
               <div className="bx-nl-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(236,72,153,0.15)', border: '1px solid rgba(236,72,153,0.3)', color: '#EC4899', fontWeight: 700, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', borderRadius: '100px', marginBottom: '32px' }}>
                 Newsletter gratuita · Beautyx
               </div>
