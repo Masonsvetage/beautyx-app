@@ -323,16 +323,22 @@ export default function NewsletterPage() {
             Ora sezione scura con bordi spessi (6px) e badge/eyebrow molto più grande, per
             uno stacco netto sia dalla hero sopra sia da "Chi siamo" sotto — coerente con
             la regola memory/generale.md "Durante i 90 giorni di lancio, il report va
-            spinto al massimo" (05/09/2026). Solo container/layout toccati da Davide: il
-            copy (Federica, in parallelo) resta invariato.
+            spinto al massimo" (05/09/2026). Solo container/layout toccati da Davide.
 
-            *** AGGIORNAMENTO 05/09/2026 (Federica) — ambiguità copy segnalata da Mason
-            in collaudo: "senza impegno... se un giorno vorrai proseguire" suonava come
-            un abbonamento con prova gratuita, non come un prodotto una tantum. Riscritto
-            per chiarire: il Report CURA si fa UNA VOLTA SOLA (mai ricorrente); gratis se
-            completato entro i 90gg dal lancio, altrimenti 60€ una tantum — prezzo ora
-            esplicito anche qui (prima compariva solo su app/report/page.js). Vedi stesso
-            fix su app/report/page.js, sezione "PREZZO E URGENZA TEMPORALE". */}
+            *** AGGIORNAMENTO 05/09/2026 (Federica) — riscrittura completa del copy,
+            bocciatura durissima di Mason sulla versione precedente: "sembra una
+            vaccinazione", "non si capisce a che cazzo serve il report". Causa reale
+            individuata: la spiegazione "si fa una volta sola / non è un abbonamento"
+            che Mason aveva dato AL TEAM per far capire il meccanismo era finita nel
+            testo pubblico — risultato, linguaggio da foglietto illustrativo invece che
+            da vendita. Quella frase è bandita dal testo (resta solo, una volta, nel
+            blocco prezzo di app/report/page.js, mai qui). Il problema vero non era la
+            frequenza d'uso: era che non si capiva COSA FA il report. Il copy qui sotto
+            parte da lì: cosa è (una diagnosi scritta sui dati veri di quel centro, non
+            un test online, non un oroscopo), e perché conviene farlo ora (gratis solo
+            nel lancio, un accenno al countdown, niente meccanismo di prezzo spiegato
+            tre volte). Vedi stesso intervento su app/report/page.js (hero + blocco
+            prezzo). */}
         <section
           id="report-cura"
           style={{
@@ -356,22 +362,22 @@ export default function NewsletterPage() {
               color: '#1a1a0f', background: '#EC4899',
               padding: '10px 22px', borderRadius: '999px', marginBottom: '24px',
             }}>
-              <span aria-hidden="true">★</span> Report CURA: un valore di 60€, tuo gratis nei primi 90 giorni
+              <span aria-hidden="true">★</span> Report CURA — la diagnosi del tuo centro, gratis nel lancio
             </p>
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(26px, 3.8vw, 42px)', fontWeight: 900, color: '#fff', lineHeight: 1.2, marginBottom: '20px' }}>
-              Il Report CURA si fa una volta sola. Ora è gratis — il countdown qui sotto dice per quanto ancora.
+              Il tuo centro ha un punto bloccato. Il Report CURA te lo mostra — con i tuoi numeri, non a caso.
             </h2>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '16px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
-              Qui parliamo di gestione due volte a settimana, in generale. Il Report CURA prende in mano il tuo centro — quello vero, con i suoi numeri e le sue clienti — e ne restituisce un profilo scritto solo per te, costruito secondo il metodo CURA: Consapevolezza, Unisono degli Elementi, Risveglio del Potenziale, Ascesa Strategica.
+              Non è un quiz online e non è un oroscopo travestito da consulenza. Il Report CURA prende i dati veri del tuo centro — clienti, agenda, conto — e ti restituisce una diagnosi scritta solo per te: dove sei bloccata oggi, e qual è la prima cosa su cui mettere le mani domani mattina. Niente consigli buoni per tutte: un punto di partenza specifico, per quel centro che conosci a memoria — il tuo.
             </p>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '36px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
-              È un&apos;esperienza che vivi una volta sola: la fai, ed è fatta — non un abbonamento con quota mensile. Falla entro questi 90 giorni dal lancio e non paghi nulla, un valore di 60€ che resta tuo. Se il countdown scade prima che tu l&apos;abbia fatta, quella stessa esperienza — sempre unica, mai ricorrente — costa 60€, una volta sola. In entrambi i casi, se un giorno vorrai proseguire, quello che emerge qui diventa già la base della tua consulenza vera: niente lavoro rifatto due volte.
+              Vale 60€. Durante il lancio è gratis: il countdown qui sotto dice per quanto ancora, poi si torna al prezzo pieno.
             </p>
 
             <div style={{ marginBottom: '36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <ReportCountdownBanner variant="prominent" />
               <p style={{ marginTop: '14px', fontSize: '13px', color: '#b8a8b0', lineHeight: 1.6, maxWidth: '420px' }}>
-                Il countdown conta la finestra gratuita: 90 giorni dal lancio pubblico del report, poi si richiude.
+                Passata questa finestra, il Report CURA si paga. Oggi no.
               </p>
             </div>
 
@@ -379,10 +385,10 @@ export default function NewsletterPage() {
               href="/report"
               style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '18px 40px', borderRadius: '10px', fontWeight: 800, fontSize: '17px', textDecoration: 'none', boxShadow: '0 10px 28px rgba(236,72,153,0.4)' }}
             >
-              Registrati ora al Report CURA →
+              Scopri dove sei bloccata → Fai il Report CURA
             </Link>
             <p style={{ marginTop: '16px', fontSize: '13px', color: '#b8a8b0', lineHeight: 1.6 }}>
-              Bastano pochi minuti e un account completo — se più avanti scegli la piattaforma, non dovrai registrarti una seconda volta.
+              Bastano pochi minuti e un account completo — ti serve comunque, qualunque cosa deciderai dopo.
             </p>
           </div>
         </section>

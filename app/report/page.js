@@ -8,14 +8,24 @@ import ReportCountdownBanner from '@/components/common/ReportCountdownBanner'
 // Pagina pubblica del Report di profiling CURA (nome rinominato da CARE il
 // 03/09/2026 per collisione di marchio — vedi nome-metodo-CARE.md) — vera
 // CTA del funnel per il "traffico caldo" (chi ci conosce già), punto di
-// atterraggio futuro per ads/outreach mirati sul report. Framing corretto
-// (fix ambiguità 05/09/2026, segnalata da Mason in collaudo: il copy
-// precedente suonava come un abbonamento con prova gratuita): il report è
-// un prodotto/esperienza UNA TANTUM, mai ricorrente. Chi lo completa entro
-// i 90 giorni dal lancio non paga nulla (valore 60€ in regalo); chi lo
-// completa dopo la finestra paga 60€ una tantum, quella stessa unica
-// volta — non un canone. In entrambi i casi il credito è scalabile
-// sull'abbonamento se poi si continua con la piattaforma (mai due volte).
+// atterraggio futuro per ads/outreach mirati sul report.
+//
+// Meccanismo interno (per il team, NON per il testo pubblico): chi completa
+// il report entro i 90 giorni dal lancio non paga nulla (valore 60€ in
+// regalo); chi lo completa dopo paga 60€ una tantum, mai un canone; il
+// credito è scalabile sull'abbonamento se poi si continua con la piattaforma.
+//
+// *** AGGIORNAMENTO 05/09/2026 (Federica) — riscrittura completa di hero e
+// blocco prezzo. Bocciatura durissima di Mason: "sembra una vaccinazione",
+// "non si capisce a che cazzo serve il report". Causa reale: la spiegazione
+// sopra (una tantum / non un abbonamento) — pensata per il team — era finita
+// nel testo per le clienti, in tre punti diversi, con toni da foglietto
+// illustrativo. Ora è bandita dal copy pubblico: se proprio serve compare
+// UNA sola volta, di sfuggita, nel blocco prezzo, mai come titolo o argomento
+// principale. Il vero problema non era la frequenza d'uso, era che non si
+// capiva COSA FA il report: hero e blocco prezzo ora partono da lì — è una
+// diagnosi sui dati veri di quel centro, non un test online, non un
+// oroscopo — e dal perché convenga farlo ora (gratis solo nel lancio).
 //
 // STATO ATTUALE (28/08/2026): il motore del questionario e la UI del quiz
 // (punti 3/8 del piano tecnico) non sono ancora pronti — questa pagina è
@@ -86,7 +96,7 @@ export default function ReportPage() {
             borderRadius: '100px',
             marginBottom: '28px',
           }}>
-            Report CURA · Una volta sola, gratis nei primi 90 giorni
+            Report CURA · La diagnosi del tuo centro, gratis nel lancio
           </div>
 
           {/* Headline — dolore concreto, non il doppio senso della parola */}
@@ -113,7 +123,11 @@ export default function ReportPage() {
             </span>
           </h1>
 
-          {/* Sottotitolo — cosa fa il report, senza spiegare il metodo */}
+          {/* Sottotitolo — riscritto da zero (05/09/2026, Federica): il problema
+              non era la frequenza d'uso, era che non si capiva cosa fa davvero il
+              report. Qui si dice chiaro: prende i dati veri di QUEL centro e dice
+              dove è bloccato oggi e cosa fare per prima — non un test generico,
+              non un oroscopo, non un elenco di consigli. */}
           <p style={{
             fontSize: 'clamp(16px, 4vw, 19px)',
             color: '#444',
@@ -122,11 +136,11 @@ export default function ReportPage() {
             maxWidth: '520px',
             margin: '0 auto 32px',
           }}>
-            Il Report CURA è una fotografia onesta di dove il tuo centro è
-            bloccato — e di cosa puoi far ripartire per prima, subito. Nasce
-            da un metodo che guardiamo insieme a te, non un test online
-            generico: guarda dritto a te, titolare, alle tue scelte e alla
-            guida del tuo centro.
+            Non è un test online e non è un oroscopo. Il Report CURA guarda
+            i dati veri del tuo centro — clienti, agenda, conto — e ti dice
+            due cose chiare: dove sei bloccata oggi, e qual è la prima mossa
+            da fare. Scritto su misura per il tuo centro, quello vero: non
+            per "un centro estetico" qualsiasi.
           </p>
 
           {/* ── CTA PRINCIPALE ── */}
@@ -274,7 +288,7 @@ export default function ReportPage() {
               marginBottom: '12px',
               color: '#1a1a0f',
             }}>
-              Un valore di 60€. Tuo gratis, se lo fai ora.
+              La tua diagnosi vale 60€. Ora è gratis.
             </h3>
 
             {/* Countdown visibile dei 90 giorni (richiesta di Mason dopo il
@@ -290,12 +304,11 @@ export default function ReportPage() {
             </div>
 
             <p style={{ color: '#555', fontSize: '15px', lineHeight: 1.7 }}>
-              Il Report CURA è un&apos;esperienza che vivi una volta sola: la
-              fai, ed è fatta — non un abbonamento con quota mensile.
-              Completala entro il countdown qui sopra e non paghi nulla. La
-              fai dopo? Quella stessa esperienza, sempre unica, costa 60€ una
-              volta sola — che diventano comunque credito pieno
-              sull'abbonamento se continui con noi.
+              Vale 60€: è il prezzo di una diagnosi scritta sui dati del tuo
+              centro, non di un abbonamento. Falla ora, dentro il countdown
+              qui sopra, e non paghi nulla. Se il countdown scade prima,
+              resta un investimento singolo — e diventa credito pieno se poi
+              scegli di continuare con noi.
             </p>
           </div>
         </section>
