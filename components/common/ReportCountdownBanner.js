@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, Fragment } from 'react'
+import Link from 'next/link'
 
 // Countdown reale dei giorni rimanenti del periodo gratuito (90gg) del report
 // di profiling CURA (rinominato da CARE il 03/09/2026, vedi nome-metodo-CARE.md).
@@ -266,6 +267,23 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
   }
 
   if (variant === 'topbar') {
+    // *** CORREZIONE 05/09/2026 — collaudo Mason bocciato duramente: "i
+    // caratteri piccoli non si capisce, non c'è un invito all'azione, 'ancora
+    // qualche giorno per assicurartelo' non si capisce cosa deve assicurare".
+    // Due difetti risolti qui (non un ritocco estetico):
+    // 1) claim riscritto per essere ESPLICITO su cosa si ottiene ("Report CURA
+    //    gratis") invece di alludervi con un pronome ("...assicurartelo") privo
+    //    di referente chiaro in un banner letto di corsa;
+    // 2) aggiunto un vero bottone cliccabile verso /report (prima il banner era
+    //    solo testo + countdown, senza alcun invito all'azione dentro la barra
+    //    stessa) — bottone chip scuro opaco con testo oro, stesso principio di
+    //    contrasto forte del chip countdown "onBrand", cosi i due elementi più
+    //    rilevanti della barra (countdown + CTA) si leggono come una coppia
+    //    coerente sullo sfondo pieno oro→rosa. Font del claim aumentato
+    //    (14px → clamp 16-19px) perché doveva leggersi a colpo d'occhio.
+    //    Testo del claim è una versione diretta di Davide, non definitiva:
+    //    Federica lavora in parallelo sul resto della sezione e può affinarlo
+    //    sopra senza toccare bottone/countdown.
     return (
       <div
         className={`bx-report-countdown bx-report-countdown--topbar ${className}`}
@@ -293,9 +311,13 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
           @media (prefers-reduced-motion: reduce) {
             .bx-topbar-pulse { animation: none; }
           }
+          .bx-topbar-cta { transition: background 0.15s ease, transform 0.1s ease; }
+          .bx-topbar-cta:hover, .bx-topbar-cta:focus-visible { background: #000 !important; }
+          .bx-topbar-cta:active { transform: scale(0.97); }
           @media (max-width: 560px) {
-            .bx-topbar-row { padding: 10px 16px !important; gap: 8px !important; }
-            .bx-topbar-claim { font-size: 12.5px !important; }
+            .bx-topbar-row { padding: 12px 16px !important; gap: 8px !important; }
+            .bx-topbar-claim { font-size: 15px !important; }
+            .bx-topbar-cta { width: 100%; }
           }
         `}</style>
         <div
@@ -310,22 +332,26 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
             alignItems: 'center',
             justifyContent: 'center',
             flexWrap: 'wrap',
-            rowGap: '6px',
-            columnGap: '10px',
-            padding: '11px 24px',
+            rowGap: '10px',
+            columnGap: '14px',
+            padding: '13px 24px',
           }}
         >
           <span
             className="bx-topbar-claim"
             style={{
               fontFamily: 'var(--font-inter), sans-serif',
-              fontSize: '14px',
+              // Aumentato da 14px (bocciato: "i caratteri piccoli non si
+              // capisce") — deve leggersi a colpo d'occhio senza avvicinarsi
+              // allo schermo.
+              fontSize: 'clamp(16px, 2.6vw, 19px)',
               fontWeight: 800,
               color: '#1a1a0f',
               textAlign: 'center',
+              lineHeight: 1.25,
             }}
           >
-            Report CURA gratis — ancora
+            Report CURA gratis
           </span>
           <span className="bx-topbar-pulse" style={{ display: 'inline-flex' }}>
             <CountdownDigits days={days} hours={hours} minutes={minutes} seconds={seconds} size="sm" theme="onBrand" />
@@ -334,14 +360,43 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
             className="bx-topbar-claim"
             style={{
               fontFamily: 'var(--font-inter), sans-serif',
-              fontSize: '14px',
+              fontSize: 'clamp(16px, 2.6vw, 19px)',
               fontWeight: 800,
               color: '#1a1a0f',
               textAlign: 'center',
+              lineHeight: 1.25,
             }}
           >
-            per assicurartelo
+            rimasti
           </span>
+          <Link
+            href="/report"
+            className="bx-topbar-cta"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              // Bottone vero (non un link testuale sottolineato): chip scuro
+              // opaco con testo oro, contrasto forte rispetto allo sfondo
+              // oro→rosa del banner — stesso principio del chip countdown
+              // "onBrand", cosi countdown e CTA si leggono come coppia.
+              background: '#1a1a0f',
+              color: '#FFE44D',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 800,
+              fontSize: 'clamp(14px, 2vw, 16px)',
+              padding: '13px 24px',
+              minHeight: '44px', // touch-friendly su mobile
+              borderRadius: '999px',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 10px rgba(26,26,15,0.4)',
+              border: '1.5px solid rgba(26,26,15,0.2)',
+            }}
+          >
+            Richiedilo ora →
+          </Link>
         </div>
       </div>
     )
