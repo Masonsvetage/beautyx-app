@@ -315,7 +315,15 @@ export default function NewsletterPage() {
             uno stacco netto sia dalla hero sopra sia da "Chi siamo" sotto — coerente con
             la regola memory/generale.md "Durante i 90 giorni di lancio, il report va
             spinto al massimo" (05/09/2026). Solo container/layout toccati da Davide: il
-            copy (Federica, in parallelo) resta invariato. */}
+            copy (Federica, in parallelo) resta invariato.
+
+            *** AGGIORNAMENTO 05/09/2026 (Federica) — ambiguità copy segnalata da Mason
+            in collaudo: "senza impegno... se un giorno vorrai proseguire" suonava come
+            un abbonamento con prova gratuita, non come un prodotto una tantum. Riscritto
+            per chiarire: il Report CURA si fa UNA VOLTA SOLA (mai ricorrente); gratis se
+            completato entro i 90gg dal lancio, altrimenti 60€ una tantum — prezzo ora
+            esplicito anche qui (prima compariva solo su app/report/page.js). Vedi stesso
+            fix su app/report/page.js, sezione "PREZZO E URGENZA TEMPORALE". */}
         <section
           id="report-cura"
           style={{
@@ -339,16 +347,16 @@ export default function NewsletterPage() {
               color: '#1a1a0f', background: '#EC4899',
               padding: '10px 22px', borderRadius: '999px', marginBottom: '24px',
             }}>
-              <span aria-hidden="true">★</span> Report CURA gratis · Solo nei primi 90 giorni dal lancio
+              <span aria-hidden="true">★</span> Report CURA: un valore di 60€, tuo gratis nei primi 90 giorni
             </p>
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(26px, 3.8vw, 42px)', fontWeight: 900, color: '#fff', lineHeight: 1.2, marginBottom: '20px' }}>
-              Il Report CURA è gratis adesso. Il countdown qui sotto dice fino a quando.
+              Il Report CURA si fa una volta sola. Ora è gratis — il countdown qui sotto dice per quanto ancora.
             </h2>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '16px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
               Qui parliamo di gestione due volte a settimana, in generale. Il Report CURA prende in mano il tuo centro — quello vero, con i suoi numeri e le sue clienti — e ne restituisce un profilo scritto solo per te, costruito secondo il metodo CURA: Consapevolezza, Unisono degli Elementi, Risveglio del Potenziale, Ascesa Strategica.
             </p>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '36px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
-              Per i primi 90 giorni dal lancio pubblico è gratuito, senza pagare nulla e senza impegno. Se un giorno vorrai proseguire, quello che emerge qui diventa già la base della tua consulenza vera — niente lavoro rifatto due volte.
+              È un&apos;esperienza che vivi una volta sola: la fai, ed è fatta — non un abbonamento con quota mensile. Falla entro questi 90 giorni dal lancio e non paghi nulla, un valore di 60€ che resta tuo. Se il countdown scade prima che tu l&apos;abbia fatta, quella stessa esperienza — sempre unica, mai ricorrente — costa 60€, una volta sola. In entrambi i casi, se un giorno vorrai proseguire, quello che emerge qui diventa già la base della tua consulenza vera: niente lavoro rifatto due volte.
             </p>
 
             <div style={{ marginBottom: '36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

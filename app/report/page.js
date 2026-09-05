@@ -8,9 +8,14 @@ import ReportCountdownBanner from '@/components/common/ReportCountdownBanner'
 // Pagina pubblica del Report di profiling CURA (nome rinominato da CARE il
 // 03/09/2026 per collisione di marchio — vedi nome-metodo-CARE.md) — vera
 // CTA del funnel per il "traffico caldo" (chi ci conosce già), punto di
-// atterraggio futuro per ads/outreach mirati sul report. Framing: gratis
-// per i primi 90 giorni dal lancio, poi 60€ scalabili come credito
-// sull'abbonamento (mai due volte).
+// atterraggio futuro per ads/outreach mirati sul report. Framing corretto
+// (fix ambiguità 05/09/2026, segnalata da Mason in collaudo: il copy
+// precedente suonava come un abbonamento con prova gratuita): il report è
+// un prodotto/esperienza UNA TANTUM, mai ricorrente. Chi lo completa entro
+// i 90 giorni dal lancio non paga nulla (valore 60€ in regalo); chi lo
+// completa dopo la finestra paga 60€ una tantum, quella stessa unica
+// volta — non un canone. In entrambi i casi il credito è scalabile
+// sull'abbonamento se poi si continua con la piattaforma (mai due volte).
 //
 // STATO ATTUALE (28/08/2026): il motore del questionario e la UI del quiz
 // (punti 3/8 del piano tecnico) non sono ancora pronti — questa pagina è
@@ -81,7 +86,7 @@ export default function ReportPage() {
             borderRadius: '100px',
             marginBottom: '28px',
           }}>
-            Report CURA · Gratis nei primi 90 giorni
+            Report CURA · Una volta sola, gratis nei primi 90 giorni
           </div>
 
           {/* Headline — dolore concreto, non il doppio senso della parola */}
@@ -269,7 +274,7 @@ export default function ReportPage() {
               marginBottom: '12px',
               color: '#1a1a0f',
             }}>
-              Gratis ora. Mai un doppio pagamento dopo.
+              Un valore di 60€. Tuo gratis, se lo fai ora.
             </h3>
 
             {/* Countdown visibile dei 90 giorni (richiesta di Mason dopo il
@@ -285,8 +290,12 @@ export default function ReportPage() {
             </div>
 
             <p style={{ color: '#555', fontSize: '15px', lineHeight: 1.7 }}>
-              Passato il periodo gratuito, il Report CURA costa 60€ — e
-              diventano credito pieno sull'abbonamento se continui con noi.
+              Il Report CURA è un&apos;esperienza che vivi una volta sola: la
+              fai, ed è fatta — non un abbonamento con quota mensile.
+              Completala entro il countdown qui sopra e non paghi nulla. La
+              fai dopo? Quella stessa esperienza, sempre unica, costa 60€ una
+              volta sola — che diventano comunque credito pieno
+              sull'abbonamento se continui con noi.
             </p>
           </div>
         </section>
