@@ -14,13 +14,17 @@ basso rischio di voce, come da indicazione di Mason).
 
 ## 1. Confirm signup
 
-**Contesto:** l'utente si è appena registrato (Report CURA o account Beautyx)
-e deve confermare l'email prima di poter accedere.
+**Contesto:** l'utente si è appena registrato con un account completo
+Beautyx — oggi è sempre chi ha chiesto il report, ma la stessa registrazione
+serve anche a chi in futuro si iscriverà direttamente alla piattaforma
+(stesso form/account condiviso, per design). Il template non nomina un
+prodotto/livello specifico, così va bene in entrambi i casi. Aggiornato da
+Federica il 2026-09-05 dopo osservazione di Mason.
 
 ### Oggetto
 
 ```
-Beautyx — conferma la tua email: il tuo Report CURA ti aspetta
+Beautyx — conferma la tua email: si comincia
 ```
 
 ### Corpo HTML
@@ -34,7 +38,7 @@ Beautyx — conferma la tua email: il tuo Report CURA ti aspetta
 </head>
 <body style="margin:0; padding:0; background-color:#f5f5f7; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
   <div style="display:none; font-size:1px; color:#f5f5f7; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
-    Un click e sei dentro. Il tuo Report CURA ti aspetta.
+    Un click e sei dentro. Quello che hai appena iniziato con noi ti aspetta.
   </div>
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f5f5f7; padding:32px 16px;">
     <tr>
@@ -58,7 +62,7 @@ Beautyx — conferma la tua email: il tuo Report CURA ti aspetta
                 Ci siamo quasi.
               </p>
               <p style="font-size:16px; color:#374151; line-height:1.8; margin:0 0 32px 0;">
-                Hai chiesto il tuo Report CURA — per aprirlo ci manca solo un ultimo passo: confermare che questa email è davvero tua.
+                Hai appena iniziato qualcosa con noi — per andare avanti ci manca solo un ultimo passo: confermare che questa email è davvero tua.
               </p>
 
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 32px auto;">
