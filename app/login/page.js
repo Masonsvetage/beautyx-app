@@ -104,9 +104,18 @@ function LoginContent() {
             pagina non leggeva mai il parametro `message` — l'utente restava
             su un form di login vuoto, senza nessuna indicazione di dover
             controllare la posta per confermare l'account. */}
+        {/* Fix anti account-enumeration (05/09/2026, segnalazione Mason):
+            Supabase risponde 200 alla signup anche se l'email esiste già
+            (logga internamente `user_repeated_signup`, non manda email, non
+            tocca l'account) — comportamento voluto per non rivelare quali
+            email sono registrate. Questo messaggio quindi va mostrato SEMPRE
+            uguale, sia per email nuova sia già esistente: NON deve mai
+            confermare né negare l'esistenza dell'account. Per chi ha già un
+            account, offre subito le due vie d'uscita (login / reset
+            password) senza dirglielo esplicitamente. */}
         {messageParam === 'check_email' && (
           <div className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-3 rounded-lg text-sm">
-            Registrazione quasi completata: controlla la tua email e clicca sul link di conferma per attivare l&apos;account, poi accedi qui.
+            Controlla la tua email per confermare l&apos;account. Hai già un account con questa email? Nessun problema: prova ad accedere subito con la tua password qui sotto, oppure clicca su «Password dimenticata?» se ti serve una mano a recuperarla.
           </div>
         )}
 
