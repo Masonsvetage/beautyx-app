@@ -309,10 +309,10 @@ export default function NewsletterPage() {
         <section id="report-cura" style={{ background: '#fdf2f7', padding: '72px 32px', borderTop: '1px solid #f6dce9', borderBottom: '1px solid #f6dce9' }}>
           <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
             <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '16px' }}>
-              Un passo più in là · Report CURA
+              Report CURA gratis · Solo nei primi 90 giorni dal lancio
             </p>
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(24px, 3.5vw, 38px)', fontWeight: 900, color: '#1a1a0f', lineHeight: 1.2, marginBottom: '20px' }}>
-              Se la newsletter ti ha già conquistata, il Report va più a fondo.
+              Il Report CURA è gratis adesso. Il countdown qui sotto dice fino a quando.
             </h2>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#555', lineHeight: 1.85, marginBottom: '16px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
               Qui parliamo di gestione due volte a settimana, in generale. Il Report CURA prende in mano il tuo centro — quello vero, con i suoi numeri e le sue clienti — e ne restituisce un profilo scritto solo per te, costruito secondo il metodo CURA: Consapevolezza, Unisono degli Elementi, Risveglio del Potenziale, Ascesa Strategica.
@@ -332,7 +332,7 @@ export default function NewsletterPage() {
               href="/report"
               style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '16px 34px', borderRadius: '10px', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}
             >
-              Scopri il Report CURA →
+              Registrati ora al Report CURA →
             </Link>
             <p style={{ marginTop: '16px', fontSize: '13px', color: '#8a7a80', lineHeight: 1.6 }}>
               Bastano pochi minuti e un account completo — se più avanti scegli la piattaforma, non dovrai registrarti una seconda volta.
@@ -665,6 +665,31 @@ export default function NewsletterPage() {
             >
               Iscriviti gratis →
             </a>
+
+            {/* Richiamo compatto al Report CURA, ripetuto qui in fondo pagina —
+                istruzione diretta di Mason (05/09/2026, vedi memory/generale.md
+                "Durante i 90 giorni di lancio, il report va spinto al massimo"):
+                durante la finestra dei 90gg gratuiti il richiamo va ripetuto in
+                ogni punto ad alta visibilità, chiusura pagina inclusa, e con la
+                stessa urgenza del blocco #report-cura — non l'eco leggera
+                maieutica prevista a regime dopo i 90 giorni. Non ripete il
+                blocco lungo sopra: solo eyebrow breve + countdown + CTA diretta.
+                Countdown compatto: Davide interviene qui in parallelo sullo
+                stile/countdown (vedi ReportCountdownBanner). */}
+            <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '14px' }}>
+                Il Report CURA è gratis solo nei primi 90 giorni dal lancio
+              </p>
+              <div style={{ marginBottom: '16px' }}>
+                <ReportCountdownBanner />
+              </div>
+              <Link
+                href="/report"
+                style={{ display: 'inline-block', background: 'transparent', color: '#fff', padding: '13px 30px', borderRadius: '10px', fontWeight: 700, fontSize: '15px', textDecoration: 'none', border: '1.5px solid #EC4899' }}
+              >
+                Registrati ora al Report CURA →
+              </Link>
+            </div>
           </div>
         </section>
 
