@@ -39,7 +39,25 @@ const NON_PIATTAFORMA_PLAN_CODICI = new Set(['report_profiling'])
 
 export default function Home() {
   const { currentCentro, profile, loading: authLoading, centriAccess, switchCentro, isAdmin, isHpa, isGlobalView } = useAuth()
-  const { openSidebar, sendMessage } = useBeautyx()
+  // Bug fix (06/09/2026, crash post reset-password segnalato da Mason —
+  // vedi app/global-error.js in produzione): BeautyxProviderWrapper.js NON
+  // monta <BeautyxProvider> quando l'utente è autenticato ma senza centro_id
+  // (non-admin, non-hpa) — lo fa apposta, per lasciar renderizzare questa
+  // pagina così può fare il redirect a /impostazioni?primo-accesso=1 più
+  // sotto (riga `if (!centroId) {...}`). In quella finestra useBeautyx()
+  // (contexts/BeautyxContext.js) ritorna `null` (nessun Provider sopra
+  // nell'albero), e la destrutturazione SENZA fallback qui esplodeva con
+  // "Cannot destructure property 'openSidebar' of 'null'" — un errore non
+  // catturato da nessun error boundary locale, quindi risolto solo dal
+  // global-error.js di root. Il crash è deterministico per QUALSIASI utente
+  // autenticato senza centro (capita facilmente su un account appena
+  // creato/di test su cui non è mai stato completato l'onboarding, come
+  // probabilmente quello con cui è stato provato il reset password) — non è
+  // legato in sé al flusso di recovery, ma al primo path che lo espone.
+  // `openSidebar`/`sendMessage` restano `undefined` in quel caso, ma non
+  // vengono mai chiamati: il return sotto (`if (!centroId)`) esce prima di
+  // arrivare al JSX che li usa (OnboardingChecklist).
+  const { openSidebar, sendMessage } = useBeautyx() || {}
   const router = useRouter()
   const [dataVersion, setDataVersion] = useState(0) // incrementa dopo ogni sync/import → ricarica chart e medie
 
