@@ -89,8 +89,44 @@ export async function GET(request) {
     console.error('[auth/callback] Scambio code->sessione fallito:', error.message)
   }
 
-  // Nessun code, o scambio fallito: torna al login con un errore esplicito
-  // invece di una pagina generica — più facile da diagnosticare la prossima
-  // volta.
+  // Bug fix (06/09/2026 sera, collaudo Mason — nuovo sintomo, diverso dal
+  // precedente: il link ora "arriva" ma rimbalza dritto al login invece
+  // che a /reset-password/update, niente più rimbalzo muto).
+  //
+  // Causa reale trovata nei query_logs Supabase (progetto
+  // scfumedmisbuxhdywwpb, tentativo di luigixri@gmail.com 15:44-15:45 UTC
+  // del 06/09/2026): GET /verify risponde 303 (il link email è valido e
+  // Supabase lo conferma), ma la POST /token successiva (grant_type=pkce,
+  // scatenata da exchangeCodeForSession qui sopra) fallisce con 400
+  // "invalid request: both auth code and code verifier should be
+  // non-empty" — il `code` arriva (altrimenti non saremmo dentro
+  // `if (code)`), ma il code_verifier PKCE (il cookie creato dal browser
+  // al momento della richiesta reset in AuthContext.resetPassword) non è
+  // presente sulla richiesta che arriva qui. Nei log si vede anche una
+  // seconda /verify sullo stesso token, quasi in contemporanea, che
+  // fallisce con "One-time token not found" — compatibile con link aperto
+  // da un browser/dispositivo diverso da quello con cui è stato
+  // richiesto il reset, o con un client email che "prefetcha" il link
+  // consumando il token one-time prima del click reale.
+  //
+  // Il bug VERO però era qui sotto: qualunque fosse la causa dello
+  // scambio fallito, questa route mandava SEMPRE a `/login?error=
+  // confirm_failed` — un messaggio scritto per la conferma email di
+  // signup ("prova ad accedere... o registrati di nuovo"), fuorviante e
+  // senza via d'uscita per chi sta solo recuperando la password — invece
+  // di sfruttare la UI già pronta in app/reset-password/update/page.js
+  // (stato `linkInvalid`, con CTA "Richiedi un nuovo link") che legge
+  // proprio `error`/`error_description` dalla querystring. Ora, se il
+  // flusso in corso è quello di reset password (next punta a
+  // /reset-password), l'errore torna lì invece che al login.
+  if (next.startsWith('/reset-password')) {
+    const errorDescription = searchParams.get('error_description') || 'Il link non è più valido.'
+    const params = new URLSearchParams({ error: 'access_denied', error_description: errorDescription })
+    return NextResponse.redirect(`${origin}${next}?${params.toString()}`)
+  }
+
+  // Altri flussi (es. conferma signup): torna al login con un errore
+  // esplicito invece di una pagina generica — più facile da diagnosticare
+  // la prossima volta.
   return NextResponse.redirect(`${origin}/login?error=confirm_failed`)
 }
