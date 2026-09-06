@@ -11,7 +11,7 @@ function UpdatePasswordContent() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const [linkInvalid, setLinkInvalid] = useState(false)
-  const { updatePassword, user } = useAuth()
+  const { updatePassword, user, loading: authLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -38,16 +38,40 @@ function UpdatePasswordContent() {
     }
   }, [searchParams])
 
-  // Se l'utente non è autenticato tramite il recovery link, redirect
+  // Se l'utente non è autenticato tramite il recovery link, redirect.
+  //
+  // Fix (06/09/2026): da quando `resetPassword()` in AuthContext.js manda
+  // `redirectTo` su `/auth/callback?next=/reset-password/update`, la
+  // sessione viene creata lato server (`exchangeCodeForSession` + cookie
+  // HttpOnly) PRIMA che il browser arrivi mai su questa pagina — non c'è
+  // più nessun `code`/hash da far rilevare al client, quindi l'evento
+  // `PASSWORD_RECOVERY` di onAuthStateChange (gestito sotto in AuthContext)
+  // in genere non scatta più: `user` si popola tramite il normale
+  // `initAuth()`/`getSession()` al mount, che legge la sessione già scritta
+  // nei cookie SSR.
+  //
+  // Resta comunque una race condition: anche con il cookie già pronto sul
+  // server, il provider React (AuthContext) impiega un istante a
+  // idratarsi (setState asincrono dopo `getSession()`) — durante quella
+  // finestra `loading` è `true` e `user` è ancora `null`. Un timeout fisso
+  // di 3s partito subito al mount poteva quindi scattare mentre l'auth
+  // stava ancora inizializzando. Ora si aspetta che `loading` diventi
+  // `false` (fine inizializzazione auth) prima di far partire il
+  // countdown di sicurezza: se a quel punto `user` è ancora assente, il
+  // link è davvero scaduto/non valido (o lo diventerà a breve tramite
+  // l'evento PASSWORD_RECOVERY, per cui si lascia comunque un margine di
+  // 3s prima di rimandare indietro).
   useEffect(() => {
     if (linkInvalid) return
+    if (authLoading) return
+    if (user) return
     const timeout = setTimeout(() => {
       if (!user) {
         router.push('/reset-password?message=link_expired')
       }
     }, 3000)
     return () => clearTimeout(timeout)
-  }, [user, router, linkInvalid])
+  }, [user, authLoading, router, linkInvalid])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

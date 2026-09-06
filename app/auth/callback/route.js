@@ -46,6 +46,20 @@ export async function GET(request) {
   // accesso (vedi app/dashboard/page.js). Se in futuro serve un `next`
   // diverso per altri flussi (es. reset password), lo si può passare come
   // querystring extra nel redirectTo e leggerlo qui.
+  //
+  // Aggiornamento (06/09/2026, bug reset-password trovato nei query_logs
+  // Supabase): questo `next` era già previsto e già letto qui sotto — era
+  // solo inutilizzato. Il vero bug era che `resetPassword()` in
+  // AuthContext.js puntava `redirectTo` direttamente a
+  // `/reset-password/update`, saltando questa route: dopo la verifica del
+  // link (redirect 303 lato Supabase, confermato nei log), il browser
+  // arrivava sulla pagina client senza che nessuno scambiasse mai il `code`
+  // PKCE con `exchangeCodeForSession` — zero richieste di rete, zero
+  // errori, nessuna sessione. Ora `resetPassword()` passa
+  // `redirectTo: {origin}/auth/callback?next=/reset-password/update`, che
+  // arriva qui: il `next` letto sotto diventa `/reset-password/update` e lo
+  // scambio del code avviene esplicitamente lato server come per il flusso
+  // signup.
   const next = searchParams.get('next') || '/impostazioni?primo-accesso=1'
 
   if (code) {
