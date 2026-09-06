@@ -1,27 +1,53 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function UpdatePasswordPage() {
+function UpdatePasswordContent() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
+  const [linkInvalid, setLinkInvalid] = useState(false)
   const { updatePassword, user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Supabase, quando il link di recovery è scaduto/già usato/non valido,
+  // reindirizza comunque a questa pagina ma aggiungendo `error` /
+  // `error_code` / `error_description` (come query string, o come frammento
+  // `#error=...` a seconda del flow) invece di un `code` valido. Prima di
+  // questo fix questi parametri non venivano mai letti: l'utente restava
+  // semplicemente con `user` null e, dopo 3 secondi, veniva rimandato a
+  // `/reset-password` senza alcuna spiegazione — esattamente il sintomo
+  // "dopo 3 secondi mi riapre la pagina di inserire email" segnalato da
+  // Mason, indistinguibile per lui da un bug di codice. Ora, se troviamo
+  // un errore esplicito nell'URL, lo mostriamo subito invece di aspettare
+  // il timeout silenzioso.
+  useEffect(() => {
+    const queryError = searchParams.get('error_description') || searchParams.get('error')
+    let hashError = null
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1))
+      hashError = hashParams.get('error_description') || hashParams.get('error')
+    }
+    if (queryError || hashError) {
+      setLinkInvalid(true)
+    }
+  }, [searchParams])
 
   // Se l'utente non è autenticato tramite il recovery link, redirect
   useEffect(() => {
+    if (linkInvalid) return
     const timeout = setTimeout(() => {
       if (!user) {
-        router.push('/reset-password')
+        router.push('/reset-password?message=link_expired')
       }
     }, 3000)
     return () => clearTimeout(timeout)
-  }, [user, router])
+  }, [user, router, linkInvalid])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -77,6 +103,24 @@ export default function UpdatePasswordPage() {
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-4 rounded-lg text-center">
             <p className="font-medium">Password aggiornata!</p>
             <p className="mt-1 text-sm">Verrai reindirizzato alla home...</p>
+          </div>
+        ) : linkInvalid ? (
+          <div className="space-y-6">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-lg text-center">
+              <p className="font-medium">Questo link non è più valido.</p>
+              <p className="mt-1 text-sm">
+                È scaduto o è già stato usato. Richiedine uno nuovo dalla pagina di recupero password.
+              </p>
+            </div>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => router.push('/reset-password')}
+                className="font-medium text-pink-600 hover:text-pink-500 text-sm"
+              >
+                Richiedi un nuovo link
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -145,5 +189,17 @@ export default function UpdatePasswordPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function UpdatePasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="text-gray-500 text-sm">Caricamento...</div>
+      </div>
+    }>
+      <UpdatePasswordContent />
+    </Suspense>
   )
 }

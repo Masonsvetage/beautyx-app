@@ -47,7 +47,7 @@ Beautyx — conferma la tua email: si comincia
 
           <!-- HEADER -->
           <tr>
-            <td style="background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%); padding:32px 40px; text-align:center;">
+            <td style="background-color:#9333ea; background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%); padding:32px 40px; text-align:center;">
               <span style="font-size:24px; font-weight:700; color:#ffffff; letter-spacing:0.5px;">Beautyx</span>
             </td>
           </tr>
@@ -67,7 +67,7 @@ Beautyx — conferma la tua email: si comincia
 
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 32px auto;">
                 <tr>
-                  <td align="center" style="border-radius:50px; background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%);">
+                  <td align="center" style="border-radius:50px; background-color:#9333ea; background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%);">
                     <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block; padding:16px 36px; font-size:16px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:50px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
                       Conferma la mia email
                     </a>
@@ -135,7 +135,7 @@ Beautyx — reimposta la tua password
 
           <!-- HEADER -->
           <tr>
-            <td style="background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%); padding:32px 40px; text-align:center;">
+            <td style="background-color:#9333ea; background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%); padding:32px 40px; text-align:center;">
               <span style="font-size:24px; font-weight:700; color:#ffffff; letter-spacing:0.5px;">Beautyx</span>
             </td>
           </tr>
@@ -155,7 +155,7 @@ Beautyx — reimposta la tua password
 
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 32px auto;">
                 <tr>
-                  <td align="center" style="border-radius:50px; background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%);">
+                  <td align="center" style="border-radius:50px; background-color:#9333ea; background:linear-gradient(135deg, #ec4899 0%, #9333ea 100%);">
                     <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block; padding:16px 36px; font-size:16px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:50px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
                       Reimposta la password
                     </a>

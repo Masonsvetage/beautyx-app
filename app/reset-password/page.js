@@ -1,15 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [sent, setSent] = useState(false)
   const { resetPassword } = useAuth()
+  const searchParams = useSearchParams()
+  const expiredMessage = searchParams.get('message') === 'link_expired'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -63,6 +66,11 @@ export default function ResetPasswordPage() {
           </div>
         ) : (
           <>
+            {expiredMessage && !error && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg text-sm">
+                Il link che hai usato non è (più) valido: è scaduto, è già stato usato o è stato aperto in un browser diverso da quello con cui hai richiesto il reset. Richiedine uno nuovo qui sotto.
+              </div>
+            )}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                 {error}
@@ -117,5 +125,17 @@ export default function ResetPasswordPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="text-gray-500 text-sm">Caricamento...</div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }

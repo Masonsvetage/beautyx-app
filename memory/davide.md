@@ -2475,3 +2475,110 @@ per il Bug 2a (dashboard, vedi messaggio sopra).
 `contexts/AuthContext.js`. Nessuna modifica a
 `email-templates/email-template-conferma-e-reset-supabase.md` (già
 corretto) né a `proxy.js` (non è la causa).
+
+## 06/09/2026 — Mason rivede lo stesso identico bug reset password dopo il fix di ieri
+
+**1. Deploy verificato:** `git log origin/main..main` e `main..origin/main`
+sono entrambi vuoti — `af5f331` (commit di ieri) era GIÀ su
+`origin/main`/GitHub, non serviva alcun push. Non essendoci CLI Vercel
+collegata in questa sandbox (`vercel` non installato, nessuna cartella
+`.vercel`) non è verificabile da qui lo stato esatto del deploy Vercel;
+va controllato da Mason nella dashboard Vercel, ma il deploy mancato NON
+è la spiegazione del bug persistente, perché il codice era comunque già
+su GitHub prima del retest di Mason.
+
+**2. Bottone email bianco su bianco — causa reale confermata leggendo il
+file:** avevo scritto ieri (ed erroneamente il 04/09) che il CSS del
+bottone fosse corretto — falso, non avevo controllato la property
+`background` da sola. Rileggendo oggi
+`email-templates/email-template-conferma-e-reset-supabase.md` per intero:
+sia l'header sia il bottone CTA, in ENTRAMBI i template (Confirm signup e
+Reset Password), usano SOLO `background:linear-gradient(...)` senza alcun
+`background-color` di fallback. Molti client (Outlook desktop Windows,
+alcuni webmail) non supportano i gradienti CSS inline e ignorano la
+dichiarazione: la cella resta bianca, il testo `color:#ffffff` sopra resta
+bianco → invisibile. **Fix applicato:** aggiunto `background-color:#9333ea;`
+prima di `background:linear-gradient(...)` in tutte e 4 le celle colorate
+(header + bottone, × 2 template). Nei client che supportano i gradienti
+vince comunque `background` (dichiarato dopo); nei client che lo ignorano
+resta il viola pieno, contrasto garantito col testo bianco.
+
+**3. Redirect prematuro — causa strutturale trovata nel codice della
+libreria, non nel nostro codice applicativo.** Riletta la catena completa
+init→URL→evento→redirect. `lib/supabase.js` usa `createBrowserClient` di
+`@supabase/ssr`; letto il sorgente
+(`node_modules/@supabase/ssr/dist/module/createBrowserClient.js` riga 35):
+`flowType: "pkce"` è **hardcoded**, non sovrascrivibile dalle opzioni.
+Letto poi `node_modules/@supabase/auth-js/dist/module/GoTrueClient.js`:
+- `_isPKCECallback` (riga 1541-1543): il flusso PKCE si attiva solo se
+  l'URL ha `?code=...` E lo storage locale ha ancora il
+  `-code-verifier` salvato da `resetPasswordForEmail` — quindi il link
+  DEVE essere aperto nello stesso browser/dispositivo (stessi cookie) con
+  cui è stato richiesto il reset, altrimenti lo scambio fallisce e non si
+  ottiene mai una sessione.
+- `_getSessionFromURL`, ramo PKCE (righe 1474-1484): chiama
+  `_exchangeCodeForSession` e poi **ritorna `redirectType: null` fisso**,
+  scartando l'informazione "recovery" che pure viene salvata correttamente
+  nello storage (`getCodeChallengeAndMethod(..., isPasswordRecovery=true)`,
+  riga 1634).
+- `_initialize()` (righe 279-289): usa quel `redirectType` per decidere
+  l'evento — essendo sempre `null` per il flusso PKCE, **l'evento
+  `PASSWORD_RECOVERY` non viene MAI emesso in questo progetto**: parte
+  sempre `SIGNED_IN` invece. Il branch `PASSWORD_RECOVERY` aggiunto ieri in
+  `contexts/AuthContext.js` è quindi corretto ma di fatto morto — non è mai
+  raggiunto con questa configurazione (PKCE), non è un errore ma non basta.
+- Questo di per sé non spiegherebbe il bug da solo: `getSession()` (usato
+  in `initAuth`) aspetta l'intera inizializzazione PKCE prima di
+  rispondere, quindi se lo scambio riesce il branch `SIGNED_IN` esistente
+  già gestisce correttamente la sessione recovery (con l'unica differenza
+  che se l'evento arriva mentre `initDoneRef.current` è ancora `false` il
+  listener lo scarta — innocuo, perché `initAuth` sta già processando la
+  stessa sessione in parallelo).
+- **Il vero problema pratico:** se lo scambio PKCE FALLISCE (link
+  scaduto, già usato, o aperto in un browser/dispositivo diverso da quello
+  della richiesta — scenario molto plausibile per un test reale via
+  client di posta), il codice attuale non solleva né mostra alcun errore:
+  `_initialize()` cattura l'errore, chiama `_removeSession()` e ritorna
+  silenziosamente; `getSession()` risponde con sessione `null` senza
+  errore. Risultato: `user` resta `null` e il guard di
+  `app/reset-password/update/page.js` scatta dopo 3 secondi ESATTAMENTE
+  come nel bug originale — ma stavolta la causa può essere un link
+  scaduto/riusato/cross-browser, non (necessariamente) un bug di codice
+  residuo, e senza alcuna diagnosi visibile per chi testa.
+
+**Fix applicato oggi (oltre a quanto già fatto ieri, che resta valido):**
+- `app/reset-password/update/page.js`: aggiunto controllo dei parametri
+  `error`/`error_code`/`error_description` che Supabase aggiunge all'URL
+  (query string o hash) quando il link di recovery non è valido. Se
+  presenti, mostra subito un messaggio chiaro ("questo link non è più
+  valido, richiedine uno nuovo") invece di aspettare 3 secondi e rimbalzare
+  in silenzio. Il redirect di fallback (nessun `user` dopo 3s, nessun
+  errore esplicito nell'URL) ora passa `?message=link_expired` a
+  `/reset-password`.
+- `app/reset-password/page.js`: legge `?message=link_expired` e mostra un
+  banner esplicativo (link scaduto/già usato/aperto in browser diverso)
+  invece di lasciare l'utente semplicemente sulla pagina vuota senza
+  sapere perché è tornato lì.
+- Entrambi i file avvolti in `Suspense` (richiesto da `useSearchParams` in
+  Next.js app router, stesso pattern già usato in `app/login/page.js`).
+- Verificato con parser Babel reale (stesso metodo di ieri): tutti e 3 i
+  file toccati (`app/reset-password/page.js`,
+  `app/reset-password/update/page.js`,
+  `email-templates/...md` non è JS) parseano senza errori. `biome check`
+  non segnala errori di sintassi sui file nuovi (solo warning di stile
+  preesistenti su `AuthContext.js`, non miei).
+
+**Limite onesto:** anche questo fix NON è stato collaudato dal vivo (nessun
+browser/email/Supabase raggiungibile da qui). Non risolve la causa a monte
+se la causa a monte è "link aperto in un browser diverso" — quello è un
+limite strutturale del flusso PKCE lato Supabase che, per essere risolto
+davvero, richiederebbe spostare il reset password su una route server
+dedicata tipo `/auth/callback` (come già fatto per la conferma signup) con
+scambio del code lato server via cookie, oppure passare a
+`flowType: 'implicit'` per questo client (trade-off da valutare con
+Mason, impatta anche gli altri flussi auth). Questo fix di oggi rende però
+finalmente VISIBILE la vera causa quando succede, invece di un rimbalzo
+muto — la prossima volta che Mason lo testa dal vivo, se rivede lo stesso
+identico comportamento "3 secondi poi torna alla pagina email" SENZA il
+nuovo banner di errore, vuol dire che il problema è ancora più a monte
+(es. redirect Supabase Dashboard) e va indagato lì.
