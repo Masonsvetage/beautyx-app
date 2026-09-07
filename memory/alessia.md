@@ -31,9 +31,11 @@ AD (Instagram/Facebook Reel)
 ```
 ~~Regola critica: la miniguida era il benvenuto dell'iscrizione, non un prodotto separato. CTA sempre "iscriviti — la miniguida arriva subito gratis".~~ — sostituita dopo decisione definitiva di Mason: il vero prodotto civetta ora è il report CARE, non la miniguida né la newsletter.
 
-### In vigore (2026-08-28) — decisione definitiva di Mason
+### ~~Superata (2026-09-04)~~ — vedi [[beautyx-ecosistema-tre-livelli]] in memory/generale.md
 
-Nuova architettura, in ordine:
+~~Decisione definitiva di Mason (2026-08-28)~~ — non contraddetta ma RICOLLOCATA nel tempo dall'architettura a 3 livelli del 04/09/2026: il report come "vero prodotto civetta" resta vero SOLO per la finestra di lancio dei 90 giorni gratuiti (in cui infatti agisce da livello 1, esattamente come descritto qui sotto); passata quella finestra, la newsletter torna ad essere il portone d'ingresso permanente e il report scala a livello 2 (approfondimento per chi già si fida). Non aggiornare più questa sezione: il dettaglio vive ora nella regola unica in memory/generale.md.
+
+Nuova architettura, in ordine (valida durante i primi 90 giorni dal lancio):
 
 ```
 1. Miniguida "10 errori" (basso impegno: un'email, 2 min di lettura)

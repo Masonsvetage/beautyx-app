@@ -22,6 +22,20 @@ const ROLE_LEVELS = {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  // Fix bug spinner infinito (07/09/2026, audit Riccardo): `loading` può
+  // diventare `false` per il timeout di sicurezza in initAuth() (5s) PRIMA
+  // che loadProfile() abbia davvero risposto — quindi `!loading && !profile`
+  // da solo NON basta a dire "profilo confermato assente": potrebbe
+  // benissimo significare "il fetch è ancora in corso". `profileChecked`
+  // diventa true SOLO dentro loadProfile(), dopo che la query a
+  // user_profiles (.maybeSingle()) è completata con successo — quindi
+  // distingue in modo affidabile i due casi che profile===null confonde:
+  // (a) fetch ancora in corso → profileChecked resta false, niente redirect;
+  // (b) query completata, nessuna riga trovata → profileChecked true,
+  // profile resta null di proposito, si può redirigere in sicurezza.
+  // In caso di errore di query NON viene messo a true: un errore transitorio
+  // non equivale a "profilo confermato assente" (vedi loadProfile sotto).
+  const [profileChecked, setProfileChecked] = useState(false)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -103,9 +117,19 @@ export function AuthProvider({ children }) {
 
       if (error) throw error
       setProfile(data)
+      // Query completata con successo: qui `data` è o la riga trovata o
+      // `null` restituito volutamente da .maybeSingle() quando non esiste
+      // alcuna riga per questo utente — in entrambi i casi il profilo è
+      // "verificato", non più "in caricamento".
+      setProfileChecked(true)
       return data
     } catch (error) {
       console.error('Errore caricamento profilo:', error)
+      // Errore di query (rete/DB): NON impostiamo profileChecked a true.
+      // Un errore transitorio non significa "profilo confermato assente":
+      // trattarlo come tale manderebbe in redirect verso l'onboarding un
+      // utente che invece un profilo ce l'ha, solo non è stato possibile
+      // leggerlo ora.
       return null
     }
   }, [])
@@ -599,6 +623,7 @@ export function AuthProvider({ children }) {
         clearInterval(inactivityTimerRef.current)
         setUser(null)
         setProfile(null)
+        setProfileChecked(false)
         setPermissions({})
         setPermissionsLoaded(false)
         setCentriAccess([])
@@ -821,6 +846,7 @@ export function AuthProvider({ children }) {
     // Stato base
     user,
     profile,
+    profileChecked,
     loading,
 
     // Permessi
@@ -880,7 +906,7 @@ export function AuthProvider({ children }) {
     hasMultipleRoles: allRoles.length > 1,
     reloadRoles: loadUserRoles
   }), [
-    user, profile, loading, permissions, permissionsLoaded, hasPermission,
+    user, profile, profileChecked, loading, permissions, permissionsLoaded, hasPermission,
     centriAccess, currentCentro, switchCentro, searchCentri, enterCentro, exitCentro,
     isAdmin, subUsers, canManageUser, canManageRole,
     ruoloLivello, roleLevel, isHpa, isTitolare, isDirettore, isAmministrativo,

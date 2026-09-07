@@ -38,7 +38,7 @@ function CollapsibleOnboarding({ children }) {
 const NON_PIATTAFORMA_PLAN_CODICI = new Set(['report_profiling'])
 
 export default function Home() {
-  const { currentCentro, profile, loading: authLoading, centriAccess, switchCentro, isAdmin, isHpa, isGlobalView } = useAuth()
+  const { currentCentro, profile, profileChecked, loading: authLoading, centriAccess, switchCentro, isAdmin, isHpa, isGlobalView } = useAuth()
   // Bug fix (06/09/2026, crash post reset-password segnalato da Mason —
   // vedi app/global-error.js in produzione): BeautyxProviderWrapper.js NON
   // monta <BeautyxProvider> quando l'utente è autenticato ma senza centro_id
@@ -60,6 +60,15 @@ export default function Home() {
   const { openSidebar, sendMessage } = useBeautyx() || {}
   const router = useRouter()
   const [dataVersion, setDataVersion] = useState(0) // incrementa dopo ogni sync/import → ricarica chart e medie
+
+  // Bonus fix (07/09/2026, audit Riccardo): se lo spinner "Caricamento..."
+  // resta a lungo (bug futuro simile a quello appena corretto, rete lenta,
+  // query bloccata) l'utente non deve restare bloccato senza via d'uscita.
+  // Dopo STUCK_TIMEOUT_MS mostriamo un fallback con azioni esplicite invece
+  // di girare all'infinito. Copre sia il caso "authLoading non si sblocca"
+  // sia "profilo non ancora verificato" (profileChecked false) per un utente
+  // non admin/hpa.
+  const [stuckTimeout, setStuckTimeout] = useState(false)
 
   const centroId = currentCentro?.centro_id || profile?.centro_id || null
 
@@ -95,19 +104,38 @@ export default function Home() {
   }, [authLoading, isGlobalView, router])
 
   // Utente senza centro: redirect a impostazioni per configurarlo.
-  // Nota (verifica 05/09/2026): questo effetto scatta solo se `profile` è
-  // valorizzato — un utente autenticato ma SENZA alcuna riga in user_profiles
-  // (onboarding mai completato: create-centro non chiamato) non rientra in
-  // questo ramo e resta sullo spinner di caricamento più sotto, invece di
-  // essere rimandato all'onboarding. Segnalato, non ancora deciso se estendere
-  // la condizione anche a `profile === null`: cambierebbe il comportamento per
-  // un caso che va verificato con Mason (potrebbe sovrapporsi al redirect già
-  // gestito da proxy.js per utenti non autenticati).
+  // Fix (07/09/2026, audit Riccardo — bug reale segnalato da Mason, spinner
+  // scuro scambiabile per "dashboard aperta senza login"): la condizione
+  // precedente richiedeva `profile` valorizzato, quindi un utente autenticato
+  // ma SENZA alcuna riga in user_profiles (onboarding mai completato) restava
+  // bloccato per sempre sullo spinner di "Caricamento..." più sotto — il
+  // redirect non scattava mai per lui.
+  // Il fix NON è "togliere `&& profile`": `profile === null` è ambiguo, può
+  // significare sia "profilo non ancora caricato" (fetch in corso) sia
+  // "profilo caricato e confermato assente" (query completata, nessuna riga).
+  // Confondere i due casi avrebbe introdotto una race condition opposta:
+  // redirect prematuro mentre il profilo sta ancora caricando.
+  // `profileChecked` (contexts/AuthContext.js) risolve l'ambiguità: diventa
+  // true SOLO dopo che la query a user_profiles è completata con successo
+  // (dentro loadProfile, non legato al timeout di sicurezza di initAuth che
+  // può sbloccare `authLoading` a 5s indipendentemente dal fetch profilo) —
+  // quindi profileChecked===true + profile===null significa sempre e solo
+  // "confermato assente", mai "ancora in caricamento".
   useEffect(() => {
-    if (!authLoading && !isAdmin && !isHpa && profile && !centroId) {
+    if (!authLoading && profileChecked && !isAdmin && !isHpa && !centroId) {
       router.push('/impostazioni?primo-accesso=1')
     }
-  }, [authLoading, isAdmin, isHpa, profile, centroId, router])
+  }, [authLoading, profileChecked, isAdmin, isHpa, centroId, router])
+
+  useEffect(() => {
+    const ancoraInCorso = authLoading || (!isAdmin && !isHpa && !profileChecked)
+    if (!ancoraInCorso) {
+      setStuckTimeout(false)
+      return
+    }
+    const timer = setTimeout(() => setStuckTimeout(true), 9000)
+    return () => clearTimeout(timer)
+  }, [authLoading, isAdmin, isHpa, profileChecked])
 
   // Solo se i widget gestionali sono davvero visibili: un account senza piano
   // piattaforma (es. solo report_profiling) non deve innescare fetch su dati
@@ -123,6 +151,33 @@ export default function Home() {
     } catch (error) {
       console.error('Errore caricamento incasso giornaliero:', error)
     }
+  }
+
+  // Fallback esplicito se lo spinner resta bloccato oltre il timeout
+  // ragionevole (vedi effetto stuckTimeout sopra): niente più attesa
+  // infinita, l'utente ha sempre un'azione da compiere.
+  if (stuckTimeout) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 flex items-center justify-center">
+        <div className="text-center max-w-sm px-4">
+          <p className="text-slate-300 mb-4">Il caricamento sta impiegando più del previsto.</p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => router.push('/impostazioni?primo-accesso=1')}
+              className="px-4 py-2 rounded-lg bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 transition-colors"
+            >
+              Vai alle impostazioni
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg bg-slate-700/50 text-slate-300 text-sm font-medium hover:bg-slate-600/50 transition-colors"
+            >
+              Riprova
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Loading auth o nessun centro assegnato
