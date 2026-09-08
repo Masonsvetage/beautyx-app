@@ -43,8 +43,22 @@ export async function GET(request) {
       .rpc('get_user_announcements', { p_user_id: user.id })
 
     if (rpcError) {
-      console.error('Errore recupero annunci utente:', rpcError)
-      return NextResponse.json({ error: 'Errore nel recupero degli annunci' }, { status: 500 })
+      // Fix 500 bloccante (07/09/2026, retest live Mason su /questionario):
+      // la RPC get_user_announcements (e la relativa tabella
+      // admin_announcements) NON esiste sul progetto Supabase attivo
+      // (scfumedmisbuxhdywwpb, migrato il 17/07/2026 — la migrazione
+      // 20260210_admin_announcements.sql non è mai stata riapplicata dopo la
+      // migrazione, verificato via query diretta a pg_proc/information_schema).
+      // Prima di questo fix QUALSIASI utente autenticato riceveva un 500 da
+      // questa route (non solo chi non ha ancora un centro), e le pagine che
+      // dipendono da questa chiamata come non-bloccante (es. AnnouncementBanner)
+      // restavano semplicemente senza banner — ma altre pagine che la
+      // considerassero un prerequisito potevano incastrarsi. Gli annunci sono
+      // per natura un extra non essenziale: un errore qui non deve mai
+      // impedire il resto dell'app. Logghiamo (per notare quando la tabella
+      // tornerà disponibile) e rispondiamo comunque 200 con lista vuota.
+      console.error('Errore recupero annunci utente (rispondo 200 con lista vuota):', rpcError)
+      return NextResponse.json({ data: [] })
     }
 
     return NextResponse.json({ data: data || [] })

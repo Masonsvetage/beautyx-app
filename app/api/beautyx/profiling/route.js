@@ -64,8 +64,16 @@ async function assertProfilingPlan(user_id) {
 // Progress bar — SOLO cosmetica, non guida nessuna logica di avanzamento
 // (quella resta interamente in profilingEngine.js/profiling_sessions). Legge
 // lo stato attuale della sessione per stimare "a che punto sei" nell'ambito
-// corrente. Il totale è la baseline del nucleo (6): se scatta la riserva il
-// totale reale può superare la stima — accettabile per una barra indicativa.
+// corrente.
+//
+// Fix bug segnalato da Mason (07/09/2026, retest live su beautyx.it/questionario):
+// il contatore mostrava "Scenario 7 di 6" appena scattava il primo scenario di
+// riserva. Causa: `total` era hardcoded alla sola lunghezza del nucleo (6),
+// mentre `current` saliva a 7 non appena i 6 scenari del nucleo erano già
+// somministrati — il "corrente" superava sempre il "totale" per tutta la
+// riserva (7 di 6, 8 di 6, ...). Fix: il totale mostrato riflette la fase
+// reale — resta il nucleo (6) finché non scatta la riserva, poi diventa
+// nucleo+riserva (12) per il resto dell'ambito.
 async function buildProgress(centro_id, step) {
   if (!step || (step.tipo !== 'scenario' && step.tipo !== 'narrazione_libera')) return null
   const ambito = step.ambito
@@ -83,10 +91,13 @@ async function buildProgress(centro_id, step) {
   const fattiInAmbito = somministrati.filter((code) => code?.startsWith(prefisso)).length
   const ambitoIndex = AMBITI.indexOf(ambito)
   const nucleoTotale = SCENARIO_ORDER[ambito]?.nucleo?.length || 6
+  const riservaTotale = SCENARIO_ORDER[ambito]?.riserva?.length || 0
+  const inRiserva = fattiInAmbito >= nucleoTotale
+  const totale = inRiserva ? nucleoTotale + riservaTotale : nucleoTotale
 
   return {
-    current: step.tipo === 'narrazione_libera' ? nucleoTotale : Math.min(fattiInAmbito + 1, nucleoTotale + (SCENARIO_ORDER[ambito]?.riserva?.length || 0)),
-    total: nucleoTotale,
+    current: step.tipo === 'narrazione_libera' ? totale : Math.min(fattiInAmbito + 1, totale),
+    total: totale,
     ambitoLabel: AMBITO_LABELS[ambito] || ambito,
     faseLabel: `Ambito ${ambitoIndex + 1} di ${AMBITI.length}`,
   }

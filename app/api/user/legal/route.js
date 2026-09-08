@@ -32,7 +32,20 @@ export async function GET() {
       .rpc('get_user_legal_status', { p_user_id: user.id })
 
     if (rpcError) {
-      return NextResponse.json({ error: rpcError.message }, { status: 500 })
+      // Fix 500 bloccante (07/09/2026, retest live Mason su /questionario):
+      // la RPC get_user_legal_status (e le tabelle legal_documents/
+      // legal_acceptances/legal_clauses) NON esistono sul progetto Supabase
+      // attivo (scfumedmisbuxhdywwpb, migrato il 17/07/2026 — la migrazione
+      // ESEGUI_SUBITO_legal_documents.sql non è mai stata riapplicata dopo la
+      // migrazione, verificato via query diretta a pg_proc/information_schema).
+      // Questo endpoint risponde con 500 per QUALSIASI utente autenticato, a
+      // prescindere dal centro_id. ClientLayout.js già tollera un fetch non-ok
+      // qui (silently fail, niente muro legale mostrato) — ma un 500 non è
+      // comunque una risposta "sicura" da esporre: se non ci sono documenti
+      // legali da verificare (o non possiamo verificarli), il comportamento
+      // corretto è "nessun documento pendente", non un errore server.
+      console.error('Errore recupero stato legale utente (rispondo 200 senza pendenti):', rpcError)
+      return NextResponse.json({ data: { documents: [], pending: [], has_pending: false } })
     }
 
     // Filtra documenti pendenti (non accettati)

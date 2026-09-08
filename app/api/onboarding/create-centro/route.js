@@ -82,12 +82,32 @@ export async function POST(request) {
     if (centroError) throw centroError
 
     // 2. Associa il centro al profilo utente
-    const { error: profileError } = await supabaseAdmin
+    //
+    // Fix (07/09/2026, retest live Mason su beautyx.it): un UPDATE su una
+    // riga che non esiste NON è un errore per Postgres/PostgREST — affetta
+    // 0 righe e torna comunque success. Prima di questo fix, se per
+    // qualunque motivo `user_profiles` non aveva ancora una riga per questo
+    // utente (causa reale trovata: schema drift sul progetto Supabase di
+    // produzione — vedi supabase/migrations/20260907_fix_user_profiles_
+    // schema_drift.sql — che faceva fallire in silenzio la creazione del
+    // profilo ad ogni singola registrazione), questo endpoint tornava 201
+    // "successo" avendo creato un `beauty_centers` orfano MAI collegato a
+    // nessun account. Ora richiediamo `.select('id')` per vedere davvero
+    // quante righe sono state toccate, e falliamo esplicitamente (500) se
+    // sono zero, invece di mentire con un 201.
+    const { data: updatedProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .update({ centro_id: centro.id })
       .eq('id', user.id)
+      .select('id')
 
     if (profileError) throw profileError
+    if (!updatedProfile || updatedProfile.length === 0) {
+      throw new Error(
+        'Centro creato ma non collegato al tuo profilo (profilo utente non trovato). ' +
+        'Non riprovare a creare un altro centro: contatta il supporto, il centro è già stato creato.'
+      )
+    }
 
     // =====================================================
     // REGISTRAZIONE UNIFICATA (29/08/2026, decisione Mason) — best-effort,

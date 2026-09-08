@@ -96,7 +96,7 @@ export default function ReportPage() {
             borderRadius: '100px',
             marginBottom: '28px',
           }}>
-            Report CURA · La diagnosi del tuo centro, gratis nel lancio
+            Identikit strategico CURA · La diagnosi del tuo centro, gratis nel lancio
           </div>
 
           {/* Headline — dolore concreto, non il doppio senso della parola */}
@@ -136,7 +136,7 @@ export default function ReportPage() {
             maxWidth: '520px',
             margin: '0 auto 32px',
           }}>
-            Non è un test online e non è un oroscopo. Il Report CURA guarda
+            Non è un test online e non è un oroscopo. L'Identikit strategico CURA guarda
             i dati veri del tuo centro — clienti, agenda, conto — e ti dice
             due cose chiare: dove sei bloccata oggi, e qual è la prima mossa
             da fare. Scritto su misura per il tuo centro, quello vero: non
@@ -205,7 +205,7 @@ export default function ReportPage() {
             color: '#999',
             marginBottom: '24px',
           }}>
-            Cosa trovi nel report
+            Cosa trovi nel tuo identikit strategico
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -324,7 +324,7 @@ export default function ReportPage() {
           }}>
             <p style={{ fontSize: '13.5px', color: '#666', lineHeight: 1.7, marginBottom: '10px' }}>
               Un regalo che arriva comunque: la miniguida gratuita sui 10
-              errori più comuni, tua da subito, mentre il report prende forma.
+              errori più comuni, tua da subito, mentre il tuo identikit strategico prende forma.
             </p>
             <Link href="/miniguida" style={{ color: '#EC4899', fontWeight: 700, fontSize: '13.5px', textDecoration: 'none' }}>
               Ricevi la miniguida gratuita →

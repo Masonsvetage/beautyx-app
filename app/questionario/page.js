@@ -22,7 +22,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import QuizScenario from '@/components/profiling/QuizScenario'
 
 export default function QuestionarioPage() {
-  const { centroId, loading: authLoading, isAuthenticated } = useAuth()
+  const { centroId, loading: authLoading, isAuthenticated, profileChecked } = useAuth()
   const router = useRouter()
 
   const [step, setStep] = useState(null)       // { tipo: 'scenario'|'narrazione_libera'|'completato'|'errore', ... }
@@ -30,6 +30,27 @@ export default function QuestionarioPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [generating, setGenerating] = useState(false)
+
+  // Fix spinner infinito senza uscita (07/09/2026, retest live Mason: account
+  // appena passato per reset password, autenticato ma SENZA centro_id ancora
+  // configurato, navigato direttamente su /questionario). Causa reale trovata
+  // leggendo tutto il flusso: l'effect qui sotto chiama loadNext() SOLO se
+  // `centroId` è valorizzato — per un utente senza centro `centroId` resta
+  // `null` per sempre, quindi loadNext() non parte mai, `loading` (inizializzato
+  // a true) non viene mai riportato a false, e la UI resta bloccata su
+  // "Prepariamo il tuo questionario CURA..." senza errore, esattamente come
+  // segnalato. I due 500 su /api/announcements e /api/user/legal osservati in
+  // console sono un problema reale ma SEPARATO (RPC/tabelle mai ricreate sul
+  // progetto Supabase dopo la migrazione del 17/07/2026, root cause verificata
+  // via query diretta al DB — vedi fix in quelle due route) e NON la causa di
+  // questo blocco: questa pagina non li chiama nemmeno, sono innescati da
+  // AnnouncementBanner/ClientLayout a monte, entrambi già tolleranti ai fallimenti.
+  // Fix qui, stesso principio già applicato ieri in app/dashboard/page.js
+  // (audit Riccardo): (1) se il profilo è confermato (profileChecked) e manca
+  // il centro, redirigi subito all'onboarding invece di aspettare all'infinito;
+  // (2) in ogni caso, se qualcosa resta bloccato oltre pochi secondi, mostra un
+  // fallback con azione esplicita invece di girare per sempre.
+  const [stuckTimeout, setStuckTimeout] = useState(false)
 
   // Stato della mini-chat per la narrazione libera (task #153: la parte a
   // scelta forzata è un componente puro, la narrazione resta nella chat
@@ -79,6 +100,32 @@ export default function QuestionarioPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, centroId])
+
+  // Utente autenticato ma senza centro configurato: il questionario CURA
+  // presuppone un centro (vedi call() sopra, che lo invia sempre) e non ha
+  // senso restare qui in attesa — stesso redirect già usato in
+  // app/dashboard/page.js per lo stesso caso. `profileChecked` (non solo
+  // `!authLoading`) evita di redirigere mentre il profilo sta ancora
+  // caricando: diventa true solo dopo che la query a user_profiles è
+  // davvero completata (vedi contexts/AuthContext.js).
+  useEffect(() => {
+    if (!authLoading && profileChecked && isAuthenticated && !centroId) {
+      router.push('/impostazioni?primo-accesso=1')
+    }
+  }, [authLoading, profileChecked, isAuthenticated, centroId, router])
+
+  // Timeout di sicurezza: se restiamo bloccati sullo spinner iniziale oltre
+  // 9s (stessa soglia usata in app/dashboard/page.js), mostriamo un fallback
+  // con azione esplicita invece di girare all'infinito senza via d'uscita.
+  useEffect(() => {
+    const ancoraInCorso = authLoading || (loading && !step)
+    if (!ancoraInCorso) {
+      setStuckTimeout(false)
+      return
+    }
+    const timer = setTimeout(() => setStuckTimeout(true), 9000)
+    return () => clearTimeout(timer)
+  }, [authLoading, loading, step])
 
   // Genera il report (idempotente lato server) e porta l'utente al risultato.
   async function handleCompletato() {
@@ -189,6 +236,24 @@ export default function QuestionarioPage() {
   // ============================================
 
   if (authLoading || (loading && !step)) {
+    if (stuckTimeout) {
+      return (
+        <FullscreenMessage
+          title="Ci stiamo mettendo più del previsto"
+          text="Il questionario non si è ancora aperto. Puoi riprovare o tornare alla dashboard."
+          cta={
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                style={{ ...linkStyle, background: 'none', border: '1px solid rgba(201,163,74,0.4)', borderRadius: 999, padding: '8px 18px', cursor: 'pointer', textDecoration: 'none' }}
+              >Riprova</button>
+              <Link href="/dashboard" style={linkStyle}>Torna alla dashboard</Link>
+            </div>
+          }
+        />
+      )
+    }
     return <FullscreenLoader label="Prepariamo il tuo questionario CURA..." />
   }
 
@@ -203,14 +268,30 @@ export default function QuestionarioPage() {
   }
 
   if (generating) {
-    return <FullscreenLoader label="Componiamo il tuo report CURA..." />
+    return <FullscreenLoader label="Componiamo il tuo identikit strategico CURA..." />
   }
 
   if (step?.tipo === 'scenario') {
     return (
       <>
         <ErrorToast message={error} onDismiss={() => setError(null)} />
+        {/* Fix bug segnalato da Mason (07/09/2026, retest live su
+            beautyx.it/questionario): senza `key` qui, React riusa la stessa
+            istanza di QuizScenario tra uno scenario e il successivo (stessa
+            posizione nell'albero, `step` cambia solo come prop) — quindi lo
+            stato interno `order` (useState([]) in QuizScenario.js) sopravvive
+            invece di azzerarsi, e "Conferma e vai avanti" ripropone lo stesso
+            ordinamento 1°-5° per ogni domanda senza mai richiedere una nuova
+            scelta. La `key` legata a scenario_code forza il remount completo
+            del componente (stato azzerato da zero) ad ogni nuovo scenario.
+            [08/09/2026] Davide: fix confermato presente in sorgente e su
+            commit 0a3b0a30f458cee9acb5c95693ee13a07e71a39b (HEAD di main),
+            ma non riproducibile dal vivo su beautyx.it (nodo DOM del
+            componente non viene smontato al cambio di scenario_code) —
+            sospetta build cache Vercel stantia. Riga toccata solo per
+            forzare un hash di commit diverso al prossimo deploy pulito. */}
         <QuizScenario
+          key={step.scenario_code}
           scenario={step}
           progress={progress}
           onConfirm={handleConfirmScenario}
@@ -321,7 +402,7 @@ function NarrazioneChat({ progress, messages, input, setInput, loading, onSend, 
         borderBottom: '1px solid rgba(201,163,74,0.25)',
       }}>
         <div style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 900, fontStyle: 'italic', color: '#e8c874', fontSize: '1.05rem' }}>
-          Beautyx <small style={{ display: 'block', fontFamily: 'var(--font-inter), sans-serif', fontStyle: 'normal', fontWeight: 600, fontSize: '0.62rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#a29c8a' }}>Report di profiling</small>
+          Beautyx <small style={{ display: 'block', fontFamily: 'var(--font-inter), sans-serif', fontStyle: 'normal', fontWeight: 600, fontSize: '0.62rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#a29c8a' }}>Identikit strategico</small>
         </div>
         <button type="button" onClick={onExit} style={{
           fontSize: '0.78rem', color: '#a29c8a', background: 'none', border: '1px solid rgba(201,163,74,0.25)',
