@@ -42,7 +42,7 @@ export default function ReportCuraCard() {
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[0.68rem] font-bold tracking-widest uppercase text-[#c9a34a] mb-1">Report CURA</p>
+          <p className="text-[0.68rem] font-bold tracking-widest uppercase text-[#c9a34a] mb-1">Identikit strategico CURA</p>
           <p className="text-white text-sm font-medium">Scopri come guidi davvero il tuo centro</p>
           <p className="text-slate-400 text-xs mt-1">Rispondi al questionario e ricevi il tuo profilo — gratis per i primi 90 giorni.</p>
         </div>

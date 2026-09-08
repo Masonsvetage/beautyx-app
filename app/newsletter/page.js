@@ -362,13 +362,13 @@ export default function NewsletterPage() {
               color: '#1a1a0f', background: '#EC4899',
               padding: '10px 22px', borderRadius: '999px', marginBottom: '24px',
             }}>
-              <span aria-hidden="true">★</span> Report CURA — la diagnosi del tuo centro, gratis nel lancio
+              <span aria-hidden="true">★</span> Identikit strategico CURA — la diagnosi del tuo centro, gratis nel lancio
             </p>
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(26px, 3.8vw, 42px)', fontWeight: 900, color: '#fff', lineHeight: 1.2, marginBottom: '20px' }}>
-              Il tuo centro ha un punto bloccato. Il Report CURA te lo mostra — con i tuoi numeri, non a caso.
+              Il tuo centro ha un punto bloccato. L'Identikit strategico CURA te lo mostra — con i tuoi numeri, non a caso.
             </h2>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '16px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
-              Non è un quiz online e non è un oroscopo travestito da consulenza. Il Report CURA prende i dati veri del tuo centro — clienti, agenda, conto — e ti restituisce una diagnosi scritta solo per te: dove sei bloccata oggi, e qual è la prima cosa su cui mettere le mani domani mattina. Niente consigli buoni per tutte: un punto di partenza specifico, per quel centro che conosci a memoria — il tuo.
+              Non è un quiz online e non è un oroscopo travestito da consulenza. L'Identikit strategico CURA prende i dati veri del tuo centro — clienti, agenda, conto — e ti restituisce una diagnosi scritta solo per te: dove sei bloccata oggi, e qual è la prima cosa su cui mettere le mani domani mattina. Niente consigli buoni per tutte: un punto di partenza specifico, per quel centro che conosci a memoria — il tuo.
             </p>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '36px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
               Vale 60€. Durante il lancio è gratis: il countdown qui sotto dice per quanto ancora, poi si torna al prezzo pieno.
@@ -377,7 +377,7 @@ export default function NewsletterPage() {
             <div style={{ marginBottom: '36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <ReportCountdownBanner variant="prominent" />
               <p style={{ marginTop: '14px', fontSize: '13px', color: '#b8a8b0', lineHeight: 1.6, maxWidth: '420px' }}>
-                Passata questa finestra, il Report CURA si paga. Oggi no.
+                Passata questa finestra, l'Identikit strategico CURA si paga. Oggi no.
               </p>
             </div>
 
@@ -385,7 +385,7 @@ export default function NewsletterPage() {
               href="/report"
               style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '18px 40px', borderRadius: '10px', fontWeight: 800, fontSize: '17px', textDecoration: 'none', boxShadow: '0 10px 28px rgba(236,72,153,0.4)' }}
             >
-              Scopri dove sei bloccata → Fai il Report CURA
+              Scopri dove sei bloccata → Fai il tuo Identikit strategico CURA
             </Link>
             <p style={{ marginTop: '16px', fontSize: '13px', color: '#b8a8b0', lineHeight: 1.6 }}>
               Bastano pochi minuti e un account completo — ti serve comunque, qualunque cosa deciderai dopo.
@@ -731,7 +731,7 @@ export default function NewsletterPage() {
                 stile/countdown (vedi ReportCountdownBanner). */}
             <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
               <p style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '14px' }}>
-                Il Report CURA è gratis solo nei primi 90 giorni dal lancio
+                L'Identikit strategico CURA è gratis solo nei primi 90 giorni dal lancio
               </p>
               <div style={{ marginBottom: '16px' }}>
                 <ReportCountdownBanner />
@@ -740,7 +740,7 @@ export default function NewsletterPage() {
                 href="/report"
                 style={{ display: 'inline-block', background: 'transparent', color: '#fff', padding: '13px 30px', borderRadius: '10px', fontWeight: 700, fontSize: '15px', textDecoration: 'none', border: '1.5px solid #EC4899' }}
               >
-                Registrati ora al Report CURA →
+                Registrati ora all'Identikit strategico CURA →
               </Link>
             </div>
           </div>

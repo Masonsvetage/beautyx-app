@@ -640,7 +640,7 @@ export default function SignupPage() {
               <h3 className="text-sm font-medium text-purple-800">Il tuo account gratuito</h3>
               <ul className="mt-2 text-xs text-purple-700 space-y-1">
                 <li>- Accesso alla dashboard base</li>
-                <li>- Report CURA incluso gratis nei primi 90 giorni dal lancio</li>
+                <li>- Identikit strategico CURA incluso gratis nei primi 90 giorni dal lancio</li>
                 <li>- Nessuna carta di credito richiesta</li>
               </ul>
             </div>

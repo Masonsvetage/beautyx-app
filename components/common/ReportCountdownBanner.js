@@ -222,7 +222,7 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
   if (!countdown || countdown.expired) return null
 
   const { days, hours, minutes, seconds } = countdown
-  const readableLabel = `${days} giorni, ${hours} ore, ${minutes} minuti e ${seconds} secondi rimasti per il report gratis`
+  const readableLabel = `${days} giorni, ${hours} ore, ${minutes} minuti e ${seconds} secondi rimasti per l'identikit strategico gratis`
 
   if (variant === 'prominent') {
     return (
@@ -260,7 +260,7 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
           color: '#fff',
           textAlign: 'center',
         }}>
-          rimasti per il report gratis
+          rimasti per l'identikit strategico gratis
         </span>
       </div>
     )
@@ -351,7 +351,7 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
               lineHeight: 1.25,
             }}
           >
-            Report CURA gratis
+            Identikit strategico CURA gratis
           </span>
           <span className="bx-topbar-pulse" style={{ display: 'inline-flex' }}>
             <CountdownDigits days={days} hours={hours} minutes={minutes} seconds={seconds} size="sm" theme="onBrand" />
@@ -424,7 +424,7 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
     >
       <span aria-hidden="true">⏳</span>
       <CountdownDigits days={days} hours={hours} minutes={minutes} seconds={seconds} size="sm" />
-      <span aria-hidden="true">report gratis, poi 60€</span>
+      <span aria-hidden="true">identikit strategico gratis, poi 60€</span>
     </div>
   )
 }

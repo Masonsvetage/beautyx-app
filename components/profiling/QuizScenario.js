@@ -66,7 +66,7 @@ export default function QuizScenario({ scenario, progress, onConfirm, onExit }) 
       <div className="qz-topbar">
         <div className="qz-brand">
           <span className="qz-dot" />
-          <div>Beautyx<small>Report di profiling</small></div>
+          <div>Beautyx<small>Identikit strategico</small></div>
         </div>
         {onExit && (
           <button type="button" className="qz-exit" onClick={onExit}>Esci e continua dopo</button>

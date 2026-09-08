@@ -29,7 +29,7 @@ export default function RisultatoQuestionarioPage() {
         body: JSON.stringify({ centro_id: centroId, action: 'report' }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Errore nel caricamento del report')
+      if (!res.ok) throw new Error(data.error || "Errore nel caricamento dell'identikit strategico")
       setReport(data.report)
     } catch (err) {
       setError(err.message)
@@ -52,7 +52,7 @@ export default function RisultatoQuestionarioPage() {
       <main style={{ maxWidth: 760, margin: '0 auto', padding: '20px 20px 80px' }}>
         {(authLoading || loading) && (
           <div style={{ textAlign: 'center', padding: '60px 0', color: '#a97e1f' }}>
-            Carichiamo il tuo report CURA...
+            Carichiamo il tuo identikit strategico CURA...
           </div>
         )}
 
@@ -66,10 +66,10 @@ export default function RisultatoQuestionarioPage() {
         {!authLoading && !loading && !error && !report && (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <h1 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontStyle: 'italic', fontSize: 24, marginBottom: 12 }}>
-              Il tuo report non è ancora pronto
+              Il tuo identikit strategico non è ancora pronto
             </h1>
             <p style={{ color: '#6b6555', marginBottom: 20 }}>
-              Non risulta ancora un report generato per il tuo centro — completa prima il questionario.
+              Non risulta ancora un identikit strategico generato per il tuo centro — completa prima il questionario.
             </p>
             <Link
               href="/questionario"

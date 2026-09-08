@@ -801,7 +801,7 @@ trovare qualcuno che faccia lo stesso con lei.
 Il passo successivo ha già un nome — CURA — pensato apposta per questo:
 continuare insieme, con un confronto vero, guidato da una persona in carne e
 ossa che parte proprio dal tuo profilo, quello che queste pagine hanno solo
-iniziato a mostrare. Se ti va di andare oltre questo report, quel confronto ti
+iniziato a mostrare. Se ti va di andare oltre questo identikit strategico, quel confronto ti
 aspetta.
 
 ## Note per il Coordinatore (Federica, 28/08/2026)
