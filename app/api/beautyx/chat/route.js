@@ -1102,7 +1102,7 @@ export async function POST(request) {
 
     // === 4. PRIMA CHIAMATA LEGGERA: Claude sceglie quali tool usare ===
     const firstResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 1500,
       system: systemPrompt,
       messages,
@@ -1165,7 +1165,7 @@ export async function POST(request) {
       ]
 
       currentResponse = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-5',
         max_tokens: 2000,
         system: systemPrompt,
         messages: conversationMessages,

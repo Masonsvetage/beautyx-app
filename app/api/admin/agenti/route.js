@@ -4,10 +4,10 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 
 const AGENTS = [
-  { name: 'beautyx',      label: 'BeautyX Coordinator', model: 'claude-sonnet-4-20250514', icon: '🤖', color: 'teal' },
+  { name: 'beautyx',      label: 'BeautyX Coordinator', model: 'claude-sonnet-5', icon: '🤖', color: 'teal' },
   { name: 'receptionist', label: 'Receptionist',         model: 'claude-haiku-4-5-20251001', icon: '📓', color: 'blue' },
-  { name: 'analista',     label: 'Analista',             model: 'claude-sonnet-4-20250514', icon: '📊', color: 'amber' },
-  { name: 'marketing',    label: 'Marketing',            model: 'claude-sonnet-4-20250514', icon: '📣', color: 'purple' },
+  { name: 'analista',     label: 'Analista',             model: 'claude-sonnet-5', icon: '📊', color: 'amber' },
+  { name: 'marketing',    label: 'Marketing',            model: 'claude-sonnet-5', icon: '📣', color: 'purple' },
 ]
 
 const admin = createClient(

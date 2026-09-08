@@ -5,10 +5,10 @@ import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 
 const AGENT_MODELS = {
-  beautyx:      'claude-sonnet-4-20250514',
+  beautyx:      'claude-sonnet-5',
   receptionist: 'claude-haiku-4-5-20251001',
-  analista:     'claude-sonnet-4-20250514',
-  marketing:    'claude-sonnet-4-20250514',
+  analista:     'claude-sonnet-5',
+  marketing:    'claude-sonnet-5',
 }
 
 const admin = createClient(
