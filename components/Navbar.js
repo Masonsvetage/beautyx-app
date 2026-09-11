@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import CentroSearchDropdown from '@/components/admin/CentroSearchDropdown'
 import TokenCounter from '@/components/beautyx/TokenCounter'
 import HpaWidget from '@/components/dashboard/HpaWidget'
+import { isPiattaformaPlanCodice } from '@/lib/platformPlan'
 
 const PLAN_BADGE_STYLES = {
   demo:         'bg-slate-700/60 text-slate-300 border-slate-600/50',
@@ -45,6 +46,7 @@ export default function Navbar() {
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false)
   const [showHpaPanel, setShowHpaPanel] = useState(false)
   const [userPlan, setUserPlan] = useState(null)    // { codice, nome }
+  const [planLoaded, setPlanLoaded] = useState(false)
   const [navTokenUsage, setNavTokenUsage] = useState(null)
   const centroSwitcherRef = useRef(null)
   const userMenuRef = useRef(null)
@@ -71,12 +73,21 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Carica piano abbonamento e token usage per utenti non-admin e non-HPA
+  // Carica piano abbonamento e token usage per utenti non-admin e non-HPA.
+  // planLoaded (11/09/2026, fix bug "identikit-only vede piattaforma
+  // intera"): finché non sappiamo il piano reale, i link ai moduli
+  // gestionali (Movimenti/Analytics/Obiettivi/Pianificazione/Centro/
+  // Strategie) restano nascosti di default — vedi hasPiattaformaPlan sotto
+  // e lib/platformPlan.js. Prima di questo fix questa stessa fetch popolava
+  // SOLO il badge del piano nel menu utente: i link di navigazione erano
+  // già tutti costruiti sopra, in base al solo ruolo (hasPermission), mai
+  // in base al piano — causa reale del bug.
   useEffect(() => {
-    if (!isAdmin && !isHpa && profile) {
-      fetch('/api/subscriptions/balance')
-        .then(r => r.json())
-        .then(d => {
+    if (isAdmin || isHpa) { setPlanLoaded(true); return }
+    if (!profile) return
+    fetch('/api/subscriptions/balance')
+      .then(r => r.json())
+      .then(d => {
           if (d?.plan) setUserPlan({ codice: d.plan.codice, nome: d.plan.nome })
           if (d?.subscription && d?.plan) {
             const sub  = d.subscription
@@ -99,8 +110,8 @@ export default function Navbar() {
             })
           }
         })
-        .catch(() => {})
-    }
+      .catch(() => {})
+      .finally(() => setPlanLoaded(true))
   }, [isAdmin, isHpa, profile])
 
   // Costruisci nav items in base ai permessi e ruolo
@@ -108,6 +119,14 @@ export default function Navbar() {
 
   // Admin: mostra voci centro SOLO se ha un centro selezionato
   const hasCentro = !!currentCentro
+
+  // Piano piattaforma reale (11/09/2026, fix bug "identikit-only vede
+  // piattaforma intera" — vedi lib/platformPlan.js e il commento sopra
+  // l'effect che carica userPlan). Admin/HPA bypassano sempre (nessun piano
+  // "cliente"). Finché planLoaded è false, hasPiattaformaPlan resta false
+  // per default-deny: niente flash dei link gestionali prima di sapere il
+  // piano reale.
+  const hasPiattaformaPlan = isAdmin || isHpa || (planLoaded && isPiattaformaPlanCodice(userPlan?.codice))
 
   if (isAdmin) {
     // Admin ha sempre la sua dashboard
@@ -124,22 +143,22 @@ export default function Navbar() {
     if (hasPermission('dashboard.visualizza')) {
       navItems.push({ href: '/dashboard', label: 'Dashboard', icon: '🏠' })
     }
-    if (hasPermission('movimenti.visualizza')) {
+    if (hasPermission('movimenti.visualizza') && hasPiattaformaPlan) {
       navItems.push({ href: '/movimenti', label: 'Movimenti', icon: '💰' })
     }
-    if (hasPermission('analytics.visualizza')) {
+    if (hasPermission('analytics.visualizza') && hasPiattaformaPlan) {
       navItems.push({ href: '/analytics', label: 'Analytics', icon: '📊' })
     }
-    if (hasPermission('obiettivi.visualizza')) {
+    if (hasPermission('obiettivi.visualizza') && hasPiattaformaPlan) {
       navItems.push({ href: '/obiettivi', label: 'Obiettivi', icon: '🎯' })
     }
-    if (hasPermission('pianificazione.visualizza')) {
+    if (hasPermission('pianificazione.visualizza') && hasPiattaformaPlan) {
       navItems.push({ href: '/pianificazione', label: 'Pianificazione', icon: '📋' })
     }
-    if (hasCentro) {
+    if (hasCentro && hasPiattaformaPlan) {
       navItems.push({ href: '/centro', label: 'Centro', icon: '🏢' })
     }
-    if (hasCentro && !isHpa) {
+    if (hasCentro && !isHpa && hasPiattaformaPlan) {
       navItems.push({ href: '/strategie', label: 'Strategie', icon: '🚀' })
     }
     if (isHpa) {

@@ -10,6 +10,7 @@ import ConsoleDatiWidget from '@/components/dashboard/ConsoleDatiWidget'
 import GamificationWidget from '@/components/dashboard/GamificationWidget'
 import ReportCuraCard from '@/components/dashboard/ReportCuraCard'
 import { useBeautyx } from '@/contexts/BeautyxContext'
+import { NON_PIATTAFORMA_PLAN_CODICI } from '@/lib/platformPlan'
 
 function CollapsibleOnboarding({ children }) {
   const [open, setOpen] = useState(false)
@@ -27,15 +28,11 @@ function CollapsibleOnboarding({ children }) {
 }
 
 // Piani che sbloccano davvero i widget gestionali (incassi, obiettivi,
-// accantonamenti, import dati). Qualunque altro caso — nessun piano, o il
-// piano report_profiling (assegnato gratis a chi ha comprato solo il Report
-// CURA, livello 2 dell'ecosistema, vedi memory/generale.md 04/09/2026) — NON
-// deve mai vedere questi widget: sono costruiti per centri con dati reali di
-// incasso/obiettivi/accantonamenti, che un account solo-report non ha mai
-// avuto modo di popolare. Prima di questo fix la dashboard mostrava questi
-// widget a chiunque avesse un centro_id, a prescindere dal piano — un utente
-// report_profiling-only li vedeva comunque, con fetch su dati inesistenti.
-const NON_PIATTAFORMA_PLAN_CODICI = new Set(['report_profiling'])
+// accantonamenti, import dati) — regola condivisa, vedi lib/platformPlan.js
+// (11/09/2026: estratta da qui in un modulo condiviso perché lo stesso
+// concetto serve ora anche a Navbar e alle pagine gestionali dirette, non
+// solo ai widget di questa dashboard — vedi bug riportato da Mason
+// nell'audit "identikit-only vede piattaforma intera").
 
 export default function Home() {
   const { currentCentro, profile, profileChecked, loading: authLoading, centriAccess, switchCentro, isAdmin, isHpa, isGlobalView } = useAuth()

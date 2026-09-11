@@ -29,9 +29,15 @@ import { generateIntelligentAlerts } from '@/lib/analytics-alerts'
 import CommandBar from '@/components/common/CommandBar'
 import HelpTooltip from '@/components/common/HelpTooltip'
 import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import { usePiattaformaPlan } from '@/hooks/usePiattaformaPlan'
 
 export default function AnalyticsPage() {
   const { currentCentro, profile, loading: authLoading } = useAuth()
+  const router = useRouter()
+  // Fix 11/09/2026 (bug "identikit-only vede piattaforma intera", segnalato
+  // da Mason) — vedi stesso commento in app/movimenti/page.js.
+  const { planLoaded, hasPiattaformaPlan } = usePiattaformaPlan()
   const [movements, setMovements] = useState([])
   const [openingHours, setOpeningHours] = useState([])
   const [closures, setClosures] = useState([])
@@ -54,6 +60,13 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (centroId) loadData()
   }, [centroId])
+
+  // Deep-link guard: vedi app/movimenti/page.js per il contesto completo.
+  useEffect(() => {
+    if (planLoaded && !hasPiattaformaPlan) {
+      router.replace('/dashboard')
+    }
+  }, [planLoaded, hasPiattaformaPlan, router])
 
   // Ricarica ricavi operativi quando cambia il periodo
   useEffect(() => {
@@ -152,6 +165,17 @@ export default function AnalyticsPage() {
       movementStats
     }
   }, [movements, period, openingHours, closures, viewMode, showYoY, showOnlyOperational, soglieUtente])
+
+  if (!planLoaded || !hasPiattaformaPlan) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">📊</div>
+          <div className="text-xl font-semibold text-slate-200">Caricamento...</div>
+        </div>
+      </div>
+    )
+  }
 
   if (!centroId) {
     return (

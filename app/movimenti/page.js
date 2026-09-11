@@ -12,9 +12,19 @@ import VendorsConfig from '@/components/settings/VendorsConfig'
 import { groupByCategory } from '@/lib/analytics'
 import { useAuth } from '@/contexts/AuthContext'
 import HelpTooltip from '@/components/common/HelpTooltip'
+import { useRouter } from 'next/navigation'
+import { usePiattaformaPlan } from '@/hooks/usePiattaformaPlan'
 
 export default function MovimentiPage() {
   const { currentCentro, profile } = useAuth()
+  const router = useRouter()
+  // Fix 11/09/2026 (bug "identikit-only vede piattaforma intera", segnalato
+  // da Mason): questa pagina prima si fidava solo di centroId/autenticazione
+  // — un utente con solo il piano report_profiling (Identikit Strategico,
+  // niente moduli gestionali) arrivando qui via URL diretto vedeva la
+  // pagina intera. Stesso gate già in uso in app/dashboard/page.js dal
+  // 04/09/2026, ora condiviso via hooks/usePiattaformaPlan.js.
+  const { planLoaded, hasPiattaformaPlan } = usePiattaformaPlan()
   const [movements, setMovements] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -30,6 +40,14 @@ export default function MovimentiPage() {
   useEffect(() => {
     if (centroId) loadData()
   }, [centroId])
+
+  // Deep-link guard: se il piano è confermato senza accesso ai moduli
+  // gestionali, non restare su questa pagina — torna alla dashboard.
+  useEffect(() => {
+    if (planLoaded && !hasPiattaformaPlan) {
+      router.replace('/dashboard')
+    }
+  }, [planLoaded, hasPiattaformaPlan, router])
 
   async function loadData() {
     setLoading(true)
@@ -131,6 +149,20 @@ export default function MovimentiPage() {
     if (movements.length === 0) return null
     return groupByCategory(movements)
   }, [movements])
+
+  if (!planLoaded || !hasPiattaformaPlan) {
+    // Non renderizzare mai il contenuto gestionale mentre non sappiamo
+    // ancora il piano (default-deny) o se sappiamo che l'utente non ha un
+    // piano piattaforma reale (redirect già innescato dall'effect sopra).
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-2xl mb-2">⏳</div>
+          <div>Caricamento...</div>
+        </div>
+      </div>
+    )
+  }
 
   if (!centroId) {
     return (

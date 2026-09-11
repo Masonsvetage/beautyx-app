@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { usePiattaformaPlan } from '@/hooks/usePiattaformaPlan'
 import { calcolaServizio, analizzaCongelato, formatEuro } from '@/lib/listino-calc'
 import { useMultiSelect } from '@/lib/useMultiSelect'
 import BulkActionBar from '@/components/common/BulkActionBar'
@@ -2505,7 +2506,30 @@ function TabIntegrazioni() {
 function CentroPageInner() {
   const { currentCentro, profile } = useAuth()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'orari')
+  // Fix 11/09/2026 (bug "identikit-only vede piattaforma intera", segnalato
+  // da Mason) — vedi stesso commento in app/movimenti/page.js. /centro
+  // gestisce orari/dipendenti/listino prezzi/integrazioni bancarie: stessa
+  // famiglia di moduli gestionali, stesso gate.
+  const { planLoaded, hasPiattaformaPlan } = usePiattaformaPlan()
+
+  useEffect(() => {
+    if (planLoaded && !hasPiattaformaPlan) {
+      router.replace('/dashboard')
+    }
+  }, [planLoaded, hasPiattaformaPlan, router])
+
+  if (!planLoaded || !hasPiattaformaPlan) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-4xl mb-4">⏳</p>
+          <p className="text-slate-400 text-sm">Caricamento...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!currentCentro && !profile?.centro_id) {
     return (

@@ -1,7 +1,35 @@
 'use client'
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { usePiattaformaPlan } from '@/hooks/usePiattaformaPlan'
 
 export default function StrategiePage() {
+  const router = useRouter()
+  // Fix 11/09/2026 (bug "identikit-only vede piattaforma intera", segnalato
+  // da Mason) — vedi stesso commento in app/movimenti/page.js. Questa
+  // pagina è solo un hub di link verso obiettivi/pianificazione/analytics/
+  // centro: nessun dato proprio, ma va comunque gated per coerenza (non ha
+  // senso mostrare un menu verso pagine a cui l'utente non può accedere).
+  const { planLoaded, hasPiattaformaPlan } = usePiattaformaPlan()
+
+  useEffect(() => {
+    if (planLoaded && !hasPiattaformaPlan) {
+      router.replace('/dashboard')
+    }
+  }, [planLoaded, hasPiattaformaPlan, router])
+
+  if (!planLoaded || !hasPiattaformaPlan) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl mb-2">⏳</div>
+          <div className="text-slate-400">Caricamento...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">

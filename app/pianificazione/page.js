@@ -6,11 +6,35 @@ import AccantonamentiDashboard from '@/components/pianificazione/AccantonamentiD
 import EmployeeList from '@/components/pianificazione/EmployeeList'
 import { useAuth } from '@/contexts/AuthContext'
 import HelpTooltip from '@/components/common/HelpTooltip'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { usePiattaformaPlan } from '@/hooks/usePiattaformaPlan'
 
 export default function PianificazionePage() {
   const { currentCentro, profile } = useAuth()
   const [activeTab, setActiveTab] = useState('budget') // budget, accantonamenti, dipendenti
   const centroId = currentCentro?.centro_id || profile?.centro_id
+  const router = useRouter()
+  // Fix 11/09/2026 (bug "identikit-only vede piattaforma intera", segnalato
+  // da Mason) — vedi stesso commento in app/movimenti/page.js.
+  const { planLoaded, hasPiattaformaPlan } = usePiattaformaPlan()
+
+  useEffect(() => {
+    if (planLoaded && !hasPiattaformaPlan) {
+      router.replace('/dashboard')
+    }
+  }, [planLoaded, hasPiattaformaPlan, router])
+
+  if (!planLoaded || !hasPiattaformaPlan) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl mb-2">⏳</div>
+          <div className="text-slate-400">Caricamento...</div>
+        </div>
+      </div>
+    )
+  }
 
   if (!centroId) {
     return (

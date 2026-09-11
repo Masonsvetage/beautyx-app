@@ -134,7 +134,14 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg', theme = '
     fontFamily: MONO_STACK,
     fontWeight: 800,
     fontVariantNumeric: 'tabular-nums',
-    fontSize: isLg ? 'clamp(26px, 6vw, 38px)' : '15px',
+    // *** AGGIORNAMENTO (Davide) — collaudo dal vivo Mason su /newsletter,
+    // sezione Identikit Strategico CURA: "countdown troppo piccolo, va reso
+    // prominente". Taglia "lg" ingrandita (26-38px → 32-48px, minWidth
+    // 54→64px, padding aumentato) per essere il primo elemento che si nota
+    // nella sezione, non un dettaglio marginale. La taglia "sm" (pill hero,
+    // richiamo di chiusura, topbar) resta invariata — non è quella
+    // contestata da Mason.
+    fontSize: isLg ? 'clamp(32px, 7vw, 48px)' : '15px',
     lineHeight: 1,
     // Entrambe le taglie sono pensate per la resa reale nel sito: sia l'uso
     // "lg" (sezione Report CURA, sfondo scuro) sia l'uso "sm" (pill nella hero
@@ -143,28 +150,28 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg', theme = '
     // su scuro nella versione precedente della pill, corretto qui).
     color: isOnBrand ? '#FFE44D' : '#fff',
     background: isOnBrand ? '#1a1a0f' : (isLg ? 'rgba(0,0,0,0.32)' : 'rgba(236,72,153,0.28)'),
-    borderRadius: isLg ? '10px' : '5px',
-    padding: isLg ? '10px 8px' : '3px 6px',
-    minWidth: isLg ? '54px' : '28px',
+    borderRadius: isLg ? '12px' : '5px',
+    padding: isLg ? '14px 10px' : '3px 6px',
+    minWidth: isLg ? '68px' : '28px',
     textAlign: 'center',
     display: 'inline-block',
   }
 
   const labelStyle = {
     display: 'block',
-    fontSize: isLg ? '10px' : '8px',
+    fontSize: isLg ? '11px' : '8px',
     fontWeight: 700,
     letterSpacing: '0.09em',
     textTransform: 'uppercase',
     color: isOnBrand ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.65)',
-    marginTop: isLg ? '6px' : '2px',
+    marginTop: isLg ? '7px' : '2px',
     textAlign: 'center',
   }
 
   const sepStyle = {
     fontFamily: MONO_STACK,
     fontWeight: 800,
-    fontSize: isLg ? 'clamp(20px, 4vw, 28px)' : '13px',
+    fontSize: isLg ? 'clamp(24px, 5vw, 34px)' : '13px',
     // Il separatore, a differenza dei numeri, sta DIRETTAMENTE sullo sfondo
     // del genitore (non dentro il chip scuro) — su "onBrand" quello sfondo è
     // il gradiente chiaro oro→rosa, quindi serve un tono scuro per restare
@@ -229,11 +236,23 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
       <div
         className={`bx-report-countdown bx-report-countdown--prominent ${className}`}
         style={{
-          display: 'inline-flex',
+          // *** AGGIORNAMENTO (Davide) — collaudo Mason su /newsletter,
+          // sezione Identikit Strategico CURA (05/09/2026 + successivo giro):
+          // "countdown troppo piccolo/marginale". Prima il pannello era
+          // `inline-flex` (dimensionato SOLO sul proprio contenuto, quindi
+          // restava una scatola piccola persa in mezzo allo spazio bianco
+          // della sezione). Ora è `flex` a `width:100%`: riempie qualunque
+          // contenitore lo ospiti — sia il wrapper largo dedicato in
+          // app/newsletter/page.js (sezione report-cura, pensato apposta più
+          // largo della colonna di testo per fare da banner vero) sia la
+          // card di /report — invece di restare un pill piccolo al centro.
+          display: 'flex',
+          width: '100%',
+          boxSizing: 'border-box',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '14px',
-          padding: '24px 32px',
+          gap: '16px',
+          padding: '30px 32px',
           borderRadius: '18px',
           // Pannello scuro OPACO (non un tint semi-trasparente sul colore del
           // genitore): questo componente viene montato sia su sfondi scuri
@@ -253,7 +272,7 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
         <CountdownDigits days={days} hours={hours} minutes={minutes} seconds={seconds} size="lg" />
         <span style={{
           fontFamily: 'var(--font-inter), sans-serif',
-          fontSize: '13px',
+          fontSize: '14px',
           fontWeight: 700,
           letterSpacing: '0.06em',
           textTransform: 'uppercase',

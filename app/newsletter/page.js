@@ -119,6 +119,27 @@ export default function NewsletterPage() {
         html { scroll-behavior: smooth; }
         .bx-art-card { transition: transform 0.18s ease, box-shadow 0.18s ease; cursor: pointer; }
         .bx-art-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
+        .bx-nl-accedi-link { transition: color 0.15s ease; }
+        .bx-nl-accedi-link:hover, .bx-nl-accedi-link:focus-visible { color: #1a1a0f !important; }
+        /* CTA "Identikit strategico CURA" (sezione report-cura): stesso
+           pattern di pulse già usato in ReportCountdownBanner.js
+           (bx-topbar-pulse, variant "topbar") — anello di box-shadow che
+           respira, stesso ciclo 2.6s, stessa regola prefers-reduced-motion.
+           Colori adattati: qui il bottone è pieno rosa su sfondo scuro
+           (non un chip scuro su barra chiara), quindi l'anello è un alone
+           rosa invece che nero. Riusato di proposito invece di inventare un
+           nuovo effetto, per coerenza con l'unico altro elemento "urgente"
+           già presente nel sito. */
+        @keyframes bx-report-cta-pulse {
+          0%, 100% { box-shadow: 0 14px 36px rgba(236,72,153,0.5), 0 0 0 0 rgba(236,72,153,0); }
+          50% { box-shadow: 0 14px 36px rgba(236,72,153,0.5), 0 0 0 8px rgba(236,72,153,0.28); }
+        }
+        .bx-report-cta-pulse { animation: bx-report-cta-pulse 2.6s ease-in-out infinite; transition: transform 0.15s ease; }
+        .bx-report-cta-pulse:hover, .bx-report-cta-pulse:focus-visible { transform: translateY(-2px); }
+        .bx-report-cta-pulse:active { transform: scale(0.98); }
+        @media (prefers-reduced-motion: reduce) {
+          .bx-report-cta-pulse { animation: none; }
+        }
         .bx-article h3 { font-family: var(--font-playfair), Georgia, serif; font-size: 20px; color: #1a1a0f; margin: 28px 0 10px; line-height: 1.3; }
         .bx-article p { font-size: 16px; color: #333; line-height: 1.8; margin-bottom: 16px; }
         .bx-article ul { margin: 0 0 16px 22px; }
@@ -195,12 +216,32 @@ export default function NewsletterPage() {
             <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={137} height={150} className="bx-nl-logo" style={{ position: 'absolute', borderRadius: '4px' }} />
             <Image src="/beautyx-wordmark.png" alt="Beautyx" width={220} height={151} className="bx-nl-wordmark-img" />
           </Link>
-          <a
-            href="#form-section"
-            style={{ background: '#1a1a0f', color: '#fff', padding: '12px 24px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', lineHeight: 1, textDecoration: 'none' }}
-          >
-            Iscriviti gratis →
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {/* Link "Accedi" per chi è già registrato — mancava del tutto su
+                /newsletter (segnalato da Mason, vedi task #180): senza questo
+                link chi ha già un account non trova modo di rientrare da qui
+                e finisce a ri-iscriversi o a cercarsi da solo /login. Testo
+                semplice, nessun bottone pieno: deve restare secondario
+                rispetto al CTA primario "Iscriviti gratis". Stesso pattern
+                già in uso altrove nel sito per lo stesso scopo (vedi
+                app/page.js righe 522 e 1101, classe Tailwind lì
+                "text-sm text-slate-300 hover:text-white" — qui riprodotto in
+                stile inline coerente con il resto della pagina, che usa
+                inline style ovunque invece di Tailwind). */}
+            <Link
+              href="/login"
+              className="bx-nl-accedi-link"
+              style={{ color: 'rgba(26,26,15,0.55)', fontSize: '14px', fontWeight: 600, textDecoration: 'none' }}
+            >
+              Accedi
+            </Link>
+            <a
+              href="#form-section"
+              style={{ background: '#1a1a0f', color: '#fff', padding: '12px 24px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', lineHeight: 1, textDecoration: 'none' }}
+            >
+              Iscriviti gratis →
+            </a>
+          </div>
         </header>
 
         {/* ── TOPBAR COUNTDOWN REPORT CURA ──
@@ -343,16 +384,30 @@ export default function NewsletterPage() {
           id="report-cura"
           style={{
             position: 'relative',
-            background: 'linear-gradient(135deg, #1a1a0f 0%, #2a1420 55%, #1a1a0f 100%)',
-            padding: '80px 32px',
-            borderTop: '6px solid #EC4899',
-            borderBottom: '6px solid #EC4899',
+            // *** AGGIORNAMENTO (Davide) — collaudo dal vivo Mason: "nessuno
+            // stacco visivo tra la newsletter sopra e questa sezione, stesso
+            // sfondo scuro, sembrano un blocco unico". La hero sopra è piatta
+            // #1a1a0f; il gradiente precedente qui tornava anch'esso a
+            // #1a1a0f alle estremità, quindi il confine spariva. Ora il fondo
+            // dominante è il bordeaux (#2a1420→#1f0f18), chiaramente diverso
+            // dal nero della hero fin dal primo pixel sotto il bordo, non
+            // solo "tecnicamente diverso" ma percepibile a colpo d'occhio.
+            background: 'linear-gradient(180deg, #2a1420 0%, #23111c 55%, #1f0f18 100%)',
+            padding: '96px 32px 88px',
+            // Bordo di stacco raddoppiato (6px→10px) e rinforzato con
+            // un'ombra interna verso l'alto: due segnali indipendenti (colore
+            // di fondo diverso + bordo netto + ombra) invece di uno solo,
+            // cosi anche in scroll veloce l'occhio "sente" l'inizio di una
+            // sezione nuova.
+            borderTop: '10px solid #EC4899',
+            borderBottom: '10px solid #EC4899',
+            boxShadow: 'inset 0 24px 40px -32px rgba(0,0,0,0.6)',
             overflow: 'hidden',
           }}
         >
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'radial-gradient(circle at 50% 0%, rgba(236,72,153,0.22), transparent 60%)',
+            background: 'radial-gradient(circle at 50% 0%, rgba(236,72,153,0.26), transparent 60%)',
             pointerEvents: 'none',
           }} />
           <div style={{ position: 'relative', maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
@@ -362,33 +417,60 @@ export default function NewsletterPage() {
               color: '#1a1a0f', background: '#EC4899',
               padding: '10px 22px', borderRadius: '999px', marginBottom: '24px',
             }}>
-              <span aria-hidden="true">★</span> Identikit strategico CURA — la diagnosi del tuo centro, gratis nel lancio
+              <span aria-hidden="true">★</span> Identikit strategico CURA — vale 60€, oggi è gratis: dura solo la finestra di lancio
             </p>
             <h2 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: 'clamp(26px, 3.8vw, 42px)', fontWeight: 900, color: '#fff', lineHeight: 1.2, marginBottom: '20px' }}>
-              Il tuo centro ha un punto bloccato. L'Identikit strategico CURA te lo mostra — con i tuoi numeri, non a caso.
+              Il tuo centro ha un punto bloccato. Scoprilo oggi, gratis — con i tuoi numeri, non a caso.
             </h2>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '16px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
               Non è un quiz online e non è un oroscopo travestito da consulenza. L'Identikit strategico CURA prende i dati veri del tuo centro — clienti, agenda, conto — e ti restituisce una diagnosi scritta solo per te: dove sei bloccata oggi, e qual è la prima cosa su cui mettere le mani domani mattina. Niente consigli buoni per tutte: un punto di partenza specifico, per quel centro che conosci a memoria — il tuo.
             </p>
             <p style={{ fontSize: 'clamp(15px, 1.8vw, 17px)', color: '#d8cdd2', lineHeight: 1.85, marginBottom: '36px', maxWidth: '620px', marginLeft: 'auto', marginRight: 'auto' }}>
-              Vale 60€. Durante il lancio è gratis: il countdown qui sotto dice per quanto ancora, poi si torna al prezzo pieno.
+              Vale 60€. In questo momento è gratis — la finestra di lancio è aperta adesso, e si chiude quando il countdown qui sotto arriva a zero. Da lì in poi, il prezzo torna quello vero: 60€.
             </p>
+          </div>
 
-            <div style={{ marginBottom: '36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <ReportCountdownBanner variant="prominent" />
-              <p style={{ marginTop: '14px', fontSize: '13px', color: '#b8a8b0', lineHeight: 1.6, maxWidth: '420px' }}>
-                Passata questa finestra, l'Identikit strategico CURA si paga. Oggi no.
-              </p>
-            </div>
+          {/* Banner countdown FULL-BLEED rispetto alla colonna di testo qui
+              sopra (760px) e alla colonna della hero (640px): stesso difetto
+              segnalato da Mason ("il countdown è un dettaglio marginale") più
+              volte, causa reale doppia — (1) il pannello era dimensionato sul
+              proprio contenuto (inline-flex) invece che a piena larghezza,
+              risolto dentro ReportCountdownBanner.js (variant "prominent" ora
+              è `width:100%`); (2) qui il contenitore che lo ospita era la
+              stessa colonna stretta del testo (maxWidth 760). Ora è un
+              wrapper dedicato più largo (maxWidth 920px, deliberatamente più
+              largo della colonna di testo sopra/sotto) cosi il countdown
+              "rompe" visivamente la colonna e si legge come un vero banner a
+              sé, non come una riga in mezzo al paragrafo. */}
+          <div style={{ position: 'relative', maxWidth: '920px', margin: '0 auto', padding: '0 8px', marginBottom: '40px' }}>
+            <ReportCountdownBanner variant="prominent" />
+            <p style={{ marginTop: '18px', fontSize: 'clamp(14px, 1.6vw, 16px)', color: '#e8d5db', lineHeight: 1.6, textAlign: 'center', fontWeight: 600 }}>
+              Questi numeri contano alla rovescia verso il prezzo pieno — 60€. Finché scendono, è gratis.
+            </p>
+          </div>
 
+          <div style={{ position: 'relative', maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
+            {/* CTA principale della sezione: dopo il redesign del countdown,
+                anche il bottone riceve un trattamento più "urgente" —
+                dimensione aumentata, contrasto più forte (ombra rosa più
+                larga) e un pulse discreto sull'anello del bottone. Riusato
+                lo STESSO pattern del pulse già presente nel sito
+                (bx-topbar-pulse in ReportCountdownBanner.js, variant
+                "topbar": anello di box-shadow che respira, ciclo 2.6s,
+                disattivato sotto prefers-reduced-motion) invece di inventarne
+                uno nuovo — vedi keyframes "bx-report-cta-pulse" nello style
+                globale di questa pagina, stessa tecnica, colori adattati al
+                bottone rosa pieno su sfondo scuro invece del chip scuro su
+                sfondo chiaro della topbar. */}
             <Link
               href="/report"
-              style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '18px 40px', borderRadius: '10px', fontWeight: 800, fontSize: '17px', textDecoration: 'none', boxShadow: '0 10px 28px rgba(236,72,153,0.4)' }}
+              className="bx-report-cta-pulse"
+              style={{ display: 'inline-block', background: '#EC4899', color: '#fff', padding: '22px 48px', borderRadius: '12px', fontWeight: 800, fontSize: 'clamp(17px, 2.2vw, 19px)', textDecoration: 'none', boxShadow: '0 14px 36px rgba(236,72,153,0.5)' }}
             >
-              Scopri dove sei bloccata → Fai il tuo Identikit strategico CURA
+              Fai il tuo Identikit strategico CURA, gratis adesso →
             </Link>
             <p style={{ marginTop: '16px', fontSize: '13px', color: '#b8a8b0', lineHeight: 1.6 }}>
-              Bastano pochi minuti e un account completo — ti serve comunque, qualunque cosa deciderai dopo.
+              Bastano pochi minuti e un account completo — che ti serve comunque, qualunque cosa deciderai dopo. Meglio farlo ora che è gratis.
             </p>
           </div>
         </section>
@@ -731,7 +813,7 @@ export default function NewsletterPage() {
                 stile/countdown (vedi ReportCountdownBanner). */}
             <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
               <p style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#EC4899', marginBottom: '14px' }}>
-                L'Identikit strategico CURA è gratis solo nei primi 90 giorni dal lancio
+                Il countdown corre: Identikit strategico CURA gratis solo nei primi 90 giorni
               </p>
               <div style={{ marginBottom: '16px' }}>
                 <ReportCountdownBanner />
@@ -740,7 +822,7 @@ export default function NewsletterPage() {
                 href="/report"
                 style={{ display: 'inline-block', background: 'transparent', color: '#fff', padding: '13px 30px', borderRadius: '10px', fontWeight: 700, fontSize: '15px', textDecoration: 'none', border: '1.5px solid #EC4899' }}
               >
-                Registrati ora all'Identikit strategico CURA →
+                Fai il tuo Identikit strategico CURA — ora è gratis, poi torna a pagamento →
               </Link>
             </div>
           </div>
