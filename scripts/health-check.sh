@@ -12,6 +12,19 @@
 # ("il sito risponde 200") non aveva intercettato il bug reale del giorno (tabelle di
 # produzione mancanti): quel tipo di problema lo intercetta il check tabelle Supabase
 # nel prompt del task schedulato (query reale sulle tabelle critiche), non questo script.
+#
+# NOTA (2026-09-09): aggiunto check Anthropic (vedi sezione 5 sotto) dopo il bug reale
+# dell'08/09/2026 — il codice chiamava un modello Claude ritirato
+# (claude-sonnet-4-20250514), causando 500 "problema tecnico" su /api/beautyx/chat
+# durante il questionario CURA. NON testiamo /api/beautyx/chat via HTTP diretto: quella
+# route richiede una sessione Supabase reale letta dai cookie (verifyCentroOwnership),
+# quindi una POST senza sessione riceverebbe sempre 401 a prescindere dallo stato del
+# modello — non sarebbe un test valido, solo un falso senso di sicurezza. Testiamo
+# invece direttamente il modello Anthropic usato nelle chiamate reali del codice
+# (claude-sonnet-5, vedi app/api/beautyx/chat/route.js righe 1105/1168), con una
+# richiesta minima. La verifica di raggiungibilità delle tabelle beautyx_conversations/
+# beautyx_messages è nel prompt del task schedulato (stesso pattern delle altre tabelle
+# critiche via Supabase execute_sql), non in questo script.
 
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
@@ -74,4 +87,34 @@ if [ -n "${VERCEL_TOKEN:-}" ]; then
   esac
 else warn "Vercel -> VERCEL_TOKEN mancante (aggiungi in .env.local)"; fi
 
-# Nota: stato Supabase verificato dal task via MCP (progetto scfumedmisbuxhdywwpb).
+# 5) Anthropic — modello AI di produzione raggiungibile (NUOVO 2026-09-09)
+# Replica minima del bug reale dell'08/09/2026: chiamata diretta ad Anthropic con
+# l'identico modello usato in produzione (claude-sonnet-5), max_tokens:1 per consumare
+# pochissimo credito. Se il modello è stato ritirato/rinominato, Anthropic risponde con
+# un errore (tipicamente 404 "not_found_error") invece di 200 — stesso identico sintomo
+# della causa del bug di ieri, intercettato qui prima che un cliente ci sbatta contro.
+if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+  ai_resp=$(curl -s -w '\n%{http_code}' https://api.anthropic.com/v1/messages \
+    -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+    -H "anthropic-version: 2023-06-01" \
+    -H "Content-Type: application/json" \
+    -d '{"model":"claude-sonnet-5","max_tokens":1,"messages":[{"role":"user","content":"ping"}]}')
+  ai_code=$(echo "$ai_resp" | tail -1)
+  ai_body=$(echo "$ai_resp" | sed '$d')
+  if [ "$ai_code" = "200" ]; then
+    ok "Anthropic claude-sonnet-5 -> 200 (modello raggiungibile)"
+  else
+    bad "Anthropic claude-sonnet-5 -> $ai_code — modello AI non raggiungibile o errore interno chat (stesso sintomo del bug 08/09/2026): $ai_body"
+  fi
+else
+  warn "Anthropic -> ANTHROPIC_API_KEY mancante in .env.local"
+fi
+
+# Nota: stato Supabase (progetto + tabelle critiche, incluse beautyx_conversations/
+# beautyx_messages da oggi) verificato dal task via MCP (progetto scfumedmisbuxhdywwpb).
+#
+# NOTA (2026-09-19): il controllo "fallback AI usato nelle ultime 24h" (tabella
+# system_events, tipo='ai_fallback_used' — vedi lib/beautyx/callClaudeWithFallback.js,
+# commit 20dc8635) vive SOLO nel prompt del task schedulato via MCP Supabase execute_sql,
+# non in questo script — stesso motivo e stesso schema del check tabelle critiche sopra:
+# questo script non ha credenziali/accesso MCP.
