@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export const maxDuration = 60 // secondi — necessario per sync Koibox via BeautyX
 import { createClient } from '@supabase/supabase-js'
 import { verifyCentroOwnership } from '@/lib/auth/verifyCentroOwnership'
-import { callClaudeWithFallback } from '@/lib/beautyx/callClaudeWithFallback'
+import { callClaudeWithFallback, PRIMARY_MODEL } from '@/lib/beautyx/callClaudeWithFallback'
 import { extractMonitorData, cleanTextResponse } from '@/lib/beautyx/monitorExtractor'
 import { getCompleteBusinessData } from '@/lib/beautyx/dataHub'
 import { loadAgentPrompt } from '@/lib/beautyx/agentPrompts'
@@ -905,7 +905,13 @@ async function processAndReturn({
   user_id,
   totalTokensIn,
   totalTokensOut,
-  toolsUsed = []
+  toolsUsed = [],
+  // Modello Claude che ha EFFETTIVAMENTE generato aiResponse in questa
+  // chiamata specifica (PRIMARY_MODEL o FALLBACK_MODEL, da
+  // callClaudeWithFallback: vedi response._modelUsed in lib/beautyx/callClaudeWithFallback.js).
+  // Fallback a PRIMARY_MODEL solo come rete di sicurezza difensiva, nel caso
+  // improbabile in cui un chiamante dimentichi di passarlo.
+  modelUsed = PRIMARY_MODEL
 }) {
   // Estrai dati strutturati per il Monitor Panel
   const monitorData = extractMonitorData(aiResponse, {}, message)
@@ -942,7 +948,7 @@ async function processAndReturn({
         p_conversation_id: conversation_id || null,
         p_tokens_in: totalTokensIn || 0,
         p_tokens_out: totalTokensOut || 0,
-        p_model: 'claude-sonnet-4'
+        p_model: modelUsed
       })
       tokenUsage = trackResult
     } catch (err) {
@@ -956,7 +962,7 @@ async function processAndReturn({
     insights: savedInsights,
     requires_refresh: toolsUsed.some(t => WRITE_TOOLS.has(t)) ? ['registro'] : [],
     metadata: {
-      model: 'claude-sonnet-4',
+      model: modelUsed,
       tokens_input: totalTokensIn,
       tokens_output: totalTokensOut,
       timestamp: new Date().toISOString()
@@ -1126,7 +1132,8 @@ export async function POST(request) {
         conversation_id,
         user_id,
         totalTokensIn: firstResponse.usage.input_tokens,
-        totalTokensOut: firstResponse.usage.output_tokens
+        totalTokensOut: firstResponse.usage.output_tokens,
+        modelUsed: firstResponse._modelUsed
       })
     }
 
@@ -1192,7 +1199,8 @@ export async function POST(request) {
       user_id,
       totalTokensIn,
       totalTokensOut,
-      toolsUsed: allToolsUsed
+      toolsUsed: allToolsUsed,
+      modelUsed: currentResponse._modelUsed
     })
 
   } catch (error) {
