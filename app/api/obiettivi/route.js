@@ -36,7 +36,7 @@ export async function GET(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabaseAdmin
@@ -109,7 +109,7 @@ export async function POST(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centro_id)
+    const ownership = await verifyCentroOwnership(request, centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: obiettivo, error } = await supabaseAdmin
@@ -165,7 +165,7 @@ export async function PATCH(request) {
       )
     }
 
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // centro_id/id/created_at non sono riassegnabili dal client: l'ownership
@@ -209,7 +209,7 @@ export async function DELETE(request) {
       )
     }
 
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { error } = await supabaseAdmin

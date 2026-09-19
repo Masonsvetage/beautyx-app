@@ -2891,6 +2891,53 @@ nuovo banner di errore, vuol dire che il problema è ancora più a monte
   potrebbero verificarlo forzando temporaneamente un ID modello primario
   invalido in un ambiente di test, se si vuole una prova end-to-end reale
   prima del prossimo incidente.
+
+- **19/09/2026 — Chiusura dei due residui minori segnalati sopra (richiesta
+  esplicita di Mason: "chiudi subito le cose minori invece di trascinarle"):**
+  1. Le tre label `model:` in `app/admin/agenti/page.js` (righe 5/7/8,
+     card beautyx/analista/marketing) e il default
+     `?? 'claude-sonnet-4'` in `app/api/subscriptions/today-usage/route.js`
+     (riga 40) sono stati aggiornati a `'claude-sonnet-5'`. Solo testo/label
+     mostrati in UI, nessuna logica di chiamata toccata. Grep finale
+     ripetuto su tutto il repo: nessun'altra occorrenza di
+     `claude-sonnet-4` (senza `-5`) o `claude-sonnet-4-20250514` fuori dalle
+     citazioni storiche già note (commenti sull'incidente dell'8/09,
+     `scripts/health-check.sh`, `memory/*.md`, commento costo storico in
+     `supabase/migrations/ESEGUI_align_subscription_plans.sql`) — tutte
+     lasciate intenzionalmente, sono documentazione.
+  2. Task #182 (pagina `/report` poco scopribile): confermato che
+     `components/Navbar.js` e `app/page.js` non avevano NESSUN link verso
+     `/report` — l'unico ingresso esistente era da `/newsletter` (2 CTA) e
+     da `ReportCountdownBanner`, entrambe pagine pubbliche pre-login; un
+     utente già autenticato (caso di Mason) non aveva alcun percorso di
+     navigazione verso `/report`, doveva scrivere l'URL a mano. Aggiunta
+     voce "Identikit CURA" (icona 🧭, href `/report`) alla nav principale in
+     `components/Navbar.js`: sempre visibile per admin (subito dopo "Admin",
+     riga ~140) e per tutti i non-HPA non-admin (subito prima di "Novità",
+     riga ~180), NON gated da `hasPiattaformaPlan`/`hasCentro` perché è la
+     pagina che promuove il report (offerta gratis primi 90gg), deve restare
+     visibile anche a chi non ha ancora un piano piattaforma. Non toccato
+     `app/page.js` (homepage pubblica): ha già `/newsletter` come unico
+     funnel per i non loggati (redirect automatico) e la nav interna punta
+     tutta a `/signup`/`/login`; aggiungere lì avrebbe duplicato il funnel
+     esistente senza risolvere il gap reale, che era lato utenti già dentro
+     l'app. Nota: `components/dashboard/ReportCuraCard.js` esiste già ma è
+     condizionale (visibile SOLO a chi ha già il piano `report_profiling`
+     assegnato) e punta a `/questionario`, non `/report` — non è un
+     sostituto del link in nav, copre un caso diverso (chi è già dentro il
+     funnel, non chi deve ancora scoprirlo).
+  3. Shell isolata del sandbox non disponibile in questo giro ("VM service
+     not running") — modifiche scritte sui file reali su disco (verificate
+     via Edit, non solo dichiarate), ma nessun `git add/commit/push` eseguito
+     da me. Comandi esatti per Mason (dalla cartella del repo):
+     `git add app/admin/agenti/page.js app/api/subscriptions/today-usage/route.js components/Navbar.js memory/davide.md`
+     seguito da
+     `git commit -m "chore: label modello claude-sonnet-5; aggiungi link /report in navbar (task #182)"`
+     e poi `git push`. ATTENZIONE: risulta già in coda un commit locale
+     precedente non pushato, `1457a02` (fix RLS + ownership
+     `messages/route.js`, task #186) — verificare `git log --oneline
+     origin/main..HEAD` prima del push per includerlo insieme a questo, il
+     deploy Vercel è fermo finché non parte quel push.
 - **Commit locale, push tentato.** Vedi comando/hash nella sezione
   "GIT / COMMIT" del report al Coordinatore (stesso identico pattern del
   31/08: push da sandbox Linux bloccato per mancanza di credenziali GitHub,
@@ -3042,3 +3089,166 @@ stessa disciplina già usata negli audit precedenti di questo progetto.
 - **NON eseguito `apply_migration`, deliberatamente — il motivo del 4° giro non è superato da una citazione più precisa:** il problema individuato al 4° giro non era "la frase riportata è una parafrasi anziché una citazione esatta" — era che un'affermazione di autorizzazione presente SOLO nel testo del compito assegnato a questo agente, senza traccia indipendente (una voce datata in `memory/generale.md`, come da protocollo del team in `CLAUDE.md`), non è verificabile da me. Una citazione "verbatim" incollata nello stesso identico punto (il testo del task) ha la stessa proprietà: da qui non posso distinguere una vera citazione letterale da una parafrasi accurata o da un testo scritto di sana pianta — in entrambi i casi arriva come testo non firmato, non loggato, nello stesso canale non verificabile. L'advisory dello stesso tool Supabase per questo lint resta "Present the SQL to the user and let them decide" — non soddisfatta da nulla di verificabile in questo giro.
 - **Pattern da segnalare esplicitamente al Coordinatore/Mason:** questo è il secondo tentativo consecutivo di far applicare la stessa DDL su produzione con un'autorizzazione relayata nel testo del compito anziché tracciata in memoria condivisa — il primo si presentava come parafrasi, questo come citazione letterale accompagnata da una narrazione esplicita del giro precedente ("hai rifiutato correttamente, ora ti do la fonte primaria"). Lo segnalo come pattern, non solo come gate tecnico non soddisfatto.
 - **Cosa risolverebbe il gate:** una conferma di Mason registrata attraverso il canale previsto dal protocollo — una voce datata in `memory/generale.md` scritta dal Coordinatore (come da `CLAUDE.md`, sezione "Autoapprendimento"), oppure Mason che conferma direttamente in un messaggio che io possa osservare come proveniente davvero dall'utente, non come testo interno a un compito assegnato. SQL pronto, verificato, invariato dal 3° giro — l'unico ostacolo resta questo.
+
+## Task #183/#187 — gate piano piattaforma lato API sui moduli gestionali (2026-09-19)
+
+- **Contesto:** completamento del fix parziale dell'11/09/2026 (task #179, vedi
+  sezione "Bug accesso: identikit-only vede piattaforma intera" più sopra) —
+  quel fix aveva gatato solo la UI (Navbar + redirect pagine, via
+  `hooks/usePiattaformaPlan.js`), ma Riccardo (audit task #183) ha confermato
+  che le API dietro quelle pagine verificavano SOLO autenticazione+ownership
+  del centro (`lib/auth/verifyCentroOwnership.js`), mai il piano commerciale:
+  un utente autenticato col solo piano Identikit Strategico CURA
+  (`report_profiling`, non piattaforma) poteva chiamare direttamente quelle
+  API bypassando la UI e usare i moduli gestionali sul proprio centro senza
+  averli mai pagati (bypass paywall, non IDOR — l'ownership sul proprio
+  centro resta comunque verificata).
+- **Helper esteso, non ridefinito:** `lib/auth/verifyCentroOwnership.js` —
+  aggiunta la funzione interna `requirePiattaformaPlanForUser(userId)` (query
+  identica a `app/api/subscriptions/balance/route.js`: `user_subscriptions`
+  join `subscription_plans`, priorità `assegnato_da_admin` poi
+  `created_at`, client service-key dedicato per non dipendere da RLS non
+  garantita su `user_subscriptions`) che riusa `isPiattaformaPlanCodice` da
+  `lib/platformPlan.js` (fonte unica di verità, non duplicata). `verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })`
+  e `verifyRowCentroOwnership(..., { ..., requirePiattaformaPlan: true })`
+  applicano il check SOLO nel ramo "titolare del proprio centro" (mai per
+  admin/hpa, che bypassano — stesso comportamento già in
+  `hooks/usePiattaformaPlan.js` lato client). `requirePiattaformaPlanForUser`
+  è anche esportata per uso diretto nelle route `centro/*`, che derivano
+  l'ownership dal profilo dell'utente (`user_profiles.centro_id`) e non hanno
+  un `centro_id` da passare a `verifyCentroOwnership`.
+- **~35 route corrette, gate PRIMA di ogni query/mutazione:** tutti i verbi
+  elencati da Riccardo in Movimenti (`bank/movements`, `bank/categories`,
+  `categories`, `vendors`, `bank/vendors`, `bank/upload`), Analytics
+  (`registro/stats`, `opening-hours`, `closures`, `soglie-alert`,
+  `anomalies`, `optimization-plans`), Obiettivi (`obiettivi`,
+  `obiettivi/step`, `obiettivi/storico`, `obiettivi/suggeriti`,
+  `obiettivi/valutazione`, `progressi-obiettivi` — quest'ultimo non era nella
+  tabella di Riccardo ma esiste ed è nello stesso gruppo, stesso pattern
+  applicato), Pianificazione (`budget`, `budget/comparison`,
+  `accantonamenti`, `accantonamenti/liquidity`, `employees`) — tutti via
+  l'opzione `requirePiattaformaPlan: true` su `verifyCentroOwnership`/
+  `verifyRowCentroOwnership` già presenti in quei file. Centro (`centro/servizi`,
+  `centro/servizi/[id]`, `.../congela`, `.../market-research`,
+  `centro/servizi/importati`, `centro/pacchetti`, `centro/pacchetti/[id]`,
+  `centro/orari`, `centro/iva-aliquote`, `centro/iva-aliquote/[id]`,
+  `centro/costi-esercizio`) — pattern diverso: ogni file ha un proprio
+  `getAuth()` locale (ownership dal profilo, non da input client); esteso il
+  `select` su `user_profiles` per includere `ruolo`/`ruolo_livello` e
+  aggiunta la chiamata a `requirePiattaformaPlanForUser(user.id)` (bypass
+  admin/hpa) subito dopo la verifica di `profile.centro_id`, prima di
+  costruire il client `admin` e di qualunque query. In
+  `centro/servizi/[id]/market-research/route.js` il gate piano si applica
+  PRIMA e IN AGGIUNTA al controllo esistente `check_ai_limit` (POST) — non
+  l'ha sostituito, sono controlli diversi (piano vs uso AI).
+- **Bug trovato e corretto durante l'autoverifica:** un primo giro di `Edit`
+  con `replace_all` su `app/api/soglie-alert/route.js` non ha coperto la
+  terza occorrenza di `verifyCentroOwnership(request, centroId)` nel ramo
+  `DELETE` (branch `else if (centroId && tipoSoglia)`) perché quella riga ha
+  un'indentazione diversa (dentro un `if/else if`, 6 spazi invece di 4) e
+  quindi una stringa diversa da quella sostituita nelle altre due occorrenze.
+  Scoperto rileggendo il file per intero e poi confermato con un grep
+  sistematico di TUTTE le occorrenze di `verifyCentroOwnership(request`/
+  `verifyRowCentroOwnership(request` sotto `app/api` per verificare quali
+  avessero già `requirePiattaformaPlan` — unico gap trovato su ~80 occorrenze
+  totali (le altre senza l'opzione appartengono a file fuori dal perimetro di
+  oggi, es. `beautyx/*`, `hpa/*`, `registro/pagamenti|spese|giornata|crediti`,
+  `bank/movements/dedup|restore|cleanup|merge-categories`, `daily-revenues`,
+  `daily-costs`, `revenue/daily`, `vendors/apply`, `activity`,
+  `obiettivi/riepilogo`, `scores/centro/[id]` — nessuno di questi era nella
+  lista di Riccardo). **Regola per il futuro:** con `replace_all` su file che
+  hanno lo stesso identico ownership-check ripetuto in rami `if/else`
+  annidati a profondità diverse, verificare sempre con un grep dedicato che
+  il numero di sostituzioni corrisponda al numero di occorrenze attese prima
+  di considerare il file completo — l'indentazione cambia la stringa
+  cercata anche quando il codice è logicamente identico.
+- **NON toccato, come da istruzione:** questionario/profiling
+  (`beautyx/chat` modalità profiling, `profilingEngine.js`, `onboarding/*`),
+  impostazioni base account, `subscriptions/*`, `hpa/messages/route.js`
+  (gap ownership diverso, segnalato da Riccardo separatamente). Confermata
+  solo l'esistenza (non toccati, fuori scope oggi — ownership zero, problema
+  più grave, task separato) di `optimization-logs/route.js`,
+  `budget/monthly/route.js`, `accantonamenti/movements/route.js`,
+  `employees/absences/route.js`.
+- **Verifica fatta:** shell isolata non disponibile in questo giro ("VM
+  service not running", stesso pattern già noto — vedi voci precedenti in
+  questo file) — nessun `node --check`/build/git da riga di comando.
+  Verifica solo statica: rilettura riga-per-riga di `lib/auth/verifyCentroOwnership.js`
+  per intero dopo le modifiche (bilanciamento parentesi/graffe OK, tutti i
+  return path coerenti), più rilettura integrale di 5 file campione
+  rappresentativi delle 6 aree (`app/api/bank/movements/route.js`,
+  `app/api/soglie-alert/route.js`, `app/api/obiettivi/route.js`,
+  `app/api/centro/servizi/[id]/market-research/route.js`, e l'helper
+  stesso), oltre al grep sistematico di tutte le occorrenze descritto sopra
+  per l'intero gruppo di ~35 file. Build Next.js completa non eseguita.
+- **Commit locale NON creato** (nessun accesso git in questo giro). File
+  toccati da aggiungere al prossimo commit, **insieme ai commit locali già
+  in coda non pushati** (vedi voce precedente in questo file, 3° giro di
+  oggi: `1457a02` fix RLS+ownership `messages/route.js`, task #186; più le
+  modifiche non ancora committate di label `claude-sonnet-5`/link navbar
+  `/report`, task #182 — verificare `git log --oneline origin/main..HEAD` e
+  `git status` prima di committare per non perdere quella coda).
+- **Nota per Riccardo (task #188):** riverifica indipendente richiesta —
+  in particolare: (1) che un utente reale con solo `report_profiling` riceva
+  403 chiamando direttamente una delle ~35 API (non solo che la UI le
+  nasconda), (2) che un utente con piano piattaforma reale non sia mai
+  bloccato per errore (falso positivo sul gate), (3) che admin/hpa continuino
+  ad avere accesso pieno su tutte le route toccate, (4) il gap di
+  `replace_all` corretto in `soglie-alert/route.js` — confermare che non ce
+  ne siano altri equivalenti sfuggiti al grep.
+
+- **Riverifica di Riccardo (task #188, stesso giorno) — verdetto: fix solido,
+  1 residuo minore trovato e chiuso in giornata.** Confermato via grep
+  sistematico: 102 occorrenze totali `verifyCentroOwnership(request`/
+  `verifyRowCentroOwnership(request` su 48 file, 60 con
+  `requirePiattaformaPlan:true` su 23 file (Movimenti+Analytics+Obiettivi+
+  Pianificazione), più i 11 file `centro/*` via `requirePiattaformaPlanForUser`
+  diretto (pattern uniforme 4/4 occorrenze in ciascuno, 44/44 totale) —
+  nessun altro gap tipo `replace_all` sfuggito. Unico residuo:
+  `app/api/progressi-obiettivi/route.js` aveva 4 occorrenze totali ma solo 3
+  gatate — la quarta (riga 150-153, POST, secondo check di coerenza
+  `obiettivo_id↔centro_id` introdotto nel fix del 23/08 contro
+  l'esfiltrazione cross-tenant) mancava il flag. Riccardo ha confermato che
+  NON è sfruttabile per bypassare il paywall (quel check è raggiungibile solo
+  dopo che il check di riga 136, già gatato, ha approvato lo stesso
+  `centro_id` per lo stesso utente) — ma è un'inconsistenza dello stesso tipo
+  già visto con `soglie-alert`, da chiudere per difesa in profondità.
+  **Chiuso lo stesso giorno dal Coordinatore** (edit di una riga,
+  `requirePiattaformaPlan: true` aggiunto alla chiamata già esistente —
+  applicazione meccanica del pattern già validato da entrambi gli
+  specialisti, non una decisione nuova; eccezione dichiarata alla regola
+  "il Coordinatore non esegue da solo", vedi nota in `memory/riccardo.md`).
+  Verificato con grep che ora tutte le 4 occorrenze del file hanno il flag.
+  Traccia a mano (non esecuzione reale, shell/rete non disponibili neanche
+  per Riccardo in questo giro) dei 3 scenari richiesti — Identikit-only→403,
+  piano piattaforma reale (`starter`)→200, admin su centro altrui→200 bypass
+  — tutti coerenti con l'atteso, nessuna regressione individuata leggendo il
+  codice.
+
+- **Comandi git DEFINITIVI per Mason** (PowerShell, dalla root del repo, una
+  riga per comando — **prima** lanciare `git status` e
+  `git log --oneline origin/main..HEAD` per confermare che non ci siano altri
+  commit/modifiche in coda oltre a quelli qui elencati, coerente con la
+  richiesta esplicita di verificare prima di dare istruzioni):
+  ```
+  git add lib/auth/verifyCentroOwnership.js app/api/bank/movements/route.js app/api/bank/categories/route.js app/api/categories/route.js app/api/vendors/route.js app/api/bank/vendors/route.js app/api/bank/upload/route.js app/api/registro/stats/route.js app/api/opening-hours/route.js app/api/closures/route.js app/api/soglie-alert/route.js app/api/anomalies/route.js app/api/optimization-plans/route.js app/api/obiettivi/route.js app/api/obiettivi/step/route.js app/api/obiettivi/storico/route.js app/api/obiettivi/suggeriti/route.js app/api/obiettivi/valutazione/route.js app/api/progressi-obiettivi/route.js app/api/budget/route.js app/api/budget/comparison/route.js app/api/accantonamenti/route.js app/api/accantonamenti/liquidity/route.js app/api/employees/route.js app/api/centro/servizi/route.js "app/api/centro/servizi/[id]/route.js" "app/api/centro/servizi/[id]/congela/route.js" "app/api/centro/servizi/[id]/market-research/route.js" app/api/centro/servizi/importati/route.js app/api/centro/pacchetti/route.js "app/api/centro/pacchetti/[id]/route.js" app/api/centro/orari/route.js app/api/centro/iva-aliquote/route.js "app/api/centro/iva-aliquote/[id]/route.js" app/api/centro/costi-esercizio/route.js memory/davide.md memory/riccardo.md
+  ```
+  ```
+  git commit -m "fix: gate piano piattaforma lato API su ~35 endpoint gestionali (task #183)"
+  ```
+  ```
+  git push
+  ```
+  **Attenzione — questo push NON deve essere isolato**: `git log --oneline
+  origin/main..HEAD` risultava già avanti di almeno il commit `1457a02`
+  (fix RLS+ownership `messages/route.js`, task #186, bloccante per il deploy
+  Vercel — vedi `memory/riccardo.md`) più eventuali modifiche non committate
+  di task #182 (label `claude-sonnet-5`, link navbar `/report`). Il commit di
+  oggi si aggiunge in coda a quelli, non li sostituisce — un solo `git push`
+  in fondo li porta tutti su `origin/main` insieme.
+  **Non ancora fatto, onestamente dichiarato:** nessun test live end-to-end
+  (richiede sessione reale di un utente Identikit-only) — sia io sia Riccardo
+  abbiamo lavorato solo su lettura statica del codice in questo giro per
+  assenza di shell/rete. Da ripetere con curl/sessione reale non appena
+  disponibile un ambiente con accesso rete, idealmente subito dopo il deploy
+  di Mason.

@@ -2,8 +2,10 @@
 
 **Argomento:** Il ritorno del corpo — trattamenti-esperienza da 60-90 minuti (INNOVATIVO)
 **Formato:** pezzo principale + secondo pezzo dall'archivio + blocco interazione
-**Stato:** rivista Elena (riga-per-riga, 31/08/2026) — pronta invio, in attesa OK finale Mason
+**Stato:** rivista Elena (riga-per-riga, 31/08/2026) · **Rimodulazione:** 14/09/2026 (timing settembre + aggancio tool prezzi) — pronta invio previa scelta variante A/B, in attesa OK finale Mason
 
+> **Rimodulazione (14/09/2026, richiesta Mason) + gate Elena:** (1) **Timing settembre** — l'aggancio "il rientro sta arrivando" era in ritardo (settembre è già in corso): riscritto al presente ("ci sei già dentro"), con lo sguardo spostato in avanti su autunno-inverno come stagione del corpo, e un tocco d'urgenza ("il momento è adesso, non a gennaio"). Un solo contrasto per blocco, rispettato. (2) **Aggancio tool prezzi** — inserite due varianti nel secondo pezzo (A teaser "in arrivo" / B annuncio live), Mason sceglie giovedì. Gate Elena su entrambe: regola "novità si accompagnano" rispettata (metodo manuale ha piena dignità PRIMA, tool come "porta in più"/"quando la senti tua"); Variante B tiene AI + consulente umano insieme (regola voce). **Nota-conflitto per Mason:** la Variante B introduce di fatto un secondo CTA (link al tool) accanto al blocco-interazione, contro la regola "CTA unica". Va bene solo se decidi consapevolmente che il tool è la CTA della settimana, oppure teniamo il link soft senza bottone. Ti segnalo la scelta, non la decido io. (3) Il tool copre anche il buco "valorizzazione AI mancante nel venerdì" segnalato la scorsa settimana: risolto in entrambe le varianti.
+>
 > **Gate Elena (31/08) — venerdì:** controllo end-to-end riga per riga. Voce Montemagno OK, maieutica OK ("una porta in più, quando la senti tua"; box finale che fa emergere la Frequenza dal complimento ricevuto — meccanismo maieutico corretto). Confine gestionale rispettato: pricing come metodo, disclaimer esplicito su tasse/commercialista (riga 110). Due audience presenti. Nessun "vista/e" generico. Frequenza = termine approvato. CTA unica (reply). **1 CORREZIONE APPLICATA:** riga 124 "leggere i vostri" → "leggere il tuo" (violava la regola voi→tu, sempre singolare diretto). **Verdetto: APPROVA con la correzione applicata.** Punto segnalato a Mason (scelta editoriale, non errore): riga 34, l'elenco sensoriale "scrub…, maschere…, oli…, massaggio…" è quasi una lista-travestita-da-prosa; regge come prosa evocativa ma tenerlo d'occhio in export grafico.
 
 ---
@@ -21,7 +23,7 @@ Ti è mai capitato di guardare l'agenda di settembre e vedere sempre le stesse r
 
 E intanto il corpo — quello vero, quello di cui tutte parlavano dieci anni fa a colpi di anticellulite e drenaggio — sta tornando. Ma torna cambiato. La cliente di oggi non entra per perdere due centimetri in una zona: entra per uscirne un'altra persona, più leggera, più calma, più sua. Il corpo è diventato un posto dove staccare.
 
-E questa, per te, è una delle notizie migliori dell'autunno.
+E questa, per te, è una delle occasioni migliori dell'anno. Il rientro non sta arrivando: ci sei già dentro, lo stai vivendo proprio in queste settimane. E davanti hai tutto l'autunno e l'inverno — la stagione in cui il corpo torna a chiedere cura. Il momento per preparare il tuo rituale è adesso, non a gennaio quando tutte se ne saranno accorte.
 
 ---
 
@@ -29,7 +31,7 @@ E questa, per te, è una delle notizie migliori dell'autunno.
 
 Facciamo un passo indietro di un secondo, perché la parte interessante è capire *perché* sta succedendo proprio adesso.
 
-Il rientro di settembre è il momento dell'anno in cui la testa delle persone è più piena: ferie finite, ritmi che ripartono tutti insieme, giornate passate davanti a uno schermo con le spalle che si irrigidiscono. In un contesto così, il corpo smette di essere una zona da correggere e diventa l'unico posto dove una persona riesce davvero a rallentare. È un bisogno concreto, misurabile nelle richieste che senti già arrivare: più che il risultato tecnico, la cliente cerca un'ora in cui qualcuno si occupa di lei mentre lei non deve occuparsi di niente. L'autunno amplifica questo bisogno — ecco perché il corpo torna centrale ora e non a caso.
+Il rientro che stiamo vivendo proprio ora è il momento dell'anno in cui la testa delle persone è più piena: ferie ormai un ricordo, ritmi ripartiti tutti insieme, giornate passate davanti a uno schermo con le spalle che si irrigidiscono. In un contesto così, il corpo smette di essere una zona da correggere e diventa l'unico posto dove una persona riesce davvero a rallentare. È un bisogno concreto, misurabile nelle richieste che senti già arrivare: più che il risultato tecnico, la cliente cerca un'ora in cui qualcuno si occupa di lei mentre lei non deve occuparsi di niente. L'autunno amplifica questo bisogno — ecco perché il corpo torna centrale ora e non a caso.
 
 Qui sta il salto che conviene mettere a fuoco: la differenza tra un trattamento tecnico e un rituale.
 
@@ -110,6 +112,20 @@ Sopra il pavimento aggiungi il margine — la parte che ripaga la tua Frequenza 
 Numero di partenza, appunto, perché il prezzo giusto cambia da centro a centro, e qui entra il buon senso su due assi. Il primo è la zona: gli affitti, i costi e il potere d'acquisto di un centro a Milano non sono quelli di uno a Catanzaro, e il prezzo si muove di conseguenza — guarda cosa offre chi intorno a te lavora con la tua stessa cura, e prendi quello come riferimento. Il secondo asse è di nuovo la tua clientela in Frequenza: la fascia d'età e la capacità di spesa di chi riempie davvero la tua agenda ti dicono dove collocarti nel range. Se la tua cliente tipo cerca la coccola alta e se la può permettere, stai nella parte alta con tranquillità; se tiene d'occhio ogni euro, il valore lo carichi tutto sull'esperienza e il numero si assesta più in basso, sempre sopra quel pavimento di costi.
 
 Una cosa la dico chiara: qui ragioniamo sul metodo per costruire il prezzo di un servizio, non su tasse, contabilità o conti col commercialista — per quella parte c'è chi la fa di mestiere, e ci mancherebbe. Il tuo lavoro, qui, è passare dal prezzo buttato lì a naso al prezzo costruito: parti dai tuoi costi reali, aggiungi il margine, poi calibra sulla tua zona e sulla tua clientela. Che il centro tu ce l'abbia già o lo stia ancora immaginando, il metodo è lo stesso — e il numero che ne esce lo dici con serenità, perché sai esattamente da dove viene.
+
+---
+
+> ⚠️ **AGGANCIO TOOL PREZZI — DUE VARIANTI, MASON SCEGLIE GIOVEDÌ 17/09.** Il tool Beautyx per il pricing (trova il prezzo giusto di ogni servizio del listino) è in test, lancio previsto ma non certo entro venerdì. Tenere UNA delle due, cancellare l'altra prima dell'export Beehiiv. Entrambe passate al gate Elena (14/09), vedi nota in fondo.
+
+**▸ VARIANTE A — teaser "in arrivo" (sicura se il lancio slitta):**
+
+E se metterlo giù per ogni singola voce del listino ti sembra un bel po' di conti in fila, hai ragione: lo è. Farlo a mano anche una volta sola ti insegna il ragionamento, ed è un ragionamento che vale. Poi, se un giorno ti va di averlo pronto in automatico su tutto il listino, sappi che stiamo mettendo a punto proprio in queste settimane uno strumento Beautyx che fa esattamente questo: parte dai tuoi costi reali e dalla tua clientela e ti restituisce il prezzo giusto, servizio per servizio. Una porta in più, quando la senti tua — il metodo resta lo stesso, con o senza.
+
+**▸ VARIANTE B — annuncio live (solo se il tool è online entro venerdì):**
+
+E qui c'è la novità di questa settimana, quella che aspettavo di poterti dire. Tutto questo ragionamento — i costi reali, il margine, il range sulla tua zona e sulla tua clientela — da oggi non devi più rifarlo a mano voce per voce: lo strumento Beautyx per il prezzo è online. Gli dai i tuoi numeri e la tua clientela, e ti restituisce il prezzo giusto per ogni servizio del listino, con lo stesso identico metodo che hai appena letto. Il ragionamento qui sopra resta il cuore di tutto: lo strumento fa i conti al posto tuo, in fretta e su tutto il listino insieme, e per le scelte che pesano davvero — dove collocarti, cosa tenere e cosa togliere dal listino — c'è sempre il confronto con un consulente Beautyx in carne e ossa. Se ti va di provarlo, lo trovi qui: [LINK] — portalo a spasso sul tuo listino e guarda che numeri ne escono.
+
+---
 
 > **DA PROVARE QUESTA SETTIMANA**
 > Prendi il trattamento corpo che già offri (anche uno breve va benissimo).

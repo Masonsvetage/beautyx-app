@@ -258,3 +258,12 @@ Chiusure con beneficio:
 3. **Accompagnare, non essere categorici (maieutica).** La consapevolezza del bisogno deve emergere dal lettore ("quando la senti tua", "se un giorno ti va", "con i tuoi tempi") — mai un "devi" né un dato per scontato.
 4. **Non far sentire esclusa/indietro nessuna lettrice.** Chi non ha ancora maturato quella scelta deve sentirsi comunque brava e nel giusto ("se oggi ti fidi del tuo intuito allenato, stai già facendo la cosa giusta"), altrimenti abbandona.
 **Applicazione futura:** ogni volta che un testo tocca una novità/automazione/tecnologia, verificare: c'è un'alternativa valida per chi non l'ha? il tono è d'accompagnamento e non categorico? nessuno si sente escluso? traspare marketing? Se una risposta non va, riscrivere.
+
+---
+
+## [settembre 2026] — Hook/apertura ancorati al reale, mai romanzati
+
+**Contesto:** l'hook della newsletter di martedì (fidelizzazione) apriva con "una cliente entra, si siede, e prima ancora del trattamento dice: «Meno male che ci sei tu»".
+**Correzione Mason (14/09/2026):** "l'hook è troppo romanzato, nessuna cliente appena entra ti dice meno male che ci sei tu, ma questo non vuol dire che non sia così. Capisco il senso che volete dare, ma va reso in maniera sempre coinvolgente ma diverso perché altrimenti crea troppo distacco con la realtà."
+**Regola:** l'aggancio deve restare coinvolgente ed emotivo, ma **verosimile**. Vietato mettere in scena gesti o battute che nessuna cliente/titolare farebbe davvero in quel momento (frasi a effetto pronunciate ad alta voce, scenette da spot). Il sentimento vero si evoca ancorandolo all'esperienza concreta e riconoscibile del lettore (es. "pensa alle clienti che hai da più anni, restano anche col centro nuovo aperto lì vicino"), non a una scenetta costruita. Distinta ma imparentata con [[niente-storie-inventate]] (no personaggi/casi inventati nelle newsletter): qui il divieto riguarda anche la singola frase-scenetta idealizzata, non solo le storie lunghe.
+**Applicazione futura:** Federica scrive hook partendo dal reale del lettore; Elena, in gate, chiede a ogni apertura "una persona vera direbbe/farebbe davvero così?" — se la risposta è no, si riscrive mantenendo l'emozione ma togliendo la messa in scena.

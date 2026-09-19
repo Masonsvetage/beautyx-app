@@ -22,7 +22,7 @@ export async function GET(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
@@ -59,7 +59,7 @@ export async function POST(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centro_id)
+    const ownership = await verifyCentroOwnership(request, centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Deve avere almeno category_id O categoria_custom

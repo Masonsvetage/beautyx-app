@@ -20,7 +20,7 @@ export async function GET(request) {
 
   if (!centroId) return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
 
-  const ownership = await verifyCentroOwnership(request, centroId)
+  const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
   if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
   let query = admin

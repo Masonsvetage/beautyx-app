@@ -22,7 +22,7 @@ export async function GET(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Supabase ha limite default 1000 righe che non può essere aumentato facilmente
@@ -108,7 +108,7 @@ export async function POST(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Recupera movimenti esistenti per evitare duplicati
@@ -192,7 +192,7 @@ export async function PATCH(request) {
       )
     }
 
-    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'bank_movements', id })
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'bank_movements', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Imposta categorized_manually = true per proteggere questa modifica

@@ -1,9 +1,11 @@
 # Newsletter Beautyx — Martedì
 
 **Argomento:** Fidelizzare invece di rincorrere (angolo innovativo: oltre punti e bollini, una relazione vera che rende la cliente protagonista — collegata alla Frequenza del centro)
-**Bozza:** Federica · **Rifinitura:** Elena (riga-per-riga, 31/08/2026) · **Stato:** rivista Elena — pronta invio, in attesa OK finale Mason
+**Bozza:** Federica · **Rifinitura:** Elena (riga-per-riga, 31/08/2026) · **Revisione hook:** 14/09/2026 · **Stato:** rivista Elena — pronta invio, in attesa OK finale Mason
 
-> **Gate Elena (31/08) — martedì:** controllo end-to-end riga per riga. Voce Montemagno OK (ritmo alternato, "tu" diretto, comunanza). Maieutica OK (novità agenda accompagnata: "il giorno che ti va", "stai già facendo benissimo"). Nessun "vista/e" generico: le emozioni sono concrete (coccolata, importante, protagonista — riga 39). Nessun "voi": sempre "tu" singolare. Consulente umano Luigi Perri + AI-strumento presenti (riga 64). Frequenza del centro = termine approvato. CTA unica (reply). Due audience presenti. Nessun riferimento a SvetAge/CARE. **Verdetto: APPROVA.** Unico punto segnalato a Mason (scelta editoriale, non errore): riga 31 "Le hai insegnato tu a ragionare così" — attribuisce alla titolare l'aver "educato" la cliente alla convenienza; è ammorbidito ("con le migliori intenzioni") ma valutare se toni ulteriormente.
+> **Gate Elena (31/08) — martedì:** controllo end-to-end riga per riga. Voce Montemagno OK (ritmo alternato, "tu" diretto, comunanza). Maieutica OK (novità agenda accompagnata: "il giorno che ti va", "stai già facendo benissimo"). Nessun "vista/e" generico: le emozioni sono concrete (coccolata, importante, protagonista). Nessun "voi": sempre "tu" singolare. Consulente umano Luigi Perri + AI-strumento presenti. Frequenza del centro = termine approvato. CTA unica (reply). Due audience presenti. Nessun riferimento a SvetAge/CARE. **Verdetto: APPROVA.**
+>
+> **Revisione hook (14/09/2026, correzione Mason):** l'hook precedente ("una cliente entra e dice «Meno male che ci sei tu»") era troppo romanzato — nessuna cliente lo dice davvero appena entra, creava distacco dal reale. Riscritto ancorandolo all'esperienza diretta della titolare (le clienti storiche che restano nonostante il centro nuovo vicino), stesso colpo ma verosimile. Gate Elena sul nuovo hook: voce Montemagno OK (apre col reale del lettore, "tu" diretto), un solo contrasto soft ("c'entra poco"), nessun personaggio inventato (coerente con regola "niente storie inventate nelle newsletter"), la domanda-chiave sui bollini è preservata intatta. Punto ancora aperto per Mason (scelta editoriale, non errore): riga "Le hai insegnato tu a ragionare così" — attribuisce alla titolare l'aver "educato" la cliente alla convenienza; è ammorbidito ("con le migliori intenzioni") ma valutare se toni ulteriormente.
 
 ---
 
@@ -18,7 +20,7 @@
 
 **Hook**
 
-Sai qual è il momento più bello per chi ha un centro estetico? Quando una cliente entra, si siede, e prima ancora del trattamento dice: «Meno male che ci sei tu». In quel «tu» c'è tutto: il motivo per cui torna, il motivo per cui ti nomina alle amiche, il motivo per cui il centro appena aperto sotto casa la lascia tranquilla.
+Pensa alle clienti che hai da più anni. Ci sono da prima che aprisse quel centro nuovo poco più in là, e ci sono ancora adesso, per quanto sia bello e scintillante. Sono rimaste per qualcosa che con i bollini c'entra poco — e tu, quel qualcosa, lo fai ogni giorno quasi senza accorgertene.
 
 E adesso una domanda di quelle che ci facciamo tutte a fine giornata, con la cassa da chiudere e l'agenda di domani da guardare: quante delle tue clienti tornano perché stanno collezionando bollini, e quante tornano perché tornano da *te*?
 

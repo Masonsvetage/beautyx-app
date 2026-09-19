@@ -37,7 +37,7 @@ export async function GET() {
     }
 
     const tokens_today = (data ?? []).reduce((sum, r) => sum + (r.token_totali || 0), 0)
-    const model = data?.find(r => r.modello)?.modello ?? 'claude-sonnet-4'
+    const model = data?.find(r => r.modello)?.modello ?? 'claude-sonnet-5'
 
     return NextResponse.json({
       tokens_today,

@@ -132,6 +132,13 @@ export default function Navbar() {
     // Admin ha sempre la sua dashboard
     navItems.push({ href: '/admin', label: 'Admin', icon: '⚙️' })
 
+    // Landing pubblica Identikit Strategico CURA (task #182, 19/09/2026:
+    // segnalato da Mason come irraggiungibile navigando il sito — nessun
+    // link in nessuna nav esistente, andava scritto l'URL a mano). Voce
+    // sempre visibile (non gated da hasCentro/piano): è una pagina
+    // informativa/marketing, non un modulo gestionale del centro.
+    navItems.push({ href: '/report', label: 'Identikit CURA', icon: '🧭' })
+
     // Voci centro solo se ha selezionato un centro
     if (hasCentro) {
       navItems.push({ href: '/dashboard', label: 'Dashboard', icon: '🏠' })
@@ -165,6 +172,12 @@ export default function Navbar() {
       navItems.push({ href: '/hpa', label: 'HPA', icon: '🎓' })
     }
     if (!isHpa) {
+      // Landing pubblica Identikit Strategico CURA (task #182, 19/09/2026) —
+      // stesso ragionamento del blocco admin sopra: nessuna nav esistente ci
+      // portava, va aggiunta esplicitamente. Non gated da hasPiattaformaPlan:
+      // è la pagina che PROMUOVE il report (offerta gratis primi 90gg), deve
+      // restare visibile anche a chi non ha ancora un piano piattaforma.
+      navItems.push({ href: '/report', label: 'Identikit CURA', icon: '🧭' })
       navItems.push({ href: '/', label: 'Novità', icon: '📣' })
     }
   }

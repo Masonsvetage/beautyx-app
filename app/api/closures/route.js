@@ -16,7 +16,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
@@ -42,7 +42,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centro_id)
+    const ownership = await verifyCentroOwnership(request, centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
@@ -72,7 +72,7 @@ export async function DELETE(request) {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
-    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'exceptional_closures', id })
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'exceptional_closures', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { error } = await supabase

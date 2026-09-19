@@ -41,7 +41,7 @@ export async function GET(request) {
     let verifiedCentroId = centroId
 
     if (centroId) {
-      const ownership = await verifyCentroOwnership(request, centroId)
+      const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
       if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
     } else {
       // Solo obiettivo_id fornito: risali al centro_id dell'obiettivo e verifica
@@ -58,7 +58,7 @@ export async function GET(request) {
         return NextResponse.json({ error: 'Obiettivo non trovato' }, { status: 404 })
       }
 
-      const ownership = await verifyCentroOwnership(request, obiettivo.centro_id)
+      const ownership = await verifyCentroOwnership(request, obiettivo.centro_id, { requirePiattaformaPlan: true })
       if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
       verifiedCentroId = obiettivo.centro_id
@@ -133,7 +133,7 @@ export async function POST(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centro_id)
+    const ownership = await verifyCentroOwnership(request, centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // SICUREZZA (fix 2026-08-23, audit Riccardo su PoC reale — vedi
@@ -149,7 +149,8 @@ export async function POST(request) {
     // referenziata da obiettivo_id, non al centro_id dichiarato dal client.
     const obiettivoOwnership = await verifyRowCentroOwnership(request, supabaseAdmin, {
       table: 'obiettivi',
-      id: obiettivo_id
+      id: obiettivo_id,
+      requirePiattaformaPlan: true
     })
     if (!obiettivoOwnership.ok) return centroOwnershipErrorResponse(obiettivoOwnership)
 

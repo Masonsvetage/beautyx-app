@@ -27,7 +27,7 @@ export async function GET(request) {
 
     // obiettivo_id è l'id di una riga in `obiettivi`, che ha centro_id diretto:
     // verifica ownership tramite quella riga prima di leggere gli step.
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: steps, error } = await supabaseAdmin
@@ -59,7 +59,7 @@ export async function POST(request) {
 
     // Verifica che l'obiettivo_id indicato appartenga a un centro dell'utente
     // PRIMA di creare uno step collegato ad esso.
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivo_id })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivo_id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: step, error } = await supabaseAdmin
@@ -104,7 +104,7 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'Step non trovato' }, { status: 404 })
     }
 
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: existingStep.obiettivo_id })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: existingStep.obiettivo_id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // obiettivo_id/id/created_at non sono riassegnabili dal client via update:

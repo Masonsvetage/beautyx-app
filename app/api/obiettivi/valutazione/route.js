@@ -27,7 +27,7 @@ export async function GET(request) {
     // verifica ownership tramite quella riga PRIMA di restituire le valutazioni
     // (endpoint scoperto senza alcun controllo durante il fix dell'IDOR su
     // app/api/obiettivi/step/route.js — stesso gap, stesso rimedio).
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: valutazioni, error } = await supabaseAdmin
@@ -59,7 +59,7 @@ export async function POST(request) {
 
     // Verifica che l'obiettivo_id indicato appartenga a un centro dell'utente
     // PRIMA di registrare una valutazione collegata ad esso.
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivo_id })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivo_id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: valutazione, error } = await supabaseAdmin

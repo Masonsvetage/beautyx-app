@@ -17,7 +17,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
@@ -73,7 +73,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centro_id)
+    const ownership = await verifyCentroOwnership(request, centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Ottieni l'ordinamento più alto e aggiungi 1
@@ -126,7 +126,7 @@ export async function PATCH(request) {
   try {
     const { id, nome, tipo, colore, icona } = await request.json()
 
-    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'custom_categories', id })
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'custom_categories', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const updateData = { nome, tipo, colore }
@@ -163,7 +163,7 @@ export async function DELETE(request) {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
-    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'custom_categories', id })
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'custom_categories', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Verifica che non sia una categoria di default

@@ -2,10 +2,10 @@
 import { useState, useEffect, useCallback } from 'react'
 
 const AGENTS_META = {
-  beautyx:      { label: 'BeautyX Coordinator', icon: '🤖', color: 'teal',   model: 'claude-sonnet-4',  desc: 'Coordinatore principale. Si interfaccia con l\'utente e applica la metodologia SvetAge.' },
+  beautyx:      { label: 'BeautyX Coordinator', icon: '🤖', color: 'teal',   model: 'claude-sonnet-5',  desc: 'Coordinatore principale. Si interfaccia con l\'utente e applica la metodologia SvetAge.' },
   receptionist: { label: 'Receptionist',         icon: '📓', color: 'blue',   model: 'claude-haiku-4-5', desc: 'Gestione operativa giornaliera: incassi, spese, crediti, appuntamenti, configurazione centro.' },
-  analista:     { label: 'Analista',             icon: '📊', color: 'amber',  model: 'claude-sonnet-4',  desc: 'Analisi finanziaria, movimenti bancari, KPI, trend, coerenza dati.' },
-  marketing:    { label: 'Marketing',            icon: '📣', color: 'purple', model: 'claude-sonnet-4',  desc: 'Contenuti, campagne email, post social, trend, listino, sondaggi.' },
+  analista:     { label: 'Analista',             icon: '📊', color: 'amber',  model: 'claude-sonnet-5',  desc: 'Analisi finanziaria, movimenti bancari, KPI, trend, coerenza dati.' },
+  marketing:    { label: 'Marketing',            icon: '📣', color: 'purple', model: 'claude-sonnet-5',  desc: 'Contenuti, campagne email, post social, trend, listino, sondaggi.' },
 }
 
 const COLOR = {

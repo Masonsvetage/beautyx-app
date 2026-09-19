@@ -27,7 +27,7 @@ export async function GET(request) {
     // verifica ownership tramite quella riga PRIMA di restituire lo storico
     // (endpoint scoperto senza alcun controllo durante il fix dell'IDOR su
     // app/api/obiettivi/step/route.js — stesso gap, stesso rimedio).
-    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId })
+    const ownership = await verifyRowCentroOwnership(request, supabaseAdmin, { table: 'obiettivi', id: obiettivoId, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data: storico, error } = await supabaseAdmin

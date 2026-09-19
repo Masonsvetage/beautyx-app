@@ -17,7 +17,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
@@ -63,7 +63,7 @@ export async function POST(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centro_id)
+    const ownership = await verifyCentroOwnership(request, centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
@@ -112,7 +112,7 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'employees', id })
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'employees', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const updateData = {}
@@ -154,7 +154,7 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'employees', id })
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'employees', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Soft delete

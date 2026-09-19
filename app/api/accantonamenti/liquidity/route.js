@@ -16,7 +16,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Carica tutti i movimenti bancari

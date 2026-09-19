@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { requirePiattaformaPlanForUser } from '@/lib/auth/verifyCentroOwnership'
 
 async function getAuth() {
   const cookieStore = await cookies()
@@ -15,12 +16,24 @@ async function getAuth() {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('centro_id, ruolo_livello')
+    .select('centro_id, ruolo, ruolo_livello')
     .eq('id', user.id)
     .maybeSingle()
 
   if (!profile?.centro_id) {
     return { error: NextResponse.json({ error: 'Nessun centro associato' }, { status: 400 }) }
+  }
+
+  // Task #183: gate piano piattaforma sullo STESSO utente autenticato (mai
+  // sull'ownership, già garantita sopra da profile.centro_id) — admin/hpa
+  // bypassano, stesso comportamento di verifyCentroOwnership/usePiattaformaPlan.js.
+  const isAdminOrHpa = profile.ruolo === 'admin' || profile.ruolo_livello === 'admin'
+    || profile.ruolo === 'hpa' || profile.ruolo_livello === 'hpa'
+  if (!isAdminOrHpa) {
+    const planCheck = await requirePiattaformaPlanForUser(user.id)
+    if (!planCheck.ok) {
+      return { error: NextResponse.json({ error: planCheck.error }, { status: planCheck.status }) }
+    }
   }
 
   const admin = createClient(

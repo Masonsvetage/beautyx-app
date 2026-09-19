@@ -17,7 +17,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     let query = supabase
@@ -49,7 +49,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, payload.centro_id)
+    const ownership = await verifyCentroOwnership(request, payload.centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
@@ -71,7 +71,7 @@ export async function PATCH(request) {
   try {
     const { id, stato, note_utente, risolto_in_data } = await request.json()
 
-    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'validated_anomalies', id })
+    const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'validated_anomalies', id, requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const updateData = {

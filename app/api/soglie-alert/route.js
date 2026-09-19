@@ -21,7 +21,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'centro_id richiesto' }, { status: 400 })
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Carica soglie personalizzate dal database
@@ -100,7 +100,7 @@ export async function POST(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centro_id)
+    const ownership = await verifyCentroOwnership(request, centro_id, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     // Upsert: inserisci o aggiorna
@@ -144,7 +144,7 @@ export async function DELETE(request) {
 
     if (id) {
       // Elimina per ID
-      const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'soglie_alert', id })
+      const ownership = await verifyRowCentroOwnership(request, supabase, { table: 'soglie_alert', id, requirePiattaformaPlan: true })
       if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
       const { error } = await supabase
@@ -154,7 +154,7 @@ export async function DELETE(request) {
 
       if (error) throw error
     } else if (centroId && tipoSoglia) {
-      const ownership = await verifyCentroOwnership(request, centroId)
+      const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
       if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
       // Elimina per centro + tipo + categoria

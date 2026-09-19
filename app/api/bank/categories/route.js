@@ -21,7 +21,7 @@ export async function GET(request) {
       )
     }
 
-    const ownership = await verifyCentroOwnership(request, centroId)
+    const ownership = await verifyCentroOwnership(request, centroId, { requirePiattaformaPlan: true })
     if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)

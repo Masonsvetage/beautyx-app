@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { requirePiattaformaPlanForUser } from '@/lib/auth/verifyCentroOwnership'
 
 async function getAuth() {
   const cookieStore = await cookies()
@@ -15,10 +16,22 @@ async function getAuth() {
   if (!user) return { error: NextResponse.json({ error: 'Non autenticato' }, { status: 401 }) }
 
   const { data: profile } = await supabase
-    .from('user_profiles').select('centro_id').eq('id', user.id).maybeSingle()
+    .from('user_profiles').select('centro_id, ruolo, ruolo_livello').eq('id', user.id).maybeSingle()
 
   if (!profile?.centro_id)
     return { error: NextResponse.json({ error: 'Nessun centro' }, { status: 400 }) }
+
+  // Task #183: gate piano piattaforma sullo STESSO utente autenticato — NON
+  // sostituisce il controllo `check_ai_limit` esistente sul POST (uso AI,
+  // controllo diverso), si applica PRIMA. Admin/hpa bypassano.
+  const isAdminOrHpa = profile.ruolo === 'admin' || profile.ruolo_livello === 'admin'
+    || profile.ruolo === 'hpa' || profile.ruolo_livello === 'hpa'
+  if (!isAdminOrHpa) {
+    const planCheck = await requirePiattaformaPlanForUser(user.id)
+    if (!planCheck.ok) {
+      return { error: NextResponse.json({ error: planCheck.error }, { status: planCheck.status }) }
+    }
+  }
 
   const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
   return { user, supabase, admin, centroId: profile.centro_id }

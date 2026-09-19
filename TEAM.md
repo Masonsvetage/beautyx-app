@@ -83,7 +83,9 @@ Il team migliora nel tempo grazie a una memoria persistente nella cartella `memo
 ## Calendario editoriale settimanale
 
 **Newsletter:** 2 uscite a settimana — martedì e venerdì
-**Monitoring automatico:** Riccardo health check 3×/giorno — ore 06:00, 12:00, 18:00
+**Monitoring automatico:** Riccardo health check 1×/giorno — ore 06:00 (ridotto da 3×/giorno il 29/08/2026, vedi memory/riccardo.md)
+
+**Automazione cadenza (dal 13/09/2026):** briefing argomenti e rifinitura non dipendono più da una richiesta in chat — girano da soli via scheduled task Cowork (`beautyx-newsletter-briefing` mercoledì 08:00, `beautyx-newsletter-rifinitura` lunedì 08:00). Stessa logica per i social: `beautyx-fb-content` prepara bozze di post Facebook lun/mer/ven ore 09:00 (cadenza di partenza, regolabile), sempre presentate a Mason per approvazione — nessuna pubblicazione automatica su FB o Beehiiv senza il suo ok esplicito in quella conversazione.
 
 ### Mercoledì ore 08:00 — Briefing argomenti (per le uscite della settimana successiva)
 Il Coordinatore lancia in parallelo:
