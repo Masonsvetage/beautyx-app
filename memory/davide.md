@@ -2582,3 +2582,295 @@ muto — la prossima volta che Mason lo testa dal vivo, se rivede lo stesso
 identico comportamento "3 secondi poi torna alla pagina email" SENZA il
 nuovo banner di errore, vuol dire che il problema è ancora più a monte
 (es. redirect Supabase Dashboard) e va indagato lì.
+
+## Bug reale: utente identikit-only (report_profiling) vedeva la piattaforma gestionale intera (2026-09-11)
+
+- **Contesto:** Mason ha riprodotto sul suo account vero — da `/report`,
+  "Accedi", credenziali non riconosciute, "ripristina password", nuova
+  password inserita → si è ritrovato con Movimenti, Analytics, Obiettivi e
+  tutte le altre pagine gestionali aperte, pur avendo SOLO il piano
+  `report_profiling` (Identikit Strategico CURA), mai un piano piattaforma
+  vero.
+- **Causa esatta trovata (ENTRAMBE le cose, non una sola):**
+  1. `components/Navbar.js` costruiva i link di navigazione (Movimenti,
+     Analytics, Obiettivi, Pianificazione, Centro, Strategie) usando SOLO
+     `hasPermission()` — sistema di permessi legato al RUOLO
+     (`ruolo_livello`: admin/hpa/titolare/direttore/amministrativo), non al
+     PIANO. In `contexts/AuthContext.js`, `signUp()` assegna
+     `ruolo_livello: 'titolare'` a QUALUNQUE nuovo account (riga ~736,
+     indipendentemente dal piano acquistato), e `loadLegacyPermissions()`
+     dà al ruolo `titolare` tutti i permessi gestionali
+     (`movimenti.visualizza`, `movimenti.inserisci/modifica`,
+     `analytics.visualizza`, `obiettivi.visualizza/crea`,
+     `contabilita.visualizza`, `banca.visualizza_saldi`, ecc.) — quindi
+     qualunque utente registrato, a prescindere dal piano, vedeva sempre
+     tutti quei link.
+  2. Le pagine gestionali stesse (`app/movimenti/page.js`,
+     `app/analytics/page.js`, `app/obiettivi/page.js`,
+     `app/pianificazione/page.js`, `app/centro/page.js`) non controllavano
+     MAI il piano — solo `centroId` (autenticazione + un centro assegnato).
+     Un utente `report_profiling` ha comunque un `centro_id` reale (creato
+     da `app/api/onboarding/create-centro/route.js`, che gira per
+     QUALUNQUE registrazione e assegna anche il piano `report_profiling`
+     gratuito — vedi righe 100/142-185 di quel file), quindi arrivando via
+     URL diretto (o via i link della Navbar) vedeva la pagina intera.
+  - Il fix precedente del 04/09/2026 ("gate widget gestionali per piano
+    piattaforma reale") aveva risolto questo SOLO dentro
+    `app/dashboard/page.js` (costante locale `NON_PIATTAFORMA_PLAN_CODICI`
+    + fetch di `/api/subscriptions/balance`), mai esteso a Navbar né alle
+    altre pagine — da cui il bug rimasto.
+- **Sicurezza vs prodotto/UX — distinzione verificata e importante:** NON è
+  una fuga di dati di altri clienti. `lib/auth/verifyCentroOwnership.js`
+  (audit di Riccardo del 20-23/08/2026, confermato ancora solido) garantisce
+  che le API dietro queste pagine restituiscono SEMPRE E SOLO dati del
+  centro di proprietà dell'utente autenticato, mai di un centro altrui — un
+  report_profiling-only vedeva quindi (al più) dati vuoti/inesistenti del
+  PROPRIO centro, non dati di altri clienti. È un bug di **autorizzazione
+  di prodotto** (un utente vede/usa moduli per cui non ha pagato, perché il
+  sistema di permessi è basato solo sul ruolo e non sa nulla del piano
+  commerciale), non una violazione di confidenzialità cross-tenant.
+  **Residuo non chiuso in questo giro** (segnalato a Riccardo, task #183
+  del Coordinatore): gli endpoint API dietro queste pagine verificano
+  ownership del centro ma MAI il piano — un utente report_profiling-only
+  potrebbe ancora chiamare quelle API direttamente (bypassando la UI) e
+  usare i moduli gestionali sul proprio centro senza averli pagati. Non è
+  IDOR (resta dentro il proprio centro), ma è un bypass del paywall lato
+  API da valutare separatamente.
+- **Fix applicato — riuso del meccanismo esistente, non un sistema
+  parallelo:**
+  - `lib/platformPlan.js` (nuovo): estrae `NON_PIATTAFORMA_PLAN_CODICI`
+    (prima locale solo a `app/dashboard/page.js`) in un modulo condiviso,
+    + helper `isPiattaformaPlanCodice(codice)`.
+  - `hooks/usePiattaformaPlan.js` (nuovo): hook client che replica lo
+    stesso meccanismo del fix del 04/09 (fetch `/api/subscriptions/balance`,
+    `planLoaded`/`hasPiattaformaPlan`, bypass per admin/hpa, default-deny
+    finché non caricato) in un unico posto riusabile.
+  - `app/dashboard/page.js`: ora importa `NON_PIATTAFORMA_PLAN_CODICI` da
+    `lib/platformPlan.js` invece di ridefinirla localmente — stessa logica
+    di prima, zero comportamento cambiato, solo deduplicata.
+  - `components/Navbar.js`: la fetch esistente di `/api/subscriptions/balance`
+    (che già popolava SOLO il badge piano) ora imposta anche `planLoaded`;
+    aggiunto `hasPiattaformaPlan` (bypass admin/hpa, altrimenti
+    `planLoaded && isPiattaformaPlanCodice(userPlan?.codice)`); i link
+    Movimenti/Analytics/Obiettivi/Pianificazione/Centro/Strategie ora
+    richiedono ANCHE `hasPiattaformaPlan`, non solo `hasPermission(...)`.
+  - `app/movimenti/page.js`, `app/analytics/page.js`, `app/obiettivi/page.js`,
+    `app/pianificazione/page.js`, `app/centro/page.js`, `app/strategie/page.js`:
+    aggiunto lo stesso hook `usePiattaformaPlan()` + un `useEffect` che fa
+    `router.replace('/dashboard')` se `planLoaded && !hasPiattaformaPlan`,
+    + un return anticipato (schermata di caricamento, mai il contenuto
+    reale) finché il piano non è confermato positivo — protezione contro
+    l'accesso diretto via URL, non solo contro il click sul link di
+    navigazione. `/strategie` è solo un hub di link (nessun dato proprio)
+    ma gated comunque per coerenza (non ha senso mostrare un menu verso
+    pagine non accessibili).
+- **Verifica fatta:** solo statica — lettura riga per riga di tutti i file
+  toccati dopo ogni modifica (nessun `node --check`/build eseguibile,
+  l'ambiente shell isolato non è partito in questo giro — vedi nota sotto).
+  Nessun `useRouter`/`router` duplicato verificato via grep su tutti i 6
+  file pagina toccati.
+- **NON pushato — shell isolata non disponibile in questo giro.** Le
+  modifiche sono scritte sui file reali su disco (percorso
+  `C:\Users\luigi\Documents\beautyx-app`), ma serve un commit+push manuale
+  di Mason da Windows. Comando pulito da eseguire dalla root del progetto
+  (PowerShell, NON usare `push.bat` così com'è — vedi regola già nota sopra
+  sul commit hardcoded):
+  ```
+  git add lib/platformPlan.js hooks/usePiattaformaPlan.js components/Navbar.js app/dashboard/page.js app/movimenti/page.js app/analytics/page.js app/obiettivi/page.js app/pianificazione/page.js app/centro/page.js app/strategie/page.js
+  git commit -m "fix(access): gate nav + pagine gestionali per piano piattaforma reale (non solo dashboard)"
+  git push origin main
+  ```
+- **Nota per Riccardo:** da riconfermare con audit indipendente sul codice
+  reale (stessa convenzione del team) prima di segnare chiuso il bug #179 —
+  in particolare il residuo lato API descritto sopra (task #183).
+
+## Fallback automatico modello AI + logging uso fallback (task #184, 2026-09-19)
+
+- **Contesto:** seguito dell'incidente dell'8/09/2026 (ID modello Claude
+  ritirato `claude-sonnet-4-20250514` → 404 → "Mi dispiace, ho avuto un
+  problema tecnico" per l'utente in chat/questionario, già corretto puntando
+  a `claude-sonnet-5`). Il check giornaliero (`scripts/health-check.sh`,
+  sezione 5, aggiunta il 09/09) oggi testa SOLO che `claude-sonnet-5`
+  risponda 200 — se anche questo modello venisse ritirato o avesse
+  un'interruzione temporanea, si ripeterebbe lo stesso blocco per gli utenti
+  reali finché qualcuno non se ne accorge controllando una chat. Mason vuole
+  AUTO-RIPARAZIONE (fallback automatico), non un controllo manuale.
+- **3 call-site trovati e corretti** (grep `messages.create` su tutto il
+  repo, nessun altro punto chiama modelli `claude-sonnet-*` in modo
+  hardcoded — gli altri 4 file con `messages.create` trovati dal grep
+  usano tutti `claude-haiku-4-5-20251001`, famiglia/incidente diversi, MAI
+  toccati qui, vedi nota sotto):
+  1. `app/api/beautyx/chat/route.js` — "PRIMA CHIAMATA LEGGERA" (riga
+     ~1104-1110 prima del fix).
+  2. `app/api/beautyx/chat/route.js` — tool-use loop "5b" (riga
+     ~1167-1173 prima del fix).
+  3. `lib/beautyx/profilingEngine.js` — dentro
+     `analizzaNarrazioneLibera()` (riga ~453-457 prima del fix).
+  In tutti e 3 i casi il client Anthropic locale (`anthropic` in
+  chat/route.js riga 42, `anthropicProfiling` in profilingEngine.js riga
+  40) è stato rimosso: l'unico client Anthropic ora vive dentro il nuovo
+  helper.
+- **Modello di riserva scelto: `claude-opus-5`** (primario resta
+  `claude-sonnet-5`, invariato). **Verifica fatta, non inventato:**
+  fetch diretto (19/09/2026) di
+  `https://platform.claude.com/docs/en/models/overview` — tabella
+  "Compare models" ufficiale, "current lineup": `claude-fable-5-1`,
+  `claude-opus-5`, `claude-sonnet-5`, `claude-haiku-4-5-20251001`. Ho
+  scelto `claude-opus-5` (non `claude-haiku-4-5`) perché: (a) è un tier
+  diverso da Sonnet, non un'altra variante Sonnet — riduce il rischio che
+  un ritiro/incidente futuro colpisca ENTRAMBI primario e fallback nello
+  stesso momento; (b) stesse capacità richieste dai 3 chiamanti (tool use,
+  system prompt, 1M context window, 128K max output, ben oltre i
+  max_tokens usati qui — 300/1500/2000); (c) è la raccomandazione di
+  default della stessa pagina ufficiale ("Claude Opus 5 for most
+  workloads"), quindi la scelta più difendibile per preservare qualità
+  di risposta nel raro caso in cui scatti. Anche `claude-sonnet-4-6`
+  esiste come ID valido (verificato su
+  `platform.claude.com/docs/en/about-claude/models/model-ids-and-versions`)
+  ma NON è nel "current lineup" comparativo — scartato per prudenza.
+- **Helper creato: `lib/beautyx/callClaudeWithFallback.js`** — funzione
+  `callClaudeWithFallback(params, context)`: chiama
+  `anthropic.messages.create({...params, model: PRIMARY_MODEL})`; se fallisce
+  con un errore "di infrastruttura" ritenta UNA sola volta con
+  `model: FALLBACK_MODEL` (stessi identici parametri). Riconoscimento errore
+  ritentabile (`isRetryableModelError`, verificato contro il codice sorgente
+  reale di `@anthropic-ai/sdk` 0.71.2, `node_modules/@anthropic-ai/sdk/core/error.js`
+  + `resources/shared.d.ts` — non assunto a memoria):
+  - `err instanceof Anthropic.APIConnectionError` (copre anche
+    `APIConnectionTimeoutError`, che la estende) → nessuno status HTTP,
+    errore di connessione/timeout.
+  - `err instanceof Anthropic.APIError` con `status === 404` e
+    `err.error.error.type === 'not_found_error'` → modello non
+    disponibile/ritirato (lo stesso identico sintomo dell'incidente
+    dell'8/09).
+  - `status` numerico tra 500 e 599 inclusi → copre anche 529
+    (`overloaded_error`, il codice reale che Anthropic usa per sovraccarico)
+    senza bisogno di un controllo dedicato, perché 529 ≥ 500.
+  - Tutto il resto (400/401/403/422/429, o errori non riconosciuti come SDK
+    Anthropic) → propagato SUBITO, mai ritentato. Il 429 è escluso
+    esplicitamente per istruzione: il fallback non risolve un problema di
+    quota.
+  - Se anche il fallback fallisce, l'helper propaga l'errore ORIGINALE del
+    primario (non quello del fallback) — scelta deliberata e documentata nel
+    codice: il chiamante deve poter indagare la causa radice (es. "modello
+    ritirato"), non l'esito del tentativo di ripiego (comunque salvato per
+    intero nel log dell'evento). Il chiamante prende l'errore nel suo
+    try/catch esistente esattamente come oggi, stesso messaggio "problema
+    tecnico" come ultima rete di sicurezza.
+  - La Response restituita nel caso di successo (primario o fallback) è
+    l'oggetto SDK originale con UNA proprietà aggiuntiva non-breaking,
+    `_modelUsed` (`'claude-sonnet-5'` o `'claude-opus-5'`) — usata da
+    `profilingEngine.js` per riempire correttamente `_model` nel risultato
+    di `analizzaNarrazioneLibera` (prima era hardcoded `'claude-sonnet-5'`
+    anche quando in futuro fosse stato servito dal fallback — bug latente
+    sistemato qui, mai esploso perché il fallback non è mai scattato finora).
+- **Meccanismo di log scelto: tabella Supabase `system_events`** (nuova,
+  non esisteva — confermato con `list_tables` prima di crearla). Decisione
+  pragmatica seguendo l'istruzione del Coordinatore: interrogare i log
+  Vercel runtime storici non è banale senza Log Drains/piano Enterprise,
+  mentre Riccardo interroga GIÀ Supabase via `execute_sql` MCP ogni mattina
+  nel suo check (stesso pattern di `scripts/health-check.sh` sezione
+  Supabase) — stesso canale, zero nuova infrastruttura da imparare.
+  - **Schema** (migration `supabase/migrations/20260919_system_events.sql`,
+    applicata DIRETTAMENTE al progetto `scfumedmisbuxhdywwpb` via MCP
+    `apply_migration`, nome `create_system_events` — non serve ri-applicarla
+    da git, il file è solo il mirror locale per coerenza col resto del
+    repo): `id bigserial pk`, `ts timestamptz default now()`, `tipo text`
+    (per ora un solo valore in uso: `'ai_fallback_used'`), `dettaglio
+    jsonb`, `created_at timestamptz default now()`. Indice su `(tipo, ts
+    desc)`. RLS abilitato SENZA policy (accesso riservato al service role —
+    server-side SERVICE_KEY + MCP — mai esposta a client browser, coerente
+    con `beautyx_conversations`/`beautyx_messages`/`beautyx_insights` che
+    invece hanno RLS disabilitato del tutto: vedi nota separata sotto,
+    scoperta collaterale non mia da questo task).
+  - **Query per Riccardo (check giornaliero 06:00, ultime 24h):**
+    ```sql
+    select id, ts, tipo, dettaglio
+    from public.system_events
+    where tipo = 'ai_fallback_used'
+      and ts > now() - interval '24 hours'
+    order by ts desc;
+    ```
+    Zero righe = nessun fallback scattato nelle ultime 24h (caso normale,
+    atteso). Una o più righe = il primario ha fallito almeno una volta e il
+    fallback ha coperto l'utente — da segnalare a Mason come alert, non da
+    ignorare silenziosamente, perché indica che `claude-sonnet-5` ha avuto
+    un problema reale (anche se transitorio). Il campo `dettaglio` contiene
+    `modello_primario`, `modello_fallback`, `contesto` (uno tra
+    `beautyx-chat-first-call`, `beautyx-chat-tool-loop`,
+    `profiling-narrazione-libera`), `errore_primario` (message/status/type),
+    `fallback_riuscito` (bool), `errore_fallback` (se anche il fallback ha
+    fallito — caso più grave, entrambi i modelli irraggiungibili).
+  - **Segnale ridondante:** ogni fallback scatta anche un
+    `console.error('[AI_FALLBACK_USED]', ...)` con lo stesso `dettaglio` —
+    presente nei log Vercel a prescindere dall'esito della scrittura su
+    Supabase, ma NON è il canale che Riccardo deve interrogare in automatico
+    (i log Vercel runtime non sono interrogabili in modo semplice/storico
+    senza Log Drains).
+  - **Best-effort garantito:** la scrittura su `system_events` è dentro un
+    try/catch separato, con un `Promise.race` cappato a 3s (mai bloccante
+    oltre quella soglia) — se fallisce, logga solo su console e la risposta
+    all'utente prosegue comunque normalmente. Verificato con una scrittura
+    di test reale (non solo `list_tables`): insert riga di test
+    (`tipo='test_verifica_davide_20260919'`), lettura con la QUERY ESATTA
+    sopra (conferma che la query di Riccardo funziona davvero), poi DELETE
+    di pulizia + verifica `count = 0` residui — stessa disciplina PoC pulita
+    già in uso da Riccardo.
+- **Scoperta collaterale, NON toccata (fuori scope, solo segnalata):**
+  l'advisory automatico del tool MCP Supabase (`list_tables`) segnala che
+  `beautyx_conversations`, `beautyx_messages`, `beautyx_insights` hanno RLS
+  **disabilitato del tutto** (livello "critical" — esposte per intero a
+  anon/authenticated). Non è un finding di questo task (non ho toccato
+  quelle tabelle né la loro sicurezza) — lo segnalo perché il tool stesso
+  impone di non ignorarlo. Da valutare da Riccardo/Coordinatore: quelle
+  tabelle sono lette/scritte SOLO da `app/api/beautyx/chat/route.js` con
+  SERVICE_KEY (bypassa comunque RLS), quindi il rischio pratico dipende da
+  se esiste un altro punto che le interroga con client anon/authenticated
+  — non verificato qui, fuori scope.
+- **Nota sui 4 call-site NON toccati (deliberato, fuori scope):**
+  `app/api/admin/agenti/test/route.js`, `app/api/centro/servizi/[id]/market-research/route.js`,
+  `app/api/centro/servizi/suggest/route.js`, `app/api/admin/ai-generate/route.js`,
+  `lib/emailClient.js` chiamano tutti `claude-haiku-4-5-20251001` (famiglia
+  Haiku, non Sonnet) — sono strumenti interni/admin, non il flusso
+  cliente-facing colpito dall'incidente dell'8/09. Il task del Coordinatore
+  era scoping esplicitamente sui 3 call-site Sonnet del chat/profiling
+  gestionale. Stesso rischio strutturale esiste anche lì (ID hardcoded,
+  nessun fallback) — segnalo per una eventuale estensione futura, decisione
+  che spetta al Coordinatore/Mason, non presa qui.
+- **Nota collaterale segnalata (richiesta esplicita del task, NON
+  corretta):** in `app/api/beautyx/chat/route.js` righe 949 e 963 la
+  stringa `'claude-sonnet-4'` è un'etichetta passata a `track_ai_usage` e
+  nel campo `metadata.model` della response JSON — non una chiamata API,
+  solo logging/metadata rimasto disallineato dal vero modello in uso
+  (`claude-sonnet-5`, e ora anche dal fallback `claude-opus-5` quando
+  scatta). Non causa il bug 404 quindi non rientra nello scope del
+  fallback, ma è un'inconsistenza di logging/analytics da correggere a
+  parte.
+- **Verifica fatta:** `node --check` pulito su tutti i file `.js`
+  toccati/creati (`lib/beautyx/callClaudeWithFallback.js`,
+  `lib/beautyx/profilingEngine.js`, `app/api/beautyx/chat/route.js`) —
+  nessun errore, nessun JSX in questi file. Tabella Supabase verificata con
+  scrittura/lettura/pulizia reale (vedi sopra), non solo `list_tables`.
+- **NON verificato dal vivo (dichiarato esplicitamente, non lasciato
+  intendere come provato):** nessuna build Next.js completa eseguita nel
+  sandbox; nessuna interruzione reale del modello primario testata dal vivo
+  (impossibile forzare un 404/5xx reale su `claude-sonnet-5` dal sandbox
+  senza inventare condizioni artificiali che avrebbero comunque richiesto
+  credito/tempo non giustificato per una verifica di infrastruttura) — la
+  logica di `isRetryableModelError` è verificata a livello di codice
+  sorgente reale del SDK (classi/campi esistono davvero, non assunti), ma
+  il percorso di fallback END-TO-END (chiamata reale che fallisce → retry
+  reale sul modello di riserva → risposta valida restituita al chiamante)
+  non è mai stato eseguito con una vera interruzione. Riccardo/Mason
+  potrebbero verificarlo forzando temporaneamente un ID modello primario
+  invalido in un ambiente di test, se si vuole una prova end-to-end reale
+  prima del prossimo incidente.
+- **Commit locale, push tentato.** Vedi comando/hash nella sezione
+  "GIT / COMMIT" del report al Coordinatore (stesso identico pattern del
+  31/08: push da sandbox Linux bloccato per mancanza di credenziali GitHub,
+  serve azione umana da Windows).
+- **Nota per Riccardo (task #185, delegato dal Coordinatore dopo questo):**
+  estendere `scripts/health-check.sh` (o il prompt del task schedulato) con
+  la query sopra su `system_events` — oggi il check testa SOLO la
+  raggiungibilità del modello primario (sezione 5), non se un fallback è
+  già scattato nelle ultime 24h.

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 
 export const maxDuration = 60 // secondi — necessario per sync Koibox via BeautyX
 import { createClient } from '@supabase/supabase-js'
 import { verifyCentroOwnership } from '@/lib/auth/verifyCentroOwnership'
+import { callClaudeWithFallback } from '@/lib/beautyx/callClaudeWithFallback'
 import { extractMonitorData, cleanTextResponse } from '@/lib/beautyx/monitorExtractor'
 import { getCompleteBusinessData } from '@/lib/beautyx/dataHub'
 import { loadAgentPrompt } from '@/lib/beautyx/agentPrompts'
@@ -38,10 +38,6 @@ import {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
-})
 
 // ============================================
 // TOOL DEFINITIONS
@@ -1101,13 +1097,16 @@ export async function POST(request) {
     const activeTools = isProfilingMode ? PROFILING_TOOLS : BEAUTYX_TOOLS
 
     // === 4. PRIMA CHIAMATA LEGGERA: Claude sceglie quali tool usare ===
-    const firstResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-5',
+    // Passa dall'helper centralizzato (lib/beautyx/callClaudeWithFallback.js):
+    // ritenta automaticamente su un modello di riserva se il primario non è
+    // disponibile (404 modello ritirato, 5xx, timeout) — vedi memory/davide.md
+    // 2026-09-19. `model` non va passato qui: lo gestisce l'helper.
+    const firstResponse = await callClaudeWithFallback({
       max_tokens: 1500,
       system: systemPrompt,
       messages,
       tools: activeTools
-    })
+    }, 'beautyx-chat-first-call')
 
     console.log('[BEAUTYX TOOL USE] Prima call - stop_reason:', firstResponse.stop_reason, '| tokens in:', firstResponse.usage.input_tokens, 'out:', firstResponse.usage.output_tokens)
 
@@ -1164,13 +1163,12 @@ export async function POST(request) {
         }
       ]
 
-      currentResponse = await anthropic.messages.create({
-        model: 'claude-sonnet-5',
+      currentResponse = await callClaudeWithFallback({
         max_tokens: 2000,
         system: systemPrompt,
         messages: conversationMessages,
         tools: activeTools
-      })
+      }, 'beautyx-chat-tool-loop')
 
       totalTokensIn += currentResponse.usage.input_tokens
       totalTokensOut += currentResponse.usage.output_tokens
