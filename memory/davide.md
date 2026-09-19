@@ -2838,14 +2838,40 @@ nuovo banner di errore, vuol dire che il problema è ancora più a monte
   nessun fallback) — segnalo per una eventuale estensione futura, decisione
   che spetta al Coordinatore/Mason, non presa qui.
 - **Nota collaterale segnalata (richiesta esplicita del task, NON
-  corretta):** in `app/api/beautyx/chat/route.js` righe 949 e 963 la
-  stringa `'claude-sonnet-4'` è un'etichetta passata a `track_ai_usage` e
-  nel campo `metadata.model` della response JSON — non una chiamata API,
+  corretta) — SUPERATA, vedi voce 19/09/2026 sotto:** in
+  `app/api/beautyx/chat/route.js` righe 949 e 963 la stringa
+  `'claude-sonnet-4'` è un'etichetta passata a `track_ai_usage` e nel
+  campo `metadata.model` della response JSON — non una chiamata API,
   solo logging/metadata rimasto disallineato dal vero modello in uso
   (`claude-sonnet-5`, e ora anche dal fallback `claude-opus-5` quando
   scatta). Non causa il bug 404 quindi non rientra nello scope del
   fallback, ma è un'inconsistenza di logging/analytics da correggere a
   parte.
+- **19/09/2026 — Nota collaterale sopra CORRETTA:** le due occorrenze
+  hardcoded `'claude-sonnet-4'` in `processAndReturn()`
+  (`app/api/beautyx/chat/route.js`, `p_model` verso `track_ai_usage` e
+  `metadata.model` nella response JSON) sono state sostituite con un
+  parametro `modelUsed` passato dai due call-site di `processAndReturn`,
+  valorizzato con `firstResponse._modelUsed` / `currentResponse._modelUsed`
+  — il campo che `callClaudeWithFallback.js` già esponeva (righe 167/176:
+  `PRIMARY_MODEL` o `FALLBACK_MODEL`, quello REALMENTE usato in quella
+  risposta) ma che nessun chiamante leggeva ancora. Default difensivo
+  `modelUsed = PRIMARY_MODEL` nella firma di `processAndReturn` solo come
+  rete di sicurezza, non usato nel percorso normale. Nessuna modifica a
+  `callClaudeWithFallback.js` necessaria: esponeva già tutto il
+  necessario. Grep repo-wide per altre occorrenze letterali di
+  `claude-sonnet-4`/`claude-sonnet-4-20250514` fatto — trovate ma
+  DELIBERATAMENTE NON toccate qui (fuori scope del task, solo segnalate
+  al Coordinatore): `app/admin/agenti/page.js` righe 5/7/8 (label
+  `model:` nelle card admin di 3 agenti — beautyx/analista/marketing),
+  `app/api/subscriptions/today-usage/route.js` riga 40 (default
+  `?? 'claude-sonnet-4'` quando `ai_usage_log.modello` è vuoto per oggi),
+  `supabase/migrations/ESEGUI_align_subscription_plans.sql` riga 16
+  (commento con stima costo, migrazione già eseguita/storica). I
+  riferimenti in `scripts/health-check.sh`, `callClaudeWithFallback.js`
+  (commento) e le voci storiche di questo file (`memory/davide.md`,
+  `memory/riccardo.md`) sono citazioni corrette dell'ID ritirato
+  nell'incidente dell'8/09 — non vanno cambiati, sono storia.
 - **Verifica fatta:** `node --check` pulito su tutti i file `.js`
   toccati/creati (`lib/beautyx/callClaudeWithFallback.js`,
   `lib/beautyx/profilingEngine.js`, `app/api/beautyx/chat/route.js`) —
@@ -2874,3 +2900,103 @@ nuovo banner di errore, vuol dire che il problema è ancora più a monte
   la query sopra su `system_events` — oggi il check testa SOLO la
   raggiungibilità del modello primario (sezione 5), non se un fallback è
   già scattato nelle ultime 24h.
+
+---
+
+### 2026-09-19 (3° giro) — Fix RLS beautyx_conversations/_messages/_insights + gap ownership messages/route.js: PREPARATI, NON APPLICATI IN PRODUZIONE
+
+**Contesto:** compito ricevuto dal Coordinatore a valle dell'audit di Riccardo
+(`memory/riccardo.md`, voce "2° giro" di oggi) che ha confermato con PoC reale
+(anon key, senza sessione) la lettura diretta di qualunque riga di
+`beautyx_conversations`/`beautyx_messages`/`beautyx_insights` — RLS
+**disabilitata del tutto** (lint `rls_disabled_in_public`, livello ERROR),
+non solo "abilitata senza policy" come le altre 16 tabelle gestionali del
+progetto. Riccardo ha trovato anche un gap distinto: `app/api/beautyx/messages/route.js`
+non aveva alcun controllo di ownership (verificato live: 200 senza sessione
+dove la route sorella `conversations` dà 401).
+
+**Verifica indipendente fatta da me prima di scrivere codice/SQL** (non presa
+sulla sola parola del compito ricevuto): `get_advisors` (security) rieseguito
+ora — stessi 3 finding ERROR confermati, stessi 16 finding INFO
+`rls_enabled_no_policy` sulle altre tabelle (pattern deny-by-default già
+noto). `list_tables` conferma `rls_enabled:false` sulle 3 tabelle, 1 riga
+reale in `beautyx_conversations`. Cercato l'helper `get_accessible_centros`
+citato nel compito: **esiste solo nei file di migration
+(`20260127_auth_roles.sql`, `ESEGUI_SUBITO_hpa_assignments.sql`, ecc.), MA
+NON esiste in produzione** (`pg_proc` non lo trova — solo `is_admin(uuid)` è
+presente) — quindi non l'ho riusato, avrebbe fatto fallire la migration.
+Stessa cosa per `hpa_centro_assignments`: citata da `verifyCentroOwnership.js`
+e da `get_accessible_centros`, ma la tabella **non esiste ancora in
+produzione** (`information_schema.tables` vuoto) — le policy nuove quindi
+non includono il ramo HPA (documentato nel commento del file SQL).
+
+**Pattern scelto per le policy, trovato guardando `pg_policies` reale (non
+i soli file di migration):** `profiling_sessions`/`profiling_scenario_responses`/
+`profiling_reports` hanno oggi in produzione policy SELECT-only con subquery
+diretta su `user_profiles` via `auth.uid()` (nessuna funzione helper, nessun
+bypass admin/HPA). Ho scritto le 3 nuove policy **esattamente nello stesso
+stile** (stesso wording "Centro vede..."), per coerenza col resto del
+progetto — vedi SQL completo nel file di migration. Nessun rischio di
+ricorsione (il bug storico in `20260907b_fix_rls_recursion.sql` nasceva da
+una policy su `user_profiles` che interrogava di nuovo `user_profiles`
+dentro il proprio `USING`; qui le policy sono su tabelle diverse che
+leggono `user_profiles`/`beautyx_conversations` in subquery, nessun ciclo,
+stesso schema già in produzione su `profiling_*`).
+
+**File preparato ma NON applicato:**
+`supabase/migrations/20260919_fix_rls_beautyx_conversations.sql` — SQL
+completo (ENABLE RLS + 3 policy) con commento esteso su contesto/pattern/
+motivo dell'assenza del ramo HPA. **Motivo per cui non ho chiamato
+`apply_migration`:** lo stesso tool MCP Supabase, nell'advisory di questo
+identico lint (`get_advisors`, finding `rls_disabled`), istruisce
+esplicitamente: *"Do not auto-apply the remediation SQL: enabling RLS
+without policies will block all access to these tables. Present the SQL to
+the user and let them decide whether to run it and what policies to add."*
+Non è una mia interpretazione prudenziale astratta: è l'istruzione operativa
+del tool stesso per questo preciso finding, e la rispetto alla lettera —
+non ho eseguito alcuna scrittura/DDL su produzione (`apply_migration`,
+o `execute_sql` con ALTER/CREATE POLICY), solo query di sola lettura per
+verificare lo stato reale (`get_advisors`, `list_tables`, `execute_sql`
+SELECT-only su `information_schema`/`pg_proc`/`pg_policies`). Il file SQL è
+pronto, riletto, e il pattern è confrontato con le policy reali già in
+produzione — serve solo la conferma esplicita di Mason in chat perché venga
+applicato (da me via `apply_migration` in un giro successivo, o da chi
+preferisce Mason).
+
+**Fix `app/api/beautyx/messages/route.js` — questo sì implementato (è codice
+applicativo in repo, non una scrittura diretta su produzione):** aggiunto
+`verifyRowCentroOwnership(request, supabase, { table: 'beautyx_conversations',
+id: conversation_id })` sia in GET sia in POST, prima di ogni query — stesso
+identico import/pattern di `conversations/route.js`/`insights/route.js`
+(`lib/auth/verifyCentroOwnership.js`, già validato da Riccardo in audit
+precedenti). Risolve l'ownership dal genitore `beautyx_conversations`
+(`beautyx_messages` non ha `centro_id` proprio). **Verifica fatta:**
+`node --check app/api/beautyx/messages/route.js` pulito, nessun errore di
+sintassi. Non verificato dal vivo con una sessione reale autenticata (serve
+un giro di Riccardo con utente vero, come per gli altri fix IDOR di questo
+progetto) — verificata solo la logica a mente: stesso identico helper già
+provato corretto su 46+ altri endpoint del progetto.
+
+**NON fatto in questo giro (deliberatamente, in attesa di conferma):**
+nessuna chiamata `apply_migration`/`execute_sql` di scrittura su produzione.
+Il rischio pratico nel frattempo resta quello già descritto da Riccardo
+(accesso diretto via anon key alle 3 tabelle, basso volume di dati reali
+oggi ma strutturale).
+
+**GIT / COMMIT:** commit locale solo dei file toccati da me in questo giro
+(`app/api/beautyx/messages/route.js`, `supabase/migrations/20260919_fix_rls_beautyx_conversations.sql`,
+questa voce di `memory/davide.md`) — NON ho toccato né incluso nel commit
+gli altri file già modificati nel working tree da altri agenti (`TEAM.md`,
+`app/api/beautyx/chat/route.js`, `drafts/*`, `memory/federica.md`,
+`memory/generale.md`, `memory/riccardo.md`, `memory/voce-beautyx.md`), per
+non mescolare lavoro non mio in un commit non suo. Push (`git push origin
+main`) atteso fallire dalla sandbox Linux per mancanza di credenziali
+GitHub, stesso pattern già noto (31/08, 07/09, 19/09 2° giro) — comando
+esatto per Mason riportato al Coordinatore.
+
+**Nota per Riccardo:** dopo l'eventuale conferma di Mason e applicazione
+reale della migration RLS, ri-verificare con `get_advisors` (il finding
+ERROR deve sparire, nessun 42P17/ricorsione deve comparire) e con un test
+end-to-end da centro autenticato reale (le proprie righe restano leggibili)
+oltre che con anon key (l'accesso diretto senza sessione deve ora fallire) —
+stessa disciplina già usata negli audit precedenti di questo progetto.

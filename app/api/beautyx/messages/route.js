@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifyRowCentroOwnership, centroOwnershipErrorResponse } from '@/lib/auth/verifyCentroOwnership'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
@@ -15,6 +16,15 @@ export async function GET(request) {
     if (!conversation_id) {
       return NextResponse.json({ error: 'conversation_id richiesto' }, { status: 400 })
     }
+
+    // beautyx_messages non ha centro_id proprio: l'ownership si risolve sul
+    // genitore beautyx_conversations (stesso pattern di verifyRowCentroOwnership
+    // già usato in conversations/route.js e insights/route.js).
+    const ownership = await verifyRowCentroOwnership(request, supabase, {
+      table: 'beautyx_conversations',
+      id: conversation_id
+    })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('beautyx_messages')
@@ -52,6 +62,12 @@ export async function POST(request) {
         error: 'sender deve essere user o beautyx'
       }, { status: 400 })
     }
+
+    const ownership = await verifyRowCentroOwnership(request, supabase, {
+      table: 'beautyx_conversations',
+      id: conversation_id
+    })
+    if (!ownership.ok) return centroOwnershipErrorResponse(ownership)
 
     const { data, error } = await supabase
       .from('beautyx_messages')
