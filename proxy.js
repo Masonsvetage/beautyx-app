@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
+import { isWithinReportFreeWindow } from '@/lib/report/freeWindow'
 
 // Route pubbliche (accessibili senza autenticazione)
 // '/auth' aggiunta (03/09/2026, collaudo Mason — bug #4): serve alla route
@@ -53,17 +54,26 @@ export async function proxy(req) {
     if (pathname.startsWith('/reset-password/update')) {
       return supabaseResponse
     }
-    // La landing '/': se non autenticato → /newsletter (invariato).
-    // Fix 04/09/2026 (bug segnalato da Mason in collaudo live): il livello 3
-    // (piattaforma/abbonamenti) non è ancora un livello offerto agli utenti,
-    // quindi la vecchia landing SaaS generica di app/page.js (piani Demo/
-    // Starter/Professional/Enterprise) non va più mostrata a nessuno, nemmeno
-    // a chi è loggato. Un utente autenticato va quindi in /dashboard, che
-    // mostra solo ciò che ha davvero attivo (es. ReportCuraCard).
+    // La landing '/' per utenti NON autenticati: decisione chiusa il 4/9/2026
+    // (vedi mappa-ecosistema-beautyx.html, sezione "3. Decisioni chiuse il
+    // 4/9/2026", primo punto — "90 giorni: il report gratuito nei primi 90
+    // giorni dal lancio agisce da livello 1 (civetta a basso CPL); dopo, la
+    // newsletter torna ad essere l'unico portone permanente per il traffico
+    // nuovo"). Finché siamo dentro la finestra dei 90 giorni gratuiti
+    // (stessa scadenza usata da ReportCountdownBanner/NEXT_PUBLIC_REPORT_
+    // LAUNCH_DATE, vedi lib/report/freeWindow.js) la root porta a /report;
+    // una volta scaduta torna AUTOMATICAMENTE a /newsletter, senza bisogno
+    // di un nuovo intervento manuale — la scadenza letta è sempre la stessa,
+    // non ne esiste una seconda qui.
+    //
+    // NOTA (non in scope qui): il redirect per utenti già loggati (→
+    // /dashboard, fix 04/09/2026 sotto) è una landing "da rivedere" secondo
+    // lo schema stesso — questione distinta, non toccata da questa modifica.
     if (pathname === '/') {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        return NextResponse.redirect(new URL('/newsletter', req.url))
+        const entryRoute = isWithinReportFreeWindow() ? '/report' : '/newsletter'
+        return NextResponse.redirect(new URL(entryRoute, req.url))
       }
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }

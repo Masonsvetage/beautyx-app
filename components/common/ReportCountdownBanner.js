@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Fragment } from 'react'
 import Link from 'next/link'
+import { FREE_PERIOD_DAYS, MS_PER_DAY, getReportLaunchDate } from '@/lib/report/freeWindow'
 
 // Countdown reale dei giorni rimanenti del periodo gratuito (90gg) del report
 // di profiling CURA (rinominato da CARE il 03/09/2026, vedi nome-metodo-CARE.md).
@@ -51,30 +52,27 @@ import Link from 'next/link'
 // Il countdown viene calcolato solo lato client (mount-only, via useEffect)
 // per evitare mismatch di idratazione SSR/CSR sui secondi esatti.
 
-const FREE_PERIOD_DAYS = 90
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 const MS_PER_HOUR = 60 * 60 * 1000
 const MS_PER_MINUTE = 60 * 1000
 const PLACEHOLDER_FALLBACK_DAYS = 60 // istruzione Mason 05/09/2026, vedi nota sopra
 
+// La data/costante di lancio (env var + regola dei 90gg) vive in
+// lib/report/freeWindow.js — stessa fonte usata dal redirect server-side
+// della root in proxy.js, per non avere due calcoli della stessa scadenza
+// che potrebbero disallinearsi (vedi mappa-ecosistema-beautyx.html, sezione
+// "3. Decisioni chiuse il 4/9/2026").
 function computeDeadline() {
-  const launchDateRaw = process.env.NEXT_PUBLIC_REPORT_LAUNCH_DATE
+  const launch = getReportLaunchDate()
 
-  if (launchDateRaw) {
-    const launch = new Date(`${launchDateRaw}T00:00:00`)
-    if (Number.isNaN(launch.getTime())) {
-      console.warn('[ReportCountdownBanner] NEXT_PUBLIC_REPORT_LAUNCH_DATE non è una data valida:', launchDateRaw)
-      // data reale malformata: non blocchiamo la UI, ripieghiamo comunque sul
-      // placeholder invece di nascondere tutto il banner.
-      return new Date(Date.now() + PLACEHOLDER_FALLBACK_DAYS * MS_PER_DAY)
-    }
+  if (launch) {
     return new Date(launch.getTime() + FREE_PERIOD_DAYS * MS_PER_DAY)
   }
 
   // PLACEHOLDER in attesa della data reale di lancio (nessuna env var
-  // impostata su Vercel): "60 giorni da adesso", fissato UNA VOLTA al mount
-  // (vedi nota 05/09/2026 sopra) — non più ricalcolato ad ogni tick, altrimenti
-  // il countdown non scenderebbe mai.
+  // impostata su Vercel, o env var malformata — getReportLaunchDate() torna
+  // null in entrambi i casi e logga già l'eventuale warning): "60 giorni da
+  // adesso", fissato UNA VOLTA al mount (vedi nota 05/09/2026 sopra) — non
+  // più ricalcolato ad ogni tick, altrimenti il countdown non scenderebbe mai.
   return new Date(Date.now() + PLACEHOLDER_FALLBACK_DAYS * MS_PER_DAY)
 }
 
