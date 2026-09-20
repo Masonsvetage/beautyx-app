@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import GuidaFooterLink from '@/components/common/GuidaFooterLink'
-import { isWithinReportFreeWindow } from '@/lib/report/freeWindow'
 
 const CAT_COLORS = {
   novita: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
@@ -240,15 +239,17 @@ export default function LandingPage() {
   const { user, isAdmin, isHpa, loading } = useAuth()
   const router = useRouter()
 
-  // Redirect visitatori non autenticati: entry point primario governato
-  // dalla stessa finestra dei 90gg gratuiti usata dal middleware (proxy.js) —
-  // vedi lib/report/freeWindow.js. In condizioni normali il middleware
-  // intercetta già la richiesta prima che questo componente monti; questo
-  // effect resta come fallback per eventuali navigazioni client-side dirette
-  // su '/' e deve restare allineato alla stessa logica, non una copia propria.
+  // Redirect visitatori non autenticati: entry point primario è SEMPRE
+  // /newsletter, fisso — allineato al middleware (proxy.js, sorgente di
+  // verità). Corretto il 19/9/2026 (Mason): non va letta la finestra dei
+  // 90gg gratuiti qui — il report non sostituisce mai la newsletter come
+  // landing della root, viene solo promosso da dentro la newsletter stessa.
+  // In condizioni normali il middleware intercetta già la richiesta prima
+  // che questo componente monti; questo effect resta come fallback per
+  // eventuali navigazioni client-side dirette su '/'.
   useEffect(() => {
     if (!loading && !user) {
-      router.replace(isWithinReportFreeWindow() ? '/report' : '/newsletter')
+      router.replace('/newsletter')
     }
   }, [loading, user, router])
   const [stats, setStats] = useState(null)

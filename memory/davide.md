@@ -3252,3 +3252,114 @@ stessa disciplina già usata negli audit precedenti di questo progetto.
   assenza di shell/rete. Da ripetere con curl/sessione reale non appena
   disponibile un ambiente con accesso rete, idealmente subito dopo il deploy
   di Mason.
+
+## Tool "Listino intelligente" — costruita /listino con gating 90gg + versione lite/completa (2026-09-20, task #199/#201)
+
+- **Contesto:** seguito diretto della decisione di Mason del 19-20/09/2026
+  (vedi `memory/generale.md`, voce "Tool 'Listino intelligente' — 4° pilastro
+  dell'ecosistema"): portare `calcolatore-margine.html` (sorgente in
+  `C:\Users\luigi\progetti\beautyx-project`, HTML single-file self-contained,
+  v2.3) dentro beautyx-app come landing pubblica `/listino`, con lo stesso
+  gating dei 90gg gratuiti del report CURA e lo split lite/completo dopo.
+- **File creato:** `app/listino/page.js` — client component che monta il tool
+  quasi verbatim (stessi calcoli, stesso HTML, stesso localStorage key
+  `bx_listino_v8`, stesso formato dati export/import `btoa(unescape(
+  encodeURIComponent(JSON.stringify({voci,services,state,operatori}))))`)
+  dentro un contenitore `#bx-listino-root`, con due categorie di modifiche
+  rispetto al sorgente:
+  1. **Isolamento dal resto del sito** (bug trovato e corretto durante lo
+     sviluppo, non nel sorgente originale): il tool originale imposta i temi
+     colore scrivendo `data-theme` su `document.documentElement` e definisce
+     le custom property CSS su `:root` — corretto per una pagina standalone,
+     ma dentro beautyx-app (SPA con routing client-side) avrebbe scritto
+     l'attributo sull'intero `<html>`, sopravvivendo alla navigazione away da
+     `/listino` e potenzialmente collidendo con altre pagine che usano nomi
+     generici tipo `--bg`/`--ink`/`--card`. Fix: tutti i selettori tema
+     scoped a `#bx-listino-root` invece di `:root`, e `setTheme`/`renderThemes`
+     leggono/scrivono l'attributo su `document.getElementById('bx-listino-root')`
+     invece che su `document.documentElement`.
+  2. **Logo e font:** il logo base64 embedded nel sorgente è sostituito con
+     l'asset reale già in uso nel sito (`/logo_beautyx-oro.png`), per non
+     portare un blob enorme nel bundle. I font Google (Fraunces, Figtree,
+     Playfair Display — quest'ultimo già globale da `app/layout.js`) sono
+     self-hosted via `next/font/google` invece del `<link>` a
+     fonts.googleapis.com del sorgente — stessa regola già in vigore nel
+     progetto (vedi sezione "Font — self-hosting via next/font/google" sopra
+     in questo file), zero richieste esterne a Google.
+- **Gating implementato:** riusa **esattamente** `lib/report/freeWindow.js`
+  (`isWithinReportFreeWindow()`, stessa `NEXT_PUBLIC_REPORT_LAUNCH_DATE`,
+  nessuna nuova data) — dentro i 90gg tutte le tab sono sbloccate; fuori, la
+  funzione `showTab()` del tool (patchata, non riscritta: la logica di
+  calcolo è invariata) intercetta le tab "listino" (multi-servizio),
+  "vetrina" (stampa) e "salva" (backup/import) e mostra un pannello
+  `#bx-locked-panel` con CTA verso `/newsletter`, invece del contenuto reale.
+  Le tab "negozio" (costo orario) e "servizio" (prezzo giusto di un singolo
+  servizio) non sono mai gated, come da decisione di Mason. CTA aggiuntiva
+  "dopo il primo uso" (banner in basso, stile gradiente oro→rosa già usato da
+  `ReportCountdownBanner` variant topbar) che compare al primo click reale su
+  una tab (non allo `showTab` programmato all'avvio), link a `/newsletter`.
+- **⚠️ Scoperta importante durante la verifica (non nella memoria prima
+  d'ora):** l'istruzione ricevuta diceva di riusare "lo stesso meccanismo già
+  implementato per il credito 60€ dell'Identikit CURA". Verificato sul
+  codice reale, quel meccanismo **non esiste**: `piano-sviluppo-report-care.md`
+  (sezione 2, punto 3) elenca esplicitamente "il credito 60€→abbonamento" come
+  **non implementato** ("Da disegnare") — nessun endpoint di checkout Stripe
+  per il report, nessun campo credito su `user_purchases`/`user_subscriptions`.
+  Di conseguenza `/listino` implementa **solo il gating UI lite/completo**:
+  nessun pulsante "Paga 29€" funzionante, nessuna verifica di un "account con
+  credito" (non verificabile, la colonna non esiste). Il pannello locked
+  spiega il prezzo/meccanismo previsto ma l'unico percorso reale offerto è la
+  CTA verso `/newsletter` — stesso principio di onestà già applicato a
+  `/report` (placeholder che non promette funzionalità inesistente).
+  **Segnalo esplicitamente:** se Mason vuole un vero checkout Stripe a 29€
+  con credito scalabile, va prima costruito il meccanismo per il report CURA
+  (60€) — che oggi non c'è — o va disegnato da zero per il Listino, in
+  entrambi i casi è lavoro nuovo, non un riuso.
+- **`proxy.js`:** aggiunta `/listino` a `publicRoutes` (stesso pattern di
+  `/report`/`/miniguida`, nessun wall di login, come richiesto).
+- **`mappa-ecosistema-beautyx.html` (task #201):** aggiunto il 4° box
+  "Listino intelligente" (classe `c-teal`, come Newsletter/Miniguida) nello
+  schema a 3 livelli (sezione 1) — il contenitore "Livello 1" è stato
+  allargato in altezza (105→175) e tutti gli elementi sotto (Livello 2,
+  Livello 3, sezione "Utente registrato", legenda, viewBox) spostati di
+  conseguenza (+70 su tutte le y). Nella sezione 2 (funnel tecnico) NON è
+  stato aggiunto un nodo/freccia al diagramma esistente — giudizio esplicito:
+  quel funnel traccia solo il percorso account del report CURA, mentre
+  `/listino` non richiede mai un account, quindi non ha un punto di innesto
+  naturale in quel grafo (l'unico contatto è la CTA verso `/newsletter`, nodo
+  già esistente) — aggiunta invece una nota testuale che lo spiega. Aggiornata
+  anche la sezione "3. Decisioni chiuse" con una nuova voce datata 20/9/2026
+  (il resto della sezione, datata 4/9, non è stato toccato), che include la
+  stessa nota di onestà sul meccanismo di credito non implementato.
+- **Coda in sospeso segnalata da Mason:** non ho trovato modifiche non
+  committate aggiuntive su `mappa-ecosistema-beautyx.html` nella working
+  directory visibile a questa sessione (ho letto e modificato il file così
+  com'era su disco) — se esiste davvero una coda separata da ieri non
+  visibile qui, Mason la vedrà con `git status`/`git diff` prima di
+  committare quanto sotto; i miei cambi si aggiungono in coda, non la
+  sostituiscono.
+- **Verifica fatta — SOLO STATICA, dichiarato esplicitamente:** la shell
+  isolata di questa sessione non si è avviata per l'intera durata del lavoro
+  ("VM service not running") — non ho potuto lanciare `npm run dev`/
+  `next build`, né aprire un browser sul sito reale per testare dal vivo il
+  caricamento di `/listino` o il comportamento del gating dentro/fuori i
+  90gg, come invece richiesto. Ho verificato "a mano" leggendo il file
+  scritto: bilanciamento di backtick/`${...}` nel template literal JS
+  (nessuno stray), corrispondenza degli escape (`\\t`/`\\n`/`\\'` nel
+  wrapper → `\t`/`\n`/`\'` nello script generato, identici al sorgente),
+  coordinate SVG del diagramma ricalcolate a mano e rilette per intero.
+  **Non sostituisce un test reale.** Prima del lancio va rifatto quanto
+  segue, idealmente da Mason in locale: `npm run dev`, aprire `/listino`,
+  verificare che carichi senza errori console; forzare temporaneamente
+  `NEXT_PUBLIC_REPORT_LAUNCH_DATE` a una data passata (>90gg fa) per
+  controllare che le tab "Il listino"/"Vetrina"/"Salva" mostrino il pannello
+  bloccato con CTA, poi rimuovere/ripristinare la env var; controllare che
+  cambiare tema colore e navigare via (es. verso `/newsletter`) e tornare
+  indietro non lasci residui su `<html>` (verifica del fix di isolamento
+  sopra).
+- **File toccati:** `app/listino/page.js` (nuovo), `proxy.js`
+  (`publicRoutes`), `mappa-ecosistema-beautyx.html`.
+- **Fuori scope oggi, dichiarato esplicitamente:** vero checkout Stripe per i
+  29€ e il meccanismo di credito sull'abbonamento (vedi sopra, non esiste
+  nemmeno per il report CURA) — task #200 (copy/design pagina 4 pilastri di
+  Federica/Chiara) resta un pezzo separato, non toccato qui.
