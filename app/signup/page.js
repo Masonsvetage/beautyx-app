@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -49,7 +49,7 @@ function InputField({ id, label, required, type = 'text', placeholder, value, fi
   )
 }
 
-export default function SignupPage() {
+function SignupForm() {
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     // Step 1 - Tipo soggetto + dati base
@@ -91,6 +91,29 @@ export default function SignupPage() {
   const [clauseAcceptances, setClauseAcceptances] = useState({}) // { clauseId: true/false }
   const { signUp } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Selezione risorsa — correzione diretta di Mason (20/09/2026, task #206,
+  // vedi memory/generale.md "Modello commerciale corretto"): il Tool
+  // "Listino intelligente" NON e' piu' utilizzabile senza account come
+  // pensato in precedenza — usa lo STESSO canale di iscrizione completo
+  // dell'Identikit strategico CURA. Su questa stessa registrazione l'utente
+  // sceglie cosa vuole (Identikit, Tool, o entrambi): durante i 90 giorni
+  // di lancio la selezione garantisce accesso gratuito immediato alla/e
+  // risorsa/e scelta/e (vedi app/api/user/resource-access/route.js).
+  // Default: entrambe selezionate (riduce l'attrito — sono comunque gratis
+  // nei 90gg, vedi nota "prima sono comunque entrambi gratis" in memoria),
+  // ma restano due checkbox esplicite, non una scelta nascosta. Se si
+  // arriva da /listino o /report con ?risorsa=tool|identikit in query
+  // (link dal wall di accesso), preselezioniamo solo quella richiesta.
+  const [risorse, setRisorse] = useState({ identikit: true, tool: true })
+
+  useEffect(() => {
+    const risorsaParam = searchParams?.get('risorsa')
+    if (risorsaParam === 'tool') setRisorse({ identikit: false, tool: true })
+    else if (risorsaParam === 'identikit') setRisorse({ identikit: true, tool: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Carica documenti legali (API pubblica via RPC)
   useEffect(() => {
@@ -198,6 +221,9 @@ export default function SignupPage() {
     if (legalDocs.length === 0 && !formData.acceptTerms) {
       setError('Devi accettare i termini e condizioni'); return false
     }
+    if (!risorse.identikit && !risorse.tool) {
+      setError('Seleziona almeno una risorsa da sbloccare gratis (Identikit strategico CURA o Listino intelligente)'); return false
+    }
     return true
   }
 
@@ -240,6 +266,23 @@ export default function SignupPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: result.user.id, acceptances: acceptancesPayload })
           }).catch(() => {}) // Non bloccare la registrazione se fallisce
+        }
+
+        // Registra la selezione risorse (task #206, 20/09/2026): tracciamento
+        // interno di cosa l'utente ha scelto — non blocca la registrazione
+        // se fallisce, stesso principio del blocco legal-public sopra.
+        if (result.user?.id) {
+          const risorseSelezionate = Object.entries(risorse)
+            .filter(([, selected]) => selected)
+            .map(([key]) => key)
+
+          if (risorseSelezionate.length > 0) {
+            await fetch('/api/user/resource-access', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: result.user.id, risorse: risorseSelezionate })
+            }).catch(() => {})
+          }
         }
 
         // Fix messaggio ambiguo (05/09/2026): distinguiamo i due casi reali
@@ -628,19 +671,48 @@ export default function SignupPage() {
               </div>
             )}
 
-            {/* Bug fix (03/09/2026, collaudo Mason — bug #8): questo box
-                parlava di "versione demo" e citava funzionalità della
-                piattaforma gestionale completa (chat AI, movimenti bancari,
-                consulente HPA) non legate a quanto promesso su /report (Report
-                CURA gratis nei primi 90 giorni). Corretto qui il minimo
-                indispensabile per non essere fuorviante (testo accurato,
-                nessuna funzione promessa che non sia garantita); la rifinitura
-                di tono/voce resta di competenza di Federica. */}
+            {/* Selezione risorsa (nuovo, 20/09/2026 — task #206): il Tool
+                "Listino intelligente" ora usa lo stesso canale di iscrizione
+                completo dell'Identikit strategico CURA, invece di restare
+                utilizzabile senza account. Qui l'utente sceglie cosa vuole
+                sbloccare gratis nei 90 giorni — copy volutamente senza
+                nessuna menzione di sconto/credito futuro sull'abbonamento
+                (non esiste ancora nessuna piattaforma a cui applicarlo, vedi
+                memory/generale.md "Modello commerciale corretto"). */}
+            <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+              <h3 className="text-sm font-medium text-gray-800">Cosa vuoi sbloccare gratis, per 90 giorni?</h3>
+              <div className="flex items-start gap-2">
+                <input
+                  id="risorsa_identikit"
+                  type="checkbox"
+                  checked={risorse.identikit}
+                  onChange={(e) => setRisorse(prev => ({ ...prev, identikit: e.target.checked }))}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded mt-0.5"
+                />
+                <label htmlFor="risorsa_identikit" className="text-sm text-gray-700">
+                  <span className="font-medium">Identikit strategico CURA</span> — la diagnosi del tuo centro (90 giorni gratis, poi 60€ una tantum)
+                </label>
+              </div>
+              <div className="flex items-start gap-2">
+                <input
+                  id="risorsa_tool"
+                  type="checkbox"
+                  checked={risorse.tool}
+                  onChange={(e) => setRisorse(prev => ({ ...prev, tool: e.target.checked }))}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded mt-0.5"
+                />
+                <label htmlFor="risorsa_tool" className="text-sm text-gray-700">
+                  <span className="font-medium">Listino intelligente</span> — il calcolatore prezzi/margini (90 giorni gratis, poi 29€ una tantum)
+                </label>
+              </div>
+              <p className="text-xs text-gray-500">Puoi selezionarle entrambe — l'accesso gratuito parte subito dopo la conferma email.</p>
+            </div>
+
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
               <h3 className="text-sm font-medium text-purple-800">Il tuo account gratuito</h3>
               <ul className="mt-2 text-xs text-purple-700 space-y-1">
                 <li>- Accesso alla dashboard base</li>
-                <li>- Identikit strategico CURA incluso gratis nei primi 90 giorni dal lancio</li>
+                <li>- 90 giorni gratis sulle risorse che hai scelto sopra, poi prezzo pieno una tantum</li>
                 <li>- Nessuna carta di credito richiesta</li>
               </ul>
             </div>
@@ -685,5 +757,20 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Wrapper con Suspense: SignupForm usa useSearchParams() (per leggere
+// ?risorsa=tool|identikit quando si arriva dal wall di /listino o /report),
+// stesso pattern gia' in uso in app/login/page.js per lo stesso motivo.
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="animate-spin h-8 w-8 border-4 border-pink-500 border-t-transparent rounded-full"></div>
+      </div>
+    }>
+      <SignupForm />
+    </Suspense>
   )
 }

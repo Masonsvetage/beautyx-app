@@ -305,10 +305,9 @@ export default function ReportPage() {
 
             <p style={{ color: '#555', fontSize: '15px', lineHeight: 1.7 }}>
               Vale 60€: è il prezzo di una diagnosi scritta sui dati del tuo
-              centro, non di un abbonamento. Falla ora, dentro il countdown
-              qui sopra, e non paghi nulla. Se il countdown scade prima,
-              resta un investimento singolo — e diventa credito pieno se poi
-              scegli di continuare con noi.
+              centro. Hai 90 giorni per farla gratis, proprio ora, dentro il
+              countdown qui sopra. Passata la finestra, torna il prezzo
+              pieno — 60€.
             </p>
           </div>
         </section>

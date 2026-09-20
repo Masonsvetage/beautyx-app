@@ -338,7 +338,7 @@ export default function PilastriPage() {
                 <IconPriceTag />
               </div>
               <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEAL, marginBottom: '14px', lineHeight: 1.6 }}>
-                Listino intelligente — gratis per i primi 90 giorni, poi 29€ una tantum (scalabili sul tuo abbonamento)
+                Listino intelligente — gratis per i primi 90 giorni, poi 29€ una tantum
               </p>
               <h3 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 'clamp(21px, 2.6vw, 27px)', fontWeight: 900, color: INK, lineHeight: 1.25, marginBottom: '16px' }}>
                 Margini e costo orario, a colpo d&apos;occhio
@@ -356,7 +356,7 @@ export default function PilastriPage() {
                   Il tuo primo prezzo ti aspetta su /listino, quando ti va di provarlo ↗
                 </Link>
                 <p style={{ fontSize: '12px', color: '#888', marginTop: '12px', lineHeight: 1.6 }}>
-                  Si prova gratis, senza bisogno di iscriverti — l&apos;iscrizione arriva solo se poi vuoi il resto.
+                  Serve un account gratuito — lo stesso che usi per l&apos;Identikit, pronto in due minuti: 90 giorni gratis, poi 29€ una tantum.
                 </p>
               </div>
             </div>

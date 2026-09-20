@@ -17,37 +17,49 @@
 //     stessa regola già in vigore nel resto del progetto (vedi memory/davide.md,
 //     sezione "Font — self-hosting via next/font/google", zero richieste esterne
 //     a Google, GDPR);
-//  3) è stato aggiunto il gating 90gg + versione lite/completa (vedi sotto) e
-//     una CTA verso /newsletter dopo il primo uso — tutto il resto (calcoli,
-//     tab, guida, salvataggio) è invariato.
+//  3) è stato aggiunto il gating 90gg + versione lite/completa (vedi sotto),
+//     l'obbligo di account (vedi sotto) e una CTA verso /newsletter dopo il
+//     primo uso — tutto il resto (calcoli, tab, guida, salvataggio) è invariato.
 //
-// GATING — decisione chiusa da Mason (19-20/09/2026):
+// ACCOUNT OBBLIGATORIO (corretto il 20/09/2026, task #206 — sostituisce la
+// versione "usabile senza account/senza wall" della prima stesura del
+// 19-20/09/2026): un visitatore anonimo NON puo' piu' usare il tool. Usa lo
+// STESSO canale di registrazione completo dell'Identikit strategico CURA
+// (stesso /signup, account completo con dati centro) — non un accesso libero.
+// Motivo di Mason: servono da subito i dati corretti e completi per il
+// passaggio futuro all'abbonamento piattaforma, esattamente come per
+// l'Identikit. Un anonimo che arriva qui vede un wall con CTA a
+// /signup?risorsa=tool (vedi ListinoWall sotto), stesso principio già in uso
+// su /report per indirizzare alla registrazione unificata.
+//
+// GATING lite/completo — decisione chiusa da Mason (19-20/09/2026), invariata:
 // - Dentro i 90 giorni dal lancio (stessa finestra dell'Identikit CURA, stessa
-//   fonte lib/report/freeWindow.js — NON una nuova data): tutto sbloccato,
-//   nessuna differenza gratis/completo visibile.
+//   fonte lib/report/freeWindow.js — NON una nuova data), per QUALUNQUE utente
+//   con account: tutto sbloccato, nessuna differenza gratis/completo visibile.
 // - Fuori dai 90gg: costo orario (tab "Il negozio") e banco prezzo di un
 //   singolo servizio (tab "Prezzo giusto") restano SEMPRE gratis. Le funzioni
 //   "complete" — listino intero multi-servizio, vetrina stampabile, salvataggio/
-//   backup — richiedono la versione completa (29€ una tantum, scalabile come
-//   credito sull'abbonamento piattaforma).
+//   backup — richiedono la versione completa (29€ una tantum).
 //
-// ATTENZIONE (verificato sul codice reale il 19-20/09/2026, non solo sulla
-// memoria): il meccanismo "credito scalabile sull'abbonamento" per il report
-// CURA da 60€, citato come pattern da riusare, NON risulta implementato oggi —
-// piano-sviluppo-report-care.md lo elenca esplicitamente come "Da disegnare
-// (non implementato)" (sezione 2, punto 3), e non esiste alcun endpoint di
-// checkout Stripe per il report né un campo credito su user_purchases/
-// user_subscriptions. Di conseguenza questa pagina implementa SOLO il gating
-// UI lite/completo (stesso principio di /report: placeholder onesto, non una
-// promessa di funzionalità che non esiste) — nessun pulsante "Paga 29€" reale,
-// nessuna verifica di un "account con credito" che oggi non può esistere nel
-// DB. Il CTA verso /newsletter è l'unico percorso reale offerto oggi. Vedi
-// il report di consegna per il dettaglio.
+// NIENTE "credito abbonamento" in pubblico (corretto 20/09/2026): il copy non
+// menziona più nessuno sconto/credito futuro sull'abbonamento piattaforma —
+// resta un meccanismo predisposto solo internamente (vedi
+// supabase/migrations/20260920_user_resource_access.sql e
+// app/api/user/resource-access/route.js), MAI comunicato qui. Copy pubblico:
+// "90 giorni gratis, poi 29€ una tantum", punto.
+//
+// ATTENZIONE (verificato sul codice reale, non solo sulla memoria): non esiste
+// alcun endpoint di checkout Stripe per il report né per il tool — nessuna
+// verifica di un "account con credito" che oggi non può esistere nel DB. Il
+// CTA verso /newsletter dopo il primo uso resta l'unico percorso reale offerto
+// oggi per chi vuole "il resto" dell'ecosistema.
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Fraunces, Figtree } from 'next/font/google'
 import { isWithinReportFreeWindow } from '@/lib/report/freeWindow'
+import { useAuth } from '@/contexts/AuthContext'
 
 const fraunces = Fraunces({
   variable: '--font-fraunces',
@@ -438,9 +450,9 @@ function buildToolScript(isFree) {
   var __BX_GATE_FULL = ${isFree ? 'false' : 'true'};
   var __BX_GATED_TABS = ['listino','vetrina','salva'];
   var __BX_LOCK_INFO = {
-    listino: { title: "Il listino intero è nella versione completa", desc: "Il costo orario e il prezzo giusto di un singolo servizio restano gratuiti per sempre. Per vedere tutti i servizi insieme, il bilancio del mese e quante clienti servono per il pareggio, serve la versione completa: 29€ una tantum, che diventano credito sul tuo abbonamento beautyx se poi continui con la piattaforma." },
-    vetrina: { title: "La vetrina stampabile è nella versione completa", desc: "Il listino elegante da stampare ed esporre in negozio fa parte della versione completa (29€ una tantum, credito sull'abbonamento beautyx)." },
-    salva: { title: "Salvataggio e backup sono nella versione completa", desc: "Salvare il tuo lavoro e riprenderlo su un altro dispositivo fa parte della versione completa (29€ una tantum, credito sull'abbonamento beautyx)." }
+    listino: { title: "Il listino intero è nella versione completa", desc: "Il costo orario e il prezzo giusto di un singolo servizio restano gratuiti per sempre. Per vedere tutti i servizi insieme, il bilancio del mese e quante clienti servono per il pareggio, serve la versione completa: 29€ una tantum." },
+    vetrina: { title: "La vetrina stampabile è nella versione completa", desc: "Il listino elegante da stampare ed esporre in negozio fa parte della versione completa (29€ una tantum)." },
+    salva: { title: "Salvataggio e backup sono nella versione completa", desc: "Salvare il tuo lavoro e riprenderlo su un altro dispositivo fa parte della versione completa (29€ una tantum)." }
   };
 
   const r=document.getElementById("bx-listino-root")||document.documentElement,dk="bx_listino_v8";
@@ -614,7 +626,10 @@ function buildToolScript(isFree) {
 `
 }
 
-export default function ListinoPage() {
+// Il tool vero e proprio — montato SOLO per un utente autenticato (vedi
+// ListinoPage sotto, che fa da gate). Invariato rispetto a prima salvo il
+// rename da ListinoPage a ListinoTool.
+function ListinoTool() {
   const containerRef = useRef(null)
   const scriptElRef = useRef(null)
   const [showNewsletterCta, setShowNewsletterCta] = useState(false)
@@ -697,4 +712,100 @@ export default function ListinoPage() {
       )}
     </div>
   )
+}
+
+// ===================================================================
+// WALL per visitatori anonimi (nuovo, 20/09/2026 — task #206): stesso
+// principio già in uso su /report per indirizzare alla registrazione
+// unificata — nessun accesso libero al tool. Stile coerente col resto
+// dell'ecosistema (sfondo #f5f1ea, Playfair per i titoli), non il tema
+// del tool stesso (che si vede solo dopo il login).
+// ===================================================================
+function ListinoWall() {
+  return (
+    <div style={{
+      background: '#f5f1ea',
+      minHeight: '100vh',
+      fontFamily: "var(--font-inter), system-ui, sans-serif",
+      color: '#1a1a0f',
+    }}>
+      <header style={{ paddingTop: '28px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+        <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={26} height={28} style={{ borderRadius: '4px' }} />
+        <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a0f', letterSpacing: '0.01em' }}>Beautyx</span>
+      </header>
+
+      <section style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px 0', textAlign: 'center' }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: '6px',
+          background: '#0F6E56', color: '#fff', fontWeight: 700, fontSize: '11px',
+          letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px',
+          borderRadius: '100px', marginBottom: '28px',
+        }}>
+          Listino intelligente · 90 giorni gratis
+        </div>
+
+        <h1 style={{
+          fontFamily: "var(--font-playfair), Georgia, serif",
+          fontSize: 'clamp(28px, 6vw, 42px)', fontWeight: 900, lineHeight: 1.15, marginBottom: '20px',
+        }}>
+          Margini e costo orario, a colpo d&apos;occhio.
+        </h1>
+
+        <p style={{ fontSize: 'clamp(15px, 3vw, 17px)', color: '#444', lineHeight: 1.7, marginBottom: '32px' }}>
+          Per usare il Listino intelligente serve un account gratuito — lo
+          stesso che usi per l&apos;Identikit strategico CURA, con i dati del
+          tuo centro. Bastano due minuti: 90 giorni gratis, poi 29€ una tantum.
+        </p>
+
+        <div style={{ marginBottom: '14px' }}>
+          <Link
+            href="/signup?risorsa=tool"
+            style={{
+              display: 'inline-block', padding: '18px 36px', background: '#0F6E56', color: '#fff',
+              fontWeight: 700, fontSize: '16px', borderRadius: '12px', textDecoration: 'none',
+            }}
+          >
+            Crea il tuo account gratuito →
+          </Link>
+        </div>
+
+        <p style={{ fontSize: '13px', color: '#888', marginBottom: '40px' }}>
+          Hai già un account?{' '}
+          <Link href="/login" style={{ color: '#0F6E56', fontWeight: 600, textDecoration: 'none' }}>
+            Accedi
+          </Link>
+        </p>
+      </section>
+
+      <footer style={{ borderTop: '1px solid #e0dbd3', padding: '20px 24px', textAlign: 'center' }}>
+        <p style={{ fontSize: '12px', color: '#bbb' }}>
+          © {new Date().getFullYear()} Beautyx ·{' '}
+          <Link href="/privacy" style={{ color: '#bbb', textDecoration: 'none' }}>Privacy</Link>
+        </p>
+      </footer>
+    </div>
+  )
+}
+
+// Gate di accesso (nuovo, 20/09/2026): un visitatore anonimo vede il wall
+// sopra, non il tool — stesso principio già in uso su /report per
+// indirizzare alla registrazione unificata (non un accesso libero, corretto
+// rispetto alla prima stesura del 19-20/09/2026 che lo rendeva utilizzabile
+// senza account, vedi task #206 in memory/generale.md).
+export default function ListinoPage() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f1ea' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid #0F6E56', borderTopColor: 'transparent', borderRadius: '50%' }} />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <ListinoWall />
+  }
+
+  return <ListinoTool />
 }
