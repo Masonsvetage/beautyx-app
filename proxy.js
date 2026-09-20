@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
-import { isWithinReportFreeWindow } from '@/lib/report/freeWindow'
 
 // Route pubbliche (accessibili senza autenticazione)
 // '/auth' aggiunta (03/09/2026, collaudo Mason — bug #4): serve alla route
@@ -9,7 +8,7 @@ import { isWithinReportFreeWindow } from '@/lib/report/freeWindow'
 // dal link nell'email l'utente non ha ancora una sessione (è proprio questa
 // route a crearla) — senza questa voce il middleware redirigeva a /login
 // PRIMA che lo scambio del code potesse avvenire, e il link appariva rotto.
-const publicRoutes = ['/', '/login', '/signup', '/reset-password', '/api/public', '/newsletter', '/miniguida', '/guida', '/report', '/privacy', '/auth']
+const publicRoutes = ['/', '/login', '/signup', '/reset-password', '/api/public', '/newsletter', '/miniguida', '/guida', '/report', '/listino', '/pilastri', '/privacy', '/auth']
 
 // Route per ruolo specifico
 const adminRoutes = ['/admin']
@@ -54,17 +53,19 @@ export async function proxy(req) {
     if (pathname.startsWith('/reset-password/update')) {
       return supabaseResponse
     }
-    // La landing '/' per utenti NON autenticati: decisione chiusa il 4/9/2026
-    // (vedi mappa-ecosistema-beautyx.html, sezione "3. Decisioni chiuse il
-    // 4/9/2026", primo punto — "90 giorni: il report gratuito nei primi 90
-    // giorni dal lancio agisce da livello 1 (civetta a basso CPL); dopo, la
-    // newsletter torna ad essere l'unico portone permanente per il traffico
-    // nuovo"). Finché siamo dentro la finestra dei 90 giorni gratuiti
-    // (stessa scadenza usata da ReportCountdownBanner/NEXT_PUBLIC_REPORT_
-    // LAUNCH_DATE, vedi lib/report/freeWindow.js) la root porta a /report;
-    // una volta scaduta torna AUTOMATICAMENTE a /newsletter, senza bisogno
-    // di un nuovo intervento manuale — la scadenza letta è sempre la stessa,
-    // non ne esiste una seconda qui.
+    // La landing '/' per utenti NON autenticati: redirect FISSO a /newsletter,
+    // sempre — anche durante i 90 giorni gratuiti del report. Corretto il
+    // 19/9/2026 (Mason): un giro di lavoro precedente, in questa stessa data,
+    // aveva letto male la decisione chiusa il 4/9/2026 (vedi
+    // mappa-ecosistema-beautyx.html, sezione "3. Decisioni chiuse il
+    // 4/9/2026", primo punto — "il report... agisce da livello 1") come se
+    // durante i 90gg il report dovesse SOSTITUIRE la newsletter come landing
+    // della root. Non è così: quella riga descrive come il report viene
+    // PROMOSSO con urgenza da dentro la newsletter e le campagne (countdown,
+    // CTA "Fai il tuo Identikit strategico CURA" — vedi il redesign della
+    // sezione Report CURA su /newsletter), non un cambio della porta
+    // d'ingresso. La newsletter resta l'unica porta d'ingresso per il
+    // traffico nuovo, sempre, indipendentemente dalla finestra dei 90gg.
     //
     // NOTA (non in scope qui): il redirect per utenti già loggati (→
     // /dashboard, fix 04/09/2026 sotto) è una landing "da rivedere" secondo
@@ -72,8 +73,7 @@ export async function proxy(req) {
     if (pathname === '/') {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        const entryRoute = isWithinReportFreeWindow() ? '/report' : '/newsletter'
-        return NextResponse.redirect(new URL(entryRoute, req.url))
+        return NextResponse.redirect(new URL('/newsletter', req.url))
       }
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
