@@ -139,6 +139,14 @@ export default function Navbar() {
     // informativa/marketing, non un modulo gestionale del centro.
     navItems.push({ href: '/report', label: 'Identikit CURA', icon: '🧭' })
 
+    // Listino intelligente (bug reale segnalato da Mason, 21/09/2026:
+    // un utente già registrato/loggato non aveva NESSUN modo di raggiungere
+    // /listino dall'interno dell'app — nessun link, nessuna voce di menu,
+    // solo la landing pubblica pre-registrazione). Stesso ragionamento di
+    // /report sopra: qui in più permette ad admin di supportare/verificare
+    // il tool senza indovinare l'URL. Sempre visibile.
+    navItems.push({ href: '/listino', label: 'Listino intelligente', icon: '💶' })
+
     // Voci centro solo se ha selezionato un centro
     if (hasCentro) {
       navItems.push({ href: '/dashboard', label: 'Dashboard', icon: '🏠' })
@@ -178,6 +186,17 @@ export default function Navbar() {
       // è la pagina che PROMUOVE il report (offerta gratis primi 90gg), deve
       // restare visibile anche a chi non ha ancora un piano piattaforma.
       navItems.push({ href: '/report', label: 'Identikit CURA', icon: '🧭' })
+
+      // Listino intelligente (bug reale segnalato da Mason, 21/09/2026:
+      // un utente già registrato/loggato non aveva NESSUN modo di
+      // raggiungere /listino dall'interno dell'app — nessun link, nessuna
+      // voce di menu, solo la landing pubblica pre-registrazione lo
+      // linkava). È uno strumento "a portata di mano" che si consulta
+      // spesso (ogni volta che cambia un prezzo/servizio): stesso
+      // ragionamento di /report sopra, non gated da hasPiattaformaPlan,
+      // deve restare visibile anche a chi non ha ancora un piano
+      // piattaforma.
+      navItems.push({ href: '/listino', label: 'Listino intelligente', icon: '💶' })
       navItems.push({ href: '/', label: 'Novità', icon: '📣' })
     }
   }

@@ -36,10 +36,12 @@
 <body>
 
 <h1>Mappa dell'ecosistema Beautyx</h1>
-<p class="data">Riferimento del team — salvata il 4 settembre 2026. Aggiornare questo file (non ricrearlo da zero) ogni volta che l'architettura cambia.</p>
+<p class="data">Riferimento del team — stato attuale al 21 settembre 2026. Il corpo qui sotto descrive SOLO la situazione di oggi (nessuna nota di correzione sparsa nel testo): per la storia di come ci si è arrivati vedi la sezione "4. Cronologia" in fondo. Aggiornare questo file (non ricrearlo da zero) ogni volta che l'architettura cambia, riscrivendo il corpo per riflettere lo stato attuale e aggiungendo una riga alla cronologia.</p>
 
-<h2>1. Architettura a 3 livelli (come dovrebbe funzionare)</h2>
-<p>Livello 1 = ingresso gratuito (newsletter, miniguida, podcast futuro, listino intelligente). Livello 2 = approfondimento (report CURA). Livello 3 = ammiraglia (piattaforma, abbonamenti, AI+HPA). Eccezione: nei primi 90 giorni dal lancio il report è gratis e agisce anche lui da livello 1; nella stessa finestra anche il listino intelligente si sblocca per intero, poi torna alla versione lite gratuita (versione completa 29€ una tantum). <strong>Corretto il 20/09/2026:</strong> il listino intelligente richiede un account come il report/Identikit — stesso <code>/signup</code> unificato, nessun accesso senza registrazione (vedi nota nella sezione 4 pilastri sotto). Nessuno sconto/credito sull'abbonamento futuro è comunicato pubblicamente: resta un meccanismo tracciato solo internamente, predisposto per quando la piattaforma sarà pronta.</p>
+<h2>1. Architettura a 3 livelli, 4 pilastri d'ingresso (stato attuale)</h2>
+<p>Livello 1 (ingresso gratuito): newsletter (portone d'ingresso principale), miniguida (spinge di più verso il cambiamento, senza CTA propria — si iscrive insieme alla newsletter), podcast (in arrivo) e listino intelligente (calcolatore prezzi/margini, 4° pilastro). Livello 2 (approfondimento): Identikit strategico CURA. Livello 3 (ammiraglia): la piattaforma — abbonamenti, consulenza gestita in parte da Beautyx AI e per gli aspetti più importanti dall'HPA umano.</p>
+<p>Durante i primi 90 giorni dal lancio, sia l'Identikit CURA sia il listino intelligente sono sbloccati per intero e gratuiti (stessa finestra, stessa fonte <code>lib/report/freeWindow.js</code>). Dopo la finestra: l'Identikit costa 60€ una tantum; il listino resta gratis per sempre nella versione lite (costo orario del negozio + prezzo giusto di un singolo servizio), mentre la versione completa (listino intero multi-servizio, vetrina stampabile, salvataggio) costa 29€ una tantum — in bundle con l'Identikit, 70€ invece di 89€ separati.</p>
+<p>L'accesso a Identikit e listino richiede sempre lo stesso account completo (<code>/signup</code>, con selezione esplicita della risorsa desiderata: Identikit, Tool o entrambi) — nessun accesso libero senza registrazione. Nessuno sconto o credito sull'abbonamento futuro è comunicato pubblicamente: il tracciamento di quanto ciascun utente ha realmente pagato resta solo interno, in vista dell'apertura della piattaforma.</p>
 
 <svg width="100%" viewBox="0 0 680 800" role="img" aria-label="Ecosistema Beautyx a tre livelli, quattro pilastri di ingresso">
 <defs><marker id="arrow1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
@@ -53,29 +55,29 @@
 <text class="ts" x="340" y="90" text-anchor="middle">non ci conosce ancora</text></g>
 
 <rect x="32" y="150" width="608" height="175" fill="none" stroke="#5F5E5A" stroke-width="0.5" stroke-dasharray="4 3" rx="8"/>
-<text class="th" x="47" y="170" text-anchor="start">Livello 1 — ingresso</text>
+<text class="th" x="47" y="170" text-anchor="start">Livello 1 — ingresso (4 pilastri, pari peso)</text>
 
-<g class="c-teal"><rect x="40" y="180" width="180" height="55" rx="8"/>
-<text class="th" x="130" y="202" text-anchor="middle">Newsletter</text>
-<text class="ts" x="130" y="220" text-anchor="middle">portone d'ingresso</text></g>
+<g class="c-teal"><rect x="40" y="180" width="280" height="55" rx="8"/>
+<text class="th" x="180" y="202" text-anchor="middle">Newsletter</text>
+<text class="ts" x="180" y="220" text-anchor="middle">portone d'ingresso</text></g>
 
-<g class="c-teal"><rect x="250" y="180" width="180" height="55" rx="8"/>
-<text class="th" x="340" y="202" text-anchor="middle">Miniguida</text>
-<text class="ts" x="340" y="220" text-anchor="middle">spinge al cambiamento</text></g>
+<g class="c-teal"><rect x="340" y="180" width="280" height="55" rx="8"/>
+<text class="th" x="480" y="202" text-anchor="middle">Miniguida</text>
+<text class="ts" x="480" y="220" text-anchor="middle">spinge al cambiamento, cucita alla newsletter</text></g>
 
-<g class="c-teal"><rect x="460" y="180" width="180" height="55" rx="8" stroke-dasharray="4 3"/>
-<text class="th" x="550" y="202" text-anchor="middle">Podcast</text>
-<text class="ts" x="550" y="220" text-anchor="middle">in arrivo</text></g>
+<g class="c-teal"><rect x="40" y="250" width="280" height="55" rx="8"/>
+<text class="th" x="180" y="272" text-anchor="middle">Listino intelligente</text>
+<text class="ts" x="180" y="290" text-anchor="middle">gratis 90gg, poi lite gratis / completa 29€</text></g>
 
-<g class="c-teal"><rect x="250" y="250" width="180" height="55" rx="8"/>
-<text class="th" x="340" y="272" text-anchor="middle">Listino intelligente</text>
-<text class="ts" x="340" y="290" text-anchor="middle">gratis 90gg, poi 29€</text></g>
+<g class="c-teal"><rect x="340" y="250" width="280" height="55" rx="8" stroke-dasharray="4 3"/>
+<text class="th" x="480" y="272" text-anchor="middle">Podcast</text>
+<text class="ts" x="480" y="290" text-anchor="middle">in arrivo</text></g>
 
 <rect x="230" y="370" width="220" height="95" fill="none" stroke="#5F5E5A" stroke-width="0.5" stroke-dasharray="4 3" rx="8"/>
-<text class="th" x="245" y="386" text-anchor="start">Livello 2 (report)</text>
+<text class="th" x="245" y="386" text-anchor="start">Livello 2 (Identikit)</text>
 
 <g class="c-purple"><rect x="250" y="390" width="180" height="55" rx="8"/>
-<text class="th" x="340" y="412" text-anchor="middle">Report CURA</text>
+<text class="th" x="340" y="412" text-anchor="middle">Identikit CURA</text>
 <text class="ts" x="340" y="430" text-anchor="middle">profila col metodo CURA</text></g>
 
 <g class="c-coral"><rect x="460" y="390" width="180" height="55" rx="8" stroke-dasharray="4 3"/>
@@ -97,8 +99,8 @@
 <text class="ts" x="130" y="700" text-anchor="middle">sempre un promemoria</text></g>
 
 <g class="c-purple"><rect x="250" y="660" width="180" height="55" rx="8"/>
-<text class="th" x="340" y="682" text-anchor="middle">Report attivo</text>
-<text class="ts" x="340" y="700" text-anchor="middle">livello 1 + report</text></g>
+<text class="th" x="340" y="682" text-anchor="middle">Identikit attivo</text>
+<text class="ts" x="340" y="700" text-anchor="middle">livello 1 + Identikit</text></g>
 
 <g class="c-pink"><rect x="460" y="660" width="180" height="55" rx="8"/>
 <text class="th" x="550" y="682" text-anchor="middle">Piattaforma</text>
@@ -107,7 +109,7 @@
 <rect x="40" y="760" width="12" height="12" class="c-teal"/>
 <text class="ts" x="56" y="770" text-anchor="start" fill="#444441">livello 1</text>
 <rect x="150" y="760" width="12" height="12" class="c-purple"/>
-<text class="ts" x="166" y="770" text-anchor="start" fill="#444441">report</text>
+<text class="ts" x="166" y="770" text-anchor="start" fill="#444441">Identikit</text>
 <rect x="230" y="760" width="12" height="12" class="c-pink"/>
 <text class="ts" x="246" y="770" text-anchor="start" fill="#444441">piattaforma</text>
 <rect x="360" y="760" width="12" height="12" class="c-coral"/>
@@ -116,37 +118,51 @@
 <text class="ts" x="546" y="770" text-anchor="start" fill="#444441">neutro</text>
 </svg>
 
-<h2>2. Funnel tecnico attuale (come funziona davvero nel codice, 4/9/2026)</h2>
-<p>Newsletter e report oggi sono collegati: chi è iscritto alla newsletter e visita/torna su /newsletter vede lì, nella stessa pagina, la sezione "Report CURA" con countdown 90gg e una CTA propria ("Fai il tuo Identikit strategico CURA, gratis adesso") che porta a /report; da /report la CTA principale ("Crea il tuo account gratuito") porta a /signup, lo stesso percorso account completo (→ conferma email → centro → questionario → report) di chi arriva direttamente su /report. Non è più un rimando assente: è lo stesso meccanismo di promozione interna già mostrato a qualunque visitatore, solo che l'iscritto lo incontra restando sulla pagina a cui è già abituato. Root del sito ancora da rifinire per utente loggato (nodo flaggato).</p>
-<p><b>Correzione 19/9/2026</b> (Mason): un giro di lavoro precedente, in questa stessa data, aveva reso il redirect della root <code>beautyx.it</code> per visitatore anonimo condizionale ai 90gg gratuiti (→ /report dentro la finestra, → /newsletter dopo), leggendo male la decisione "90 giorni" chiusa il 4/9 (sezione 3 sotto). Lettura corretta: il nodo <code>beautyx.it</code> per visitatore anonimo punta <b>fisso</b> a /newsletter, sempre — indipendentemente dalla finestra dei 90gg gratuiti del report. Il report non sostituisce mai la newsletter come landing della root; viene promosso da DENTRO la newsletter (countdown, CTA "Fai il tuo Identikit strategico CURA" — redesign della sezione Report CURA su /newsletter). Ripristinato in <code>proxy.js</code> (middleware, sorgente di verità) e nello stesso fallback in <code>app/page.js</code>; <code>lib/report/freeWindow.js</code> resta comunque in uso (correttamente) da <code>ReportCountdownBanner</code> per il countdown. Root per utente loggato resta il nodo flaggato a parte, non toccato da questa modifica.</p>
-<p><b>Correzione 19/9/2026</b> (Davide, task #196, verificato sul codice reale): il secondo SVG sotto mostrava il ramo /newsletter finire a vuoto sul nodo "Iscritto newsletter" ("nessun report collegato") — vero fino al redesign fatto nei giorni scorsi (task #160/#161/#181), non più oggi. Verificato in <code>app/newsletter/page.js</code> (sezione <code>id="report-cura"</code>, righe ~384-470, più il banner <code>variant="topbar"</code> subito sotto l'header riga ~261 e il richiamo di chiusura riga ~809-825) e in <code>components/common/ReportCountdownBanner.js</code>: tutti e tre i punti montano un link <code>href="/report"</code> (mai un URL diverso). <code>app/report/page.js</code> è a sua volta una landing con un'unica CTA principale <code>href="/signup"</code> ("Crea il tuo account gratuito →") — lo stesso account completo usato da chi arriva diretto su /report (nessun form intermedio diverso, coerente con la regola già in memoria "Registrazione unificata"). Nodo e freccia aggiunti sotto per chiudere il ramo.</p>
-<p><b>Aggiunta 20/9/2026</b> (Davide, task #201): il funnel tecnico qui sotto resta quello dell'account CURA (newsletter → registrazione → conferma → centro → questionario → report) — il tool <b>Listino intelligente</b> non ci entra come nodo separato perché usa esattamente lo STESSO gate d'ingresso (registrazione su <code>/signup</code>), non un percorso diverso.
-<br><b>Corretto 20/9/2026 (task #206, stessa giornata):</b> la prima stesura di questo paragrafo diceva "<code>/listino</code> accessibile SENZA alcun account" — era la versione "cavallo di Troia senza wall" della decisione presa il 19-20/9, superata poche ore dopo da Mason (vedi <code>memory/generale.md</code>, voce "Modello commerciale corretto"). Oggi <code>/listino</code> mostra un wall a chi non è loggato, con CTA verso <code>/signup?risorsa=tool</code> — stesso account completo dell'Identikit CURA, nessun accesso libero. Durante i 90gg, chi ha un account può usare il tool per intero indipendentemente da quale risorsa abbia selezionato al signup (la selezione serve solo al tracciamento interno, non è un cancello tra le due risorse — vedi <code>app/api/user/resource-access/route.js</code>). Il CTA verso <code>/newsletter</code> dopo il primo cambio di tab resta invariato. Il 4° pilastro completo è nello schema a livelli sopra (sezione 1).</p>
-<p><b>Aggiunta 20/9/2026</b> (Davide, task #205): costruita <code>/pilastri</code>, la "vetrina" richiesta da Mason per mostrare i 4 pilastri gratuiti/freemium (Identikit strategico CURA, Newsletter+Miniguida, Listino intelligente) con PARI dignità visiva — pagina SEPARATA da <code>/newsletter</code>, che resta invariata (CTA unica sull'Identikit CURA per tutta la finestra dei 90gg, vedi sezione 3 sotto). Layout: hero Identikit a piena larghezza (stesso stile bordeaux/countdown di <code>/newsletter</code>, componente <code>ReportCountdownBanner</code> riusato) seguito da due card di pari peso — Newsletter+Miniguida (form d'iscrizione inline, stesso endpoint <code>/api/newsletter/subscribe</code> di <code>/newsletter</code>) e Listino intelligente (bottone outline teal verso <code>/listino</code>, nessun pulse — priorità visiva volutamente inferiore al CTA pieno+pulse dell'Identikit, coerente con la civetta dei 90gg; sottotesto corretto il 20/9 per riflettere che serve un account, non più "si prova senza iscriverti"). Verificato solo staticamente: la sandbox di sviluppo non era disponibile in questa sessione (VM non avviata), quindi build Next e test dal vivo non sono stati eseguiti — vedi il report di consegna di Davide per il dettaglio di cosa resta da verificare prima di considerare il task chiuso secondo la regola "Collaudo dal vivo obbligatorio" in <code>memory/generale.md</code>.</p>
+<h2>2. Funnel tecnico attuale (come funziona davvero nel codice)</h2>
+<p>La root <code>beautyx.it</code> per un visitatore anonimo reindirizza in modo fisso a <code>/newsletter</code>, sempre — indipendentemente dalla finestra dei 90 giorni gratuiti dell'Identikit. La root per un utente già loggato resta invece da rifinire (nodo flaggato nello schema sotto, non ancora risolto).</p>
+<p>Su <code>/newsletter</code>, chi è già iscritto trova la sezione "Identikit CURA" con countdown e CTA "Fai il tuo Identikit strategico CURA, gratis adesso" verso <code>/report</code> — è l'unica CTA prioritaria della pagina per tutta la finestra dei 90gg, senza CTA concorrenti. Da <code>/report</code>, la CTA principale ("Crea il tuo account gratuito") porta a <code>/signup</code>, lo stesso account completo usato da chi arriva direttamente su <code>/report</code>.</p>
+<p>Il tool <b>Listino intelligente</b> condivide lo stesso gate di registrazione dell'Identikit: <code>/listino</code> mostra un wall a chi non ha un account, con CTA verso <code>/signup?risorsa=tool</code> — stesso <code>/signup</code> unificato, nessun accesso libero. Alla registrazione l'utente seleziona la risorsa desiderata (Identikit, Tool o entrambi); la selezione serve solo al tracciamento interno, non è un cancello tra le due risorse — durante i 90gg chi ha un account può usare il tool per intero indipendentemente da cosa ha selezionato.</p>
+<p><code>/pilastri</code> è la vetrina con pari dignità visiva dei 4 pilastri: hero Identikit a piena larghezza (stesso stile/countdown di <code>/newsletter</code>) seguito da due card di pari peso — Newsletter+Miniguida (form d'iscrizione inline, stesso endpoint <code>/api/newsletter/subscribe</code>) e Listino intelligente (bottone verso <code>/listino</code>, priorità visiva volutamente inferiore al CTA dell'Identikit, coerente con la civetta dei 90gg).</p>
+<p><b>Dopo la registrazione, l'accesso non finisce alla landing:</b> chi ha già un account ritrova sia <code>/report</code> (Identikit CURA) sia <code>/listino</code> (Listino intelligente) come voci fisse del menu principale (<code>components/Navbar.js</code>), sempre visibili indipendentemente dal piano piattaforma — non solo raggiungibili dalla landing pubblica pre-registrazione. Correzione del 21/09/2026 (bug segnalato da Mason): fino a quel momento <code>/listino</code> non compariva in nessuna voce di menu per un utente già loggato, che doveva riscrivere l'URL a mano per tornare a consultare il tool.</p>
+<p>Nessun vero checkout Stripe esiste ancora né per i 60€ né per i 29€: oggi <code>/listino</code> implementa solo il gating UI lite/completo più il gate account. Verificato finora solo staticamente — il flusso signup → selezione risorsa → listino/Identikit non è mai stato collaudato dal vivo in un browser reale (regola del collaudo obbligatorio in <code>memory/generale.md</code>).</p>
 
-<svg width="100%" viewBox="0 0 680 860" role="img" aria-label="Funnel tecnico attuale">
+<svg width="100%" viewBox="0 0 860 930" role="img" aria-label="Funnel tecnico attuale, con nodi Listino intelligente e vetrina pilastri">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
 
-<line x1="280" y1="102" x2="190" y2="150" class="arr" marker-end="url(#arrow2)"/>
-<line x1="340" y1="102" x2="340" y2="150" class="arr" marker-end="url(#arrow2)"/>
-<line x1="130" y1="202" x2="130" y2="250" class="arr" marker-end="url(#arrow2)"/>
-<line x1="340" y1="202" x2="340" y2="250" class="arr" marker-end="url(#arrow2)"/>
-<line x1="380" y1="202" x2="500" y2="250" class="arr" marker-end="url(#arrow2)"/>
-<line x1="130" y1="302" x2="130" y2="350" class="arr" marker-end="url(#arrow2)"/>
-<line x1="340" y1="302" x2="340" y2="350" class="arr" marker-end="url(#arrow2)"/>
-<line x1="545" y1="302" x2="545" y2="350" class="arr" marker-end="url(#arrow2)"/>
+<line x1="290" y1="102" x2="130" y2="150" class="arr" marker-end="url(#arrow2)"/>
+<line x1="335" y1="102" x2="330" y2="150" class="arr" marker-end="url(#arrow2)"/>
+<line x1="385" y1="102" x2="530" y2="150" class="arr" marker-end="url(#arrow2)"/>
+<line x1="430" y1="102" x2="730" y2="150" class="arr" marker-end="url(#arrow2)"/>
+
+<line x1="130" y1="202" x2="130" y2="350" class="arr" marker-end="url(#arrow2)"/>
+<line x1="330" y1="202" x2="340" y2="350" class="arr" marker-end="url(#arrow2)"/>
+<line x1="410" y1="202" x2="545" y2="350" class="arr" marker-end="url(#arrow2)"/>
+<line x1="530" y1="202" x2="345" y2="350" class="arr" marker-end="url(#arrow2)"/>
+
+<line x1="130" y1="402" x2="130" y2="450" class="arr" marker-end="url(#arrow2)"/>
 <line x1="340" y1="402" x2="340" y2="450" class="arr" marker-end="url(#arrow2)"/>
+<line x1="545" y1="402" x2="545" y2="450" class="arr" marker-end="url(#arrow2)"/>
+
 <line x1="340" y1="502" x2="340" y2="550" class="arr" marker-end="url(#arrow2)"/>
-<line x1="480" y1="402" x2="430" y2="570" class="arr" marker-end="url(#arrow2)"/>
-<line x1="545" y1="402" x2="430" y2="675" class="arr" marker-end="url(#arrow2)"/>
 <line x1="340" y1="602" x2="340" y2="650" class="arr" marker-end="url(#arrow2)"/>
 <line x1="340" y1="702" x2="340" y2="750" class="arr" marker-end="url(#arrow2)"/>
-<line x1="220" y1="366" x2="250" y2="186" class="arr" style="stroke:#993C1D" stroke-dasharray="4 3" marker-end="url(#arrow2)"/>
+<line x1="340" y1="802" x2="340" y2="850" class="arr" marker-end="url(#arrow2)"/>
 
-<text class="ts" x="452" y="474" text-anchor="start" fill="#444441">senza centro</text>
-<text class="ts" x="472" y="562" text-anchor="start" fill="#444441">con piano attivo</text>
-<text class="ts" x="240" y="220" text-anchor="middle" fill="#993C1D">CTA countdown "Identikit CURA"</text>
-<text class="ts" x="240" y="234" text-anchor="middle" fill="#993C1D">in pagina, stessa /newsletter</text>
+<line x1="480" y1="502" x2="430" y2="670" class="arr" marker-end="url(#arrow2)"/>
+<line x1="545" y1="502" x2="430" y2="775" class="arr" marker-end="url(#arrow2)"/>
+
+<line x1="220" y1="462" x2="260" y2="202" class="arr" style="stroke:#993C1D" stroke-dasharray="4 3" marker-end="url(#arrow2)"/>
+<line x1="600" y1="450" x2="560" y2="202" class="arr" style="stroke:#0F766E" stroke-dasharray="4 3" marker-end="url(#arrow2)"/>
+
+<text class="ts" x="620" y="330" text-anchor="middle" fill="#0F766E">menu principale: /report e /listino</text>
+<text class="ts" x="620" y="344" text-anchor="middle" fill="#0F766E">sempre raggiungibili (fix 21/09/2026)</text>
+
+<text class="ts" x="452" y="574" text-anchor="start" fill="#444441">senza centro</text>
+<text class="ts" x="472" y="662" text-anchor="start" fill="#444441">con piano attivo</text>
+<text class="ts" x="240" y="330" text-anchor="middle" fill="#993C1D">CTA countdown "Identikit CURA"</text>
+<text class="ts" x="240" y="344" text-anchor="middle" fill="#993C1D">in pagina, stessa /newsletter</text>
+<text class="ts" x="435" y="280" text-anchor="middle" fill="#993C1D">stesso /signup</text>
+<text class="ts" x="435" y="294" text-anchor="middle" fill="#993C1D">condivide il gate con l'Identikit</text>
 
 <g class="c-gray"><rect x="250" y="50" width="180" height="52" rx="8"/>
 <text class="th" x="340" y="72" text-anchor="middle">Visitatore arriva</text>
@@ -154,66 +170,83 @@
 
 <g class="c-gray"><rect x="40" y="150" width="180" height="52" rx="8"/>
 <text class="th" x="130" y="172" text-anchor="middle">beautyx.it</text>
-<text class="ts" x="130" y="190" text-anchor="middle">redirect fisso → /newsletter</text></g>
+<text class="ts" x="130" y="190" text-anchor="middle">→ /newsletter (fisso)</text></g>
 
-<g class="c-gray"><rect x="250" y="150" width="180" height="52" rx="8"/>
-<text class="th" x="340" y="172" text-anchor="middle">Report CURA</text>
-<text class="ts" x="340" y="190" text-anchor="middle">landing pubblica</text></g>
+<g class="c-gray"><rect x="240" y="150" width="180" height="52" rx="8"/>
+<text class="th" x="330" y="172" text-anchor="middle">Identikit CURA</text>
+<text class="ts" x="330" y="190" text-anchor="middle">/report — landing pubblica</text></g>
 
-<g class="c-coral"><rect x="455" y="150" width="180" height="52" rx="8" stroke-dasharray="4 3"/>
-<text class="th" x="545" y="172" text-anchor="middle">Root per loggati</text>
-<text class="ts" x="545" y="190" text-anchor="middle">landing da rivedere</text></g>
+<g class="c-gray"><rect x="440" y="150" width="180" height="52" rx="8"/>
+<text class="th" x="530" y="172" text-anchor="middle">/listino</text>
+<text class="ts" x="530" y="190" text-anchor="middle">landing, richiede account</text></g>
 
-<g class="c-gray"><rect x="40" y="250" width="180" height="52" rx="8"/>
-<text class="th" x="130" y="272" text-anchor="middle">Newsletter</text>
-<text class="ts" x="130" y="290" text-anchor="middle">form email, no account</text></g>
+<g class="c-gray"><rect x="640" y="150" width="180" height="52" rx="8"/>
+<text class="th" x="730" y="172" text-anchor="middle">/pilastri</text>
+<text class="ts" x="730" y="190" text-anchor="middle">vetrina 4 pilastri</text></g>
 
-<g class="c-teal"><rect x="250" y="250" width="180" height="52" rx="8"/>
-<text class="th" x="340" y="272" text-anchor="middle">Registrazione</text>
-<text class="ts" x="340" y="290" text-anchor="middle">account e centro</text></g>
-
-<g class="c-teal"><rect x="455" y="250" width="180" height="52" rx="8"/>
-<text class="th" x="545" y="272" text-anchor="middle">Accedi</text>
-<text class="ts" x="545" y="290" text-anchor="middle">utente già registrato</text></g>
+<g class="c-coral"><rect x="640" y="250" width="180" height="52" rx="8" stroke-dasharray="4 3"/>
+<text class="th" x="730" y="272" text-anchor="middle">Root per loggati</text>
+<text class="ts" x="730" y="290" text-anchor="middle">landing da rivedere</text></g>
 
 <g class="c-gray"><rect x="40" y="350" width="180" height="52" rx="8"/>
-<text class="th" x="130" y="372" text-anchor="middle">Iscritto newsletter</text>
-<text class="ts" x="130" y="390" text-anchor="middle">vede promo Identikit CURA</text></g>
+<text class="th" x="130" y="372" text-anchor="middle">Newsletter</text>
+<text class="ts" x="130" y="390" text-anchor="middle">form email, no account</text></g>
 
 <g class="c-teal"><rect x="250" y="350" width="180" height="52" rx="8"/>
-<text class="th" x="340" y="372" text-anchor="middle">Email di conferma</text>
-<text class="ts" x="340" y="390" text-anchor="middle">link da cliccare</text></g>
+<text class="th" x="340" y="372" text-anchor="middle">Registrazione</text>
+<text class="ts" x="340" y="390" text-anchor="middle">account e centro</text></g>
 
 <g class="c-teal"><rect x="455" y="350" width="180" height="52" rx="8"/>
-<text class="th" x="545" y="372" text-anchor="middle">Dashboard</text>
-<text class="ts" x="545" y="390" text-anchor="middle">hub utente loggato</text></g>
+<text class="th" x="545" y="372" text-anchor="middle">Accedi</text>
+<text class="ts" x="545" y="390" text-anchor="middle">utente già registrato</text></g>
+
+<g class="c-gray"><rect x="40" y="450" width="180" height="52" rx="8"/>
+<text class="th" x="130" y="472" text-anchor="middle">Iscritto newsletter</text>
+<text class="ts" x="130" y="490" text-anchor="middle">vede promo Identikit CURA</text></g>
 
 <g class="c-teal"><rect x="250" y="450" width="180" height="52" rx="8"/>
-<text class="th" x="340" y="472" text-anchor="middle">Verifica email</text>
-<text class="ts" x="340" y="490" text-anchor="middle">crea la sessione</text></g>
+<text class="th" x="340" y="472" text-anchor="middle">Email di conferma</text>
+<text class="ts" x="340" y="490" text-anchor="middle">link da cliccare</text></g>
+
+<g class="c-teal"><rect x="455" y="450" width="180" height="52" rx="8"/>
+<text class="th" x="545" y="472" text-anchor="middle">Dashboard</text>
+<text class="ts" x="545" y="490" text-anchor="middle">hub utente loggato</text></g>
 
 <g class="c-teal"><rect x="250" y="550" width="180" height="52" rx="8"/>
-<text class="th" x="340" y="572" text-anchor="middle">Crea il centro</text>
-<text class="ts" x="340" y="590" text-anchor="middle">primo accesso</text></g>
+<text class="th" x="340" y="572" text-anchor="middle">Verifica email</text>
+<text class="ts" x="340" y="590" text-anchor="middle">crea la sessione</text></g>
 
-<g class="c-purple"><rect x="250" y="650" width="180" height="52" rx="8"/>
-<text class="th" x="340" y="672" text-anchor="middle">Questionario CURA</text>
-<text class="ts" x="340" y="690" text-anchor="middle">quiz e domande aperte</text></g>
+<g class="c-teal"><rect x="250" y="650" width="180" height="52" rx="8"/>
+<text class="th" x="340" y="672" text-anchor="middle">Crea il centro</text>
+<text class="ts" x="340" y="690" text-anchor="middle">primo accesso</text></g>
 
 <g class="c-purple"><rect x="250" y="750" width="180" height="52" rx="8"/>
-<text class="th" x="340" y="772" text-anchor="middle">Report pronto</text>
-<text class="ts" x="340" y="790" text-anchor="middle">risultato mostrato</text></g>
+<text class="th" x="340" y="772" text-anchor="middle">Questionario CURA</text>
+<text class="ts" x="340" y="790" text-anchor="middle">quiz e domande aperte</text></g>
+
+<g class="c-purple"><rect x="250" y="850" width="180" height="52" rx="8"/>
+<text class="th" x="340" y="872" text-anchor="middle">Report pronto</text>
+<text class="ts" x="340" y="890" text-anchor="middle">risultato mostrato</text></g>
 </svg>
 
-<h2>3. Decisioni chiuse il 4/9/2026</h2>
+<h2>3. Decisioni di riferimento (perché l'ecosistema è fatto così)</h2>
 <ul>
-<li><b>90 giorni:</b> il report gratuito nei primi 90 giorni dal lancio agisce da livello 1 (civetta a basso CPL); dopo, la newsletter torna ad essere l'unico portone permanente per il traffico nuovo. Non è un conflitto con la vecchia decisione del 28/08 ("report civetta") — la sequenzia nel tempo.
-<br><b>Chiarimento (aggiunto 19/9/2026, dopo un fraintendimento):</b> "il report agisce da livello 1" descrive come viene <i>promosso</i> — con urgenza, countdown e CTA — da dentro la newsletter e le campagne, NON un cambio della landing della root. La root <code>beautyx.it</code> per traffico nuovo punta SEMPRE a /newsletter, fisso, anche durante i 90gg gratuiti: il report non la sostituisce mai come porta d'ingresso. Non rileggere questa riga isolatamente per dedurre un redirect condizionale.</li>
-<li><b>Form di registrazione:</b> newsletter resta solo-email (leggera, per scelta). Il report usa lo stesso form completo (account + centro + documenti) che servirà anche per la piattaforma — verificato che /signup già raccoglie questi dati, nessuna nuova costruzione necessaria.</li>
-<li><b>Livello 3:</b> non ottimizzato per scelta, non ancora offerto. Verificato: il pagamento abbonamento esiste ed è funzionante nel codice ma non è linkato da nessuna pagina raggiungibile — tecnicamente pronto, non scopribile, coerente con l'intento.</li>
-<li><b>Promemoria obbligatorio:</b> ogni email/newsletter deve ricordare il livello successivo, sempre in modo diverso (mai un CTA fisso separato), tono maieutico, mai imperativo.</li>
-<li><b>4° pilastro "Listino intelligente" (chiuso il 20/9/2026, Mason):</b> il tool calcolatore prezzi/margini (sorgente <code>calcolatore-margine.html</code>) diventa il quarto elemento di livello 1, accanto a newsletter/miniguida/podcast — landing pubblica propria <code>/listino</code>. Stessa finestra dei 90 giorni gratuiti del report CURA (stessa fonte <code>lib/report/freeWindow.js</code>, nessuna nuova data di lancio): dentro i 90gg tutte le funzioni sono sbloccate per chi ha un account; dopo, resta gratis per sempre la versione lite (costo orario del negozio + prezzo giusto di un singolo servizio), mentre la versione completa (listino intero multi-servizio, vetrina stampabile, salvataggio/backup) richiede 29€ una tantum. CTA verso <code>/newsletter</code> dopo il primo uso del tool. Implementato da Davide (task #199/#201, vedi <code>memory/generale.md</code> e <code>memory/davide.md</code> per il dettaglio tecnico).</li>
-<li><b>Correzione modello commerciale (20/9/2026, stessa giornata, Mason — task #206):</b> la prima stesura del 4° pilastro sopra prevedeva "credito scalabile sull'abbonamento piattaforma" comunicato pubblicamente e <code>/listino</code> "usabile senza account". Entrambe corrette poche ore dopo: (1) <b>nessun credito/sconto futuro è comunicato in pubblico</b> — il copy dice solo "90 giorni gratis, poi 29€/60€ una tantum"; il credito resta un meccanismo <i>tracciato solo internamente</i> (tabella <code>user_resource_access</code>, predisposta ma non applicata al DB di produzione) per quando la piattaforma sarà pronta, basato sul valore REALMENTE pagato (rilevante per il futuro bundle Identikit+Tool a 70€ post-90gg, invece di 60+29=89€ separati); (2) <b>il Tool ora richiede lo stesso account completo dell'Identikit</b> — stesso <code>/signup</code>, con selezione esplicita di quale risorsa si vuole (Identikit/Tool/entrambe). Verificato: nessun vero checkout Stripe esiste ancora ne' per i 60€ ne' per i 29€ (<code>piano-sviluppo-report-care.md</code>, sezione 2 punto 3, "da disegnare") — <code>/listino</code> implementa quindi solo il gating UI lite/completo + il gate account, coerente con lo stato attuale (placeholder) di <code>/report</code>.</li>
+<li><b>90 giorni:</b> l'Identikit CURA è gratuito nei primi 90 giorni dal lancio e viene promosso con urgenza (countdown, CTA) da dentro la newsletter e le campagne — non sostituisce mai la newsletter come porta d'ingresso. Dopo la finestra, la newsletter resta l'unico portone permanente per il traffico nuovo. La root <code>beautyx.it</code> punta sempre, in modo fisso, a <code>/newsletter</code>.</li>
+<li><b>Form di registrazione:</b> la newsletter resta solo-email (leggera, per scelta di design). Identikit e Tool usano lo stesso form completo (account + centro + documenti) che servirà anche per la piattaforma — un solo <code>/signup</code>, con selezione della risorsa desiderata.</li>
+<li><b>Livello 3:</b> non ottimizzato per scelta, non ancora offerto agli utenti. Il pagamento abbonamento esiste ed è funzionante nel codice ma non è linkato da nessuna pagina raggiungibile — tecnicamente pronto, non scopribile.</li>
+<li><b>Promemoria obbligatorio:</b> ogni email/newsletter ricorda il livello successivo disponibile per chi la legge, sempre in modo diverso (mai un CTA fisso separato), tono maieutico, mai imperativo.</li>
+<li><b>4° pilastro Listino intelligente:</b> calcolatore prezzi/margini per centri estetici, landing pubblica propria <code>/listino</code>, stessa finestra dei 90gg gratuiti dell'Identikit. Dopo la finestra: versione lite gratis per sempre (costo orario + prezzo di un singolo servizio), versione completa 29€ una tantum.</li>
+<li><b>Modello commerciale:</b> nessun credito o sconto futuro sull'abbonamento è comunicato in pubblico — il copy dice solo "90 giorni gratis, poi si paga il prezzo pieno". Il credito resta un meccanismo tracciato solo internamente (per quando la piattaforma sarà pronta), calcolato sul valore realmente pagato da ciascun utente. Bundle Identikit+Tool dopo i 90gg: 70€ invece di 89€ separati. Il Tool richiede lo stesso account completo dell'Identikit, con selezione della risorsa al signup.</li>
+</ul>
+
+<h2>4. Cronologia (per chi vuole la storia — il corpo sopra non dipende da questa lettura)</h2>
+<ul>
+<li><b>04/09/2026</b> — Definita l'architettura a 3 livelli e l'eccezione dei 90 giorni gratuiti per l'Identikit (allora "report").</li>
+<li><b>19/09/2026</b> — Ripristinato il redirect fisso della root a <code>/newsletter</code> (era stato reso per errore condizionale ai 90gg). Collegato nel funnel il ramo <code>/newsletter</code> → Identikit CURA (countdown + CTA), prima rappresentato come ramo vuoto.</li>
+<li><b>19-20/09/2026</b> — Il tool "Listino intelligente" diventa il 4° pilastro dell'ecosistema: prezzo 29€, stessa finestra dei 90gg dell'Identikit, landing propria <code>/listino</code>; costruite anche <code>/listino</code> e <code>/pilastri</code> (vetrina dei 4 pilastri).</li>
+<li><b>20/09/2026</b> — Corretto il modello commerciale: tolto ogni riferimento pubblico a credito/sconto sull'abbonamento futuro (resta solo tracciato internamente); il Tool richiede ora lo stesso account completo dell'Identikit, con selezione della risorsa al signup; introdotto il bundle post-90gg Identikit+Tool a 70€.</li>
+<li><b>21/09/2026</b> — Riscritto questo documento: rimosse le note di correzione sparse nel corpo, contenuto riorganizzato per riflettere solo lo stato attuale; nel primo schema il Listino intelligente passa a griglia 2x2 con pari peso rispetto a Newsletter/Miniguida/Podcast; nel secondo schema aggiunti i nodi reali "/listino" (con freccia che mostra il gate <code>/signup</code> condiviso con l'Identikit) e "/pilastri".</li>
+<li><b>21/09/2026</b> — Fix bug reale segnalato da Mason: un utente già registrato/loggato non aveva nessun modo di raggiungere <code>/listino</code> dall'interno dell'app (nessun link, nessuna voce di menu — solo la landing pubblica pre-registrazione lo linkava). Aggiunta la voce "Listino intelligente" a <code>components/Navbar.js</code>, subito dopo "Identikit CURA", sempre visibile per utenti loggati non-HPA indipendentemente dal piano piattaforma (stessa logica già in uso per <code>/report</code>); aggiunta anche al blocco admin. Non aggiunta al blocco HPA: il tool è un calcolatore prezzi/margini per il proprio centro, l'HPA gestisce i centri clienti e non ha bisogno del proprio listino nel menu.</li>
 </ul>
 
 <div class="nota">
