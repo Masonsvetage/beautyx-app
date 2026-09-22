@@ -772,6 +772,18 @@ function ListinoTool() {
 // dell'ecosistema (sfondo #f5f1ea, Playfair per i titoli), non il tema
 // del tool stesso (che si vede solo dopo il login).
 // ===================================================================
+// ListinoWall — Redesign 22/09/2026 (task #226): copy finale di Federica
+// (drafts/copy-redesign-report-listino-2026-09-21.md) + immagine hero di
+// Chiara (design Canva DAHV0w6QUO8, "il numero che si sblocca" — bagliore
+// verde smeraldo #0F6E56 su bancone di legno, versione corretta dopo
+// l'anomalia cromatica segnalata da Elena il 21/09) dentro un vero layout
+// a due colonne, più una sezione "cosa trovi dentro" aggiunta per rinforzare
+// la gerarchia visiva sotto la hero — richiesta esplicita del gate di Elena
+// (drafts/gate-elena-redesign-report-listino-2026-09-21.md, Parte 3: la
+// pagina era troppo scarna, "somiglia più a una landing di attesa che alla
+// vetrina di uno strumento a pagamento"). Le 4 voci della sezione riprendono
+// testualmente concetti già approvati nel copy (sottotitolo + microcopy dei
+// pannelli di gating), non introducono nessuna nuova promessa/claim.
 function ListinoWall() {
   return (
     <div style={{
@@ -780,55 +792,206 @@ function ListinoWall() {
       fontFamily: "var(--font-inter), system-ui, sans-serif",
       color: '#1a1a0f',
     }}>
+      <style>{`
+        .bx-listino-hero-grid { display: flex; flex-direction: column; gap: 32px; }
+        .bx-listino-hero-text { text-align: center; }
+        .bx-listino-p-center { margin-left: auto; margin-right: auto; }
+        .bx-listino-image-glow {
+          position: relative;
+          width: 100%;
+          max-width: 420px;
+          margin: 0 auto;
+        }
+        .bx-listino-image-glow::before {
+          /* fascia di colore verde/oro coerente con la palette del tool,
+             richiesta esplicita del gate Elena ("manca ancora qualcosa...
+             una fascia di colore coerente con la palette del tool dietro o
+             accanto all'hero") */
+          content: '';
+          position: absolute;
+          inset: -28px;
+          background:
+            radial-gradient(circle at 28% 28%, rgba(15,110,86,0.38), transparent 60%),
+            radial-gradient(circle at 74% 70%, rgba(255,196,66,0.28), transparent 55%);
+          filter: blur(6px);
+          border-radius: 40px;
+          z-index: 0;
+        }
+        .bx-listino-image-frame {
+          position: relative;
+          z-index: 1;
+          border-radius: 28px;
+          overflow: hidden;
+          box-shadow: 0 24px 48px -20px rgba(15,110,86,0.45);
+        }
+        .bx-listino-image-frame::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 28px;
+          box-shadow: inset 0 0 70px 34px #f5f1ea;
+          pointer-events: none;
+        }
+        .bx-listino-image-frame img { display: block; width: 100%; height: auto; }
+        @media (min-width: 900px) {
+          .bx-listino-hero-grid { flex-direction: row-reverse; align-items: center; gap: 56px; }
+          .bx-listino-hero-text { text-align: left; flex: 1.05; }
+          .bx-listino-hero-image { flex: 0.95; }
+          .bx-listino-p-center { margin-left: 0; margin-right: 0; }
+          .bx-listino-image-glow { max-width: 460px; margin: 0; }
+        }
+        .bx-listino-features {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+        @media (min-width: 640px) {
+          .bx-listino-features { grid-template-columns: 1fr 1fr; }
+        }
+      `}</style>
+
       <header style={{ paddingTop: '28px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
         <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={26} height={28} style={{ borderRadius: '4px' }} />
         <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a0f', letterSpacing: '0.01em' }}>Beautyx</span>
       </header>
 
-      <section style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px 0', textAlign: 'center' }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px',
-          background: '#0F6E56', color: '#fff', fontWeight: 700, fontSize: '11px',
-          letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px',
-          borderRadius: '100px', marginBottom: '28px',
-        }}>
-          Listino intelligente · 90 giorni gratis
+      {/* ── HERO — due colonne, immagine con fascia verde/oro dietro ── */}
+      <section style={{ maxWidth: '1040px', margin: '0 auto', padding: '32px 24px 0' }}>
+        <div className="bx-listino-hero-grid">
+
+          <div className="bx-listino-hero-image">
+            <div className="bx-listino-image-glow">
+              <div className="bx-listino-image-frame">
+                <Image
+                  src="/hero-listino.jpg"
+                  alt="Un dito sfiora un cartellino prezzo su un bancone di legno chiaro, nel punto in cui si accende un bagliore verde smeraldo"
+                  width={800}
+                  height={1000}
+                  priority
+                  style={{ width: '100%', height: 'auto' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bx-listino-hero-text">
+            {/* Badge — reso più prominente (font/padding maggiori, ombra),
+                richiesta esplicita del gate Elena come alternativa/aggiunta
+                alla fascia di colore. */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              background: 'linear-gradient(135deg, #0F6E56, #12876A)', color: '#fff', fontWeight: 700, fontSize: '12.5px',
+              letterSpacing: '0.09em', textTransform: 'uppercase', padding: '9px 18px',
+              borderRadius: '100px', marginBottom: '28px',
+              boxShadow: '0 8px 20px -8px rgba(15,110,86,0.55)',
+            }}>
+              Listino intelligente · il prezzo giusto dei tuoi servizi, gratis nei primi 90 giorni
+            </div>
+
+            <h1 style={{
+              fontFamily: "var(--font-playfair), Georgia, serif",
+              lineHeight: 1.12, marginBottom: '20px',
+            }}>
+              <span style={{ display: 'block', fontSize: 'clamp(30px, 6.5vw, 46px)', fontWeight: 900, color: '#1a1a0f' }}>
+                Quanto ti costa davvero
+              </span>
+              <span style={{ display: 'block', fontSize: 'clamp(30px, 6.5vw, 46px)', fontWeight: 700, color: '#0F6E56' }}>
+                un&apos;ora del tuo centro?
+              </span>
+            </h1>
+
+            <p className="bx-listino-p-center" style={{ fontSize: 'clamp(15px, 3vw, 17px)', color: '#444', lineHeight: 1.7, marginBottom: '18px', maxWidth: '540px' }}>
+              La maggior parte dei prezzi in un centro estetico nasce a
+              sensazione — un numero che sembra giusto, non un calcolo. Il
+              Listino intelligente il calcolo lo fa al posto tuo: ti dice
+              quanto ti costa davvero un&apos;ora di negozio, ti dice se un
+              prezzo è in perdita anche quando sembra funzionare bene, e ti
+              dice qual è il servizio che credevi marginale e invece ti tiene
+              in piedi il mese. Non sulle medie del settore — sui tuoi numeri,
+              quelli veri.
+            </p>
+
+            <p className="bx-listino-p-center" style={{ fontSize: '14px', color: '#555', lineHeight: 1.6, marginBottom: '26px', maxWidth: '540px' }}>
+              Niente fogli di calcolo da costruire da zero: inserisci i numeri
+              del tuo centro, il resto lo fa il tool. Bastano pochi minuti per
+              avere il quadro vero del tuo centro.
+            </p>
+
+            <div style={{ marginBottom: '14px' }}>
+              <Link
+                href="/signup?risorsa=tool"
+                style={{
+                  display: 'inline-block', padding: '18px 36px', background: '#0F6E56', color: '#fff',
+                  fontWeight: 700, fontSize: '16px', borderRadius: '12px', textDecoration: 'none',
+                }}
+              >
+                Crea il tuo account gratuito →
+              </Link>
+            </div>
+
+            <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+              Hai già un account?{' '}
+              <Link href="/login" style={{ color: '#0F6E56', fontWeight: 600, textDecoration: 'none' }}>
+                Accedi
+              </Link>
+            </p>
+
+            <p className="bx-listino-p-center" style={{ fontSize: '13px', color: '#888', lineHeight: 1.6, marginBottom: '8px', maxWidth: '540px' }}>
+              Ti serve un account gratuito — lo stesso che usi per l&apos;Identikit strategico CURA: un&apos;unica scheda con i dati del tuo centro, mai da reinserire due volte. Hai 90 giorni per usare il Listino intelligente gratis, tutto sbloccato. Dopo, restano gratis per sempre il costo orario e il prezzo di un singolo servizio; il listino completo passa a 29€ una tantum.
+            </p>
+
+            <p className="bx-listino-p-center" style={{ fontSize: '13px', color: '#888', fontStyle: 'italic', lineHeight: 1.6, maxWidth: '540px' }}>
+              Anche il Listino intelligente nasce dalla stessa esperienza dell&apos;Identikit: i fondatori di Beautyx portano 15 anni di gestione vera di centri estetici, non teoria da corso online.
+            </p>
+          </div>
         </div>
-
-        <h1 style={{
-          fontFamily: "var(--font-playfair), Georgia, serif",
-          fontSize: 'clamp(28px, 6vw, 42px)', fontWeight: 900, lineHeight: 1.15, marginBottom: '20px',
-        }}>
-          Margini e costo orario, a colpo d&apos;occhio.
-        </h1>
-
-        <p style={{ fontSize: 'clamp(15px, 3vw, 17px)', color: '#444', lineHeight: 1.7, marginBottom: '32px' }}>
-          Per usare il Listino intelligente serve un account gratuito — lo
-          stesso che usi per l&apos;Identikit strategico CURA, con i dati del
-          tuo centro. Bastano due minuti: 90 giorni gratis, poi 29€ una tantum.
-        </p>
-
-        <div style={{ marginBottom: '14px' }}>
-          <Link
-            href="/signup?risorsa=tool"
-            style={{
-              display: 'inline-block', padding: '18px 36px', background: '#0F6E56', color: '#fff',
-              fontWeight: 700, fontSize: '16px', borderRadius: '12px', textDecoration: 'none',
-            }}
-          >
-            Crea il tuo account gratuito →
-          </Link>
-        </div>
-
-        <p style={{ fontSize: '13px', color: '#888', marginBottom: '40px' }}>
-          Hai già un account?{' '}
-          <Link href="/login" style={{ color: '#0F6E56', fontWeight: 600, textDecoration: 'none' }}>
-            Accedi
-          </Link>
-        </p>
       </section>
 
-      <footer style={{ borderTop: '1px solid #e0dbd3', padding: '20px 24px', textAlign: 'center' }}>
+      {/* ── COSA TROVI DENTRO — sezione aggiunta per dare struttura/peso
+          sotto la hero (gate Elena: "con solo 5-6 righe di testo e
+          un'immagine, la pagina resta troppo leggera"). Le 4 voci sono
+          espressioni già approvate nel copy (sottotitolo + microcopy dei
+          pannelli di gating in app/listino/page.js), non nuove promesse. ── */}
+      <section style={{ maxWidth: '860px', margin: '0 auto', padding: '56px 24px 24px' }}>
+        <p style={{
+          textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em',
+          textTransform: 'uppercase', color: '#999', marginBottom: '24px',
+        }}>
+          Cosa trovi dentro il Listino intelligente
+        </p>
+        <div className="bx-listino-features">
+          {[
+            { titolo: 'Il costo orario reale del tuo centro', desc: 'Quanto ti costa davvero un\'ora di negozio — non a sensazione, sul calcolo.' },
+            { titolo: 'Se un prezzo è in perdita o ti tiene in piedi', desc: 'Il prezzo giusto di ogni singolo servizio, e il servizio che credevi marginale e invece ti tiene in piedi il mese.' },
+            { titolo: 'Il listino intero, in un colpo d\'occhio', desc: 'Tutti i servizi insieme, con margini e pareggio — la versione completa, 29€ una tantum dopo i 90 giorni.' },
+            { titolo: 'La vetrina pronta da mostrare', desc: 'Il listino elegante da appendere in negozio o mandare su WhatsApp alle clienti.' },
+          ].map((f, i) => (
+            <div key={i} style={{
+              background: '#fff', border: '1.5px solid rgba(15,110,86,0.12)',
+              boxShadow: '0 2px 14px rgba(26,26,15,0.05)', borderRadius: '16px',
+              padding: '20px 22px', display: 'flex', gap: '14px', alignItems: 'flex-start',
+            }}>
+              <span style={{
+                fontFamily: "var(--font-playfair), serif", fontWeight: 800, fontSize: '13px',
+                color: '#fff', background: '#0F6E56', borderRadius: '50%', width: '30px', height: '30px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <h3 style={{ fontFamily: "var(--font-playfair), serif", fontWeight: 700, fontSize: '16.5px', color: '#1a1a0f', marginBottom: '6px', lineHeight: 1.3 }}>
+                  {f.titolo}
+                </h3>
+                <p style={{ fontSize: '14px', color: '#555', lineHeight: 1.6 }}>
+                  {f.desc}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer style={{ borderTop: '1px solid #e0dbd3', padding: '20px 24px', textAlign: 'center', marginTop: '32px' }}>
         <p style={{ fontSize: '12px', color: '#bbb' }}>
           © {new Date().getFullYear()} Beautyx ·{' '}
           <Link href="/privacy" style={{ color: '#bbb', textDecoration: 'none' }}>Privacy</Link>

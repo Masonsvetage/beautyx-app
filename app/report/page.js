@@ -227,6 +227,63 @@ function ReportPublicLanding() {
     <>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Redesign 22/09/2026 (task #226) — hero a due colonne con immagine +
+           rinforzo di gerarchia visiva sotto la hero, come richiesto dal gate
+           di Elena del 21/09 (drafts/gate-elena-redesign-report-listino-2026-09-21.md).
+           Le regole di layout vivono qui perché gli stili inline non supportano
+           media query: mobile-first, immagine sopra al testo, colonna singola;
+           da 900px in su, riga invertita (row-reverse) cosi' il testo (primo nel
+           DOM, per restare sopra su mobile) appare a sinistra e l'immagine a destra. */
+        .bx-hero-grid { display: flex; flex-direction: column; gap: 32px; }
+        .bx-hero-text { text-align: center; }
+        .bx-hero-p-center { margin-left: auto; margin-right: auto; }
+        .bx-hero-image-frame {
+          position: relative;
+          width: 100%;
+          max-width: 420px;
+          margin: 0 auto;
+          border-radius: 28px;
+          overflow: hidden;
+          box-shadow: 0 24px 48px -20px rgba(26,26,15,0.35);
+        }
+        .bx-hero-image-frame::after {
+          /* sfumatura ai bordi che si fonde nel crema di sfondo (#f5f1ea),
+             invece del rettangolo netto segnalato come problema dal gate Elena */
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 28px;
+          box-shadow: inset 0 0 70px 34px #f5f1ea;
+          pointer-events: none;
+        }
+        .bx-hero-image-frame img { display: block; width: 100%; height: auto; }
+        @media (min-width: 900px) {
+          .bx-hero-grid { flex-direction: row-reverse; align-items: center; gap: 56px; }
+          .bx-hero-text { text-align: left; flex: 1.05; }
+          .bx-hero-image { flex: 0.95; }
+          .bx-hero-p-center { margin-left: 0; margin-right: 0; }
+          .bx-hero-image-frame { max-width: 460px; margin: 0; }
+        }
+
+        /* Pannello "Cosa trovi" — pass da testo puro a blocco che stacca per
+           colore/consistenza (richiesta esplicita del gate Elena, Parte 3). */
+        .bx-cosa-trovi-panel {
+          background: linear-gradient(180deg, rgba(236,73,153,0.07), rgba(255,228,77,0.07));
+          border-radius: 32px;
+          padding: 48px 28px;
+        }
+        .bx-pull-quote {
+          font-family: var(--font-playfair), Georgia, serif;
+          font-style: italic;
+          font-weight: 700;
+          color: #1a1a0f;
+          text-align: center;
+          line-height: 1.35;
+          margin: 0 auto 36px;
+          max-width: 480px;
+          font-size: clamp(20px, 4vw, 27px);
+        }
       `}</style>
 
       <div style={{
@@ -262,120 +319,155 @@ function ReportPublicLanding() {
           </span>
         </header>
 
-        {/* ── HERO ── */}
+        {/* ── HERO ──
+            Redesign 22/09/2026 (task #226): copy finale di Federica
+            (drafts/copy-redesign-report-listino-2026-09-21.md) + immagine hero
+            di Chiara (design Canva DAHV0IFvZDE, drafts/immagini-redesign-report-listino-2026-09-21.md)
+            dentro un vero layout a due colonne, come richiesto dal gate di
+            Elena (drafts/gate-elena-redesign-report-listino-2026-09-21.md,
+            Parte 3): immagine sopra il testo su mobile, colonna con testo a
+            sinistra/immagine a destra da 900px in su (vedi .bx-hero-grid nello
+            style sopra), bordi dell'immagine sfumati nel crema di sfondo
+            invece del rettangolo netto segnalato come problema. */}
         <section style={{
-          maxWidth: '640px',
+          maxWidth: '1040px',
           margin: '0 auto',
           padding: '20px 24px 0',
-          textAlign: 'center',
         }}>
+          <div className="bx-hero-grid">
 
-          {/* Badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: '#FFE44D',
-            color: '#1a1a0f',
-            fontWeight: 700,
-            fontSize: '11px',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            padding: '6px 14px',
-            borderRadius: '100px',
-            marginBottom: '28px',
-          }}>
-            Identikit strategico CURA · La diagnosi del tuo centro, gratis nel lancio
-          </div>
+            {/* Immagine hero — titolare di spalle davanti al lettino vuoto,
+                luce dorata, tocco rosa cipria (concept "riconoscimento, non
+                stupore tecnologico" di Chiara). File da salvare in public/ —
+                vedi nota nel report finale di Davide se non ancora presente. */}
+            <div className="bx-hero-image">
+              <div className="bx-hero-image-frame">
+                <Image
+                  src="/hero-report.jpg"
+                  alt="Titolare di un centro estetico che si ferma un istante davanti al lettino vuoto, nella luce calda del tardo pomeriggio"
+                  width={800}
+                  height={1000}
+                  priority
+                  style={{ width: '100%', height: 'auto' }}
+                />
+              </div>
+            </div>
 
-          {/* Headline — dolore concreto, non il doppio senso della parola */}
-          <h1 style={{
-            fontFamily: "var(--font-playfair), Georgia, serif",
-            lineHeight: 1.1,
-            marginBottom: '22px',
-          }}>
-            <span style={{
-              display: 'block',
-              fontSize: 'clamp(32px, 7vw, 52px)',
-              fontWeight: 900,
-              color: '#1a1a0f',
-            }}>
-              Ti prendi cura di tutte.
-            </span>
-            <span style={{
-              display: 'block',
-              fontSize: 'clamp(32px, 7vw, 52px)',
-              fontWeight: 700,
-              color: '#EC4899',
-            }}>
-              Chi si prende CURA di te?
-            </span>
-          </h1>
-
-          {/* Sottotitolo — riscritto da zero (05/09/2026, Federica): il problema
-              non era la frequenza d'uso, era che non si capiva cosa fa davvero il
-              report. Qui si dice chiaro: prende i dati veri di QUEL centro e dice
-              dove è bloccato oggi e cosa fare per prima — non un test generico,
-              non un oroscopo, non un elenco di consigli. */}
-          <p style={{
-            fontSize: 'clamp(16px, 4vw, 19px)',
-            color: '#444',
-            lineHeight: 1.65,
-            marginBottom: '32px',
-            maxWidth: '520px',
-            margin: '0 auto 32px',
-          }}>
-            Non è un test online e non è un oroscopo. L'Identikit strategico CURA guarda
-            i dati veri del tuo centro — clienti, agenda, conto — e ti dice
-            due cose chiare: dove sei bloccata oggi, e qual è la prima mossa
-            da fare. Scritto su misura per il tuo centro, quello vero: non
-            per "un centro estetico" qualsiasi.
-          </p>
-
-          {/* ── CTA PRINCIPALE ── */}
-          <div style={{ marginBottom: '14px' }}>
-            <Link
-              href="/signup"
-              style={{
-                display: 'inline-block',
-                padding: '18px 36px',
-                background: '#EC4899',
-                color: '#fff',
+            <div className="bx-hero-text">
+              {/* Badge */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#FFE44D',
+                color: '#1a1a0f',
                 fontWeight: 700,
-                fontSize: '16px',
-                borderRadius: '12px',
-                textDecoration: 'none',
-                fontFamily: "var(--font-inter), sans-serif",
-                letterSpacing: '0.01em',
-              }}
-            >
-              Crea il tuo account gratuito →
-            </Link>
+                fontSize: '11px',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                padding: '6px 14px',
+                borderRadius: '100px',
+                marginBottom: '28px',
+              }}>
+                Identikit strategico CURA · La diagnosi del tuo centro, gratis per il lancio
+              </div>
+
+              {/* Headline — dolore concreto, non il doppio senso della parola */}
+              <h1 style={{
+                fontFamily: "var(--font-playfair), Georgia, serif",
+                lineHeight: 1.1,
+                marginBottom: '22px',
+              }}>
+                <span style={{
+                  display: 'block',
+                  fontSize: 'clamp(32px, 7vw, 52px)',
+                  fontWeight: 900,
+                  color: '#1a1a0f',
+                }}>
+                  Ti prendi cura di tutte.
+                </span>
+                <span style={{
+                  display: 'block',
+                  fontSize: 'clamp(32px, 7vw, 52px)',
+                  fontWeight: 700,
+                  color: '#EC4899',
+                }}>
+                  Chi si prende CURA di te?
+                </span>
+              </h1>
+
+              {/* Sottotitolo — riscritto da Federica il 21/09/2026 (correzione
+                  post-gate Elena: la doppia negazione "non è un test online e
+                  non è un oroscopo" è stata ridotta a una sola clausola
+                  negativa con oggetto composto, chiusa da un positivo, vedi
+                  changelog nel draft copy). */}
+              <p className="bx-hero-p-center" style={{
+                fontSize: 'clamp(16px, 4vw, 19px)',
+                color: '#444',
+                lineHeight: 1.65,
+                marginBottom: '20px',
+                maxWidth: '520px',
+              }}>
+                Non è un test online, né un oroscopo: è una diagnosi seria.
+                L'Identikit strategico CURA guarda dentro i numeri veri del
+                tuo centro — chi sono le tue clienti, come si muove la tua
+                agenda, come stanno davvero i conti — e torna con due cose
+                sole, chiare: dove sei bloccata oggi, e qual è la prima mossa
+                da fare. Fatto apposta per il tuo centro, quello vero.
+              </p>
+
+              {/* ── CTA PRINCIPALE ── */}
+              <div style={{ marginBottom: '14px' }}>
+                <Link
+                  href="/signup"
+                  style={{
+                    display: 'inline-block',
+                    padding: '18px 36px',
+                    background: '#EC4899',
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: '16px',
+                    borderRadius: '12px',
+                    textDecoration: 'none',
+                    fontFamily: "var(--font-inter), sans-serif",
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  Crea il tuo account gratuito →
+                </Link>
+              </div>
+
+              <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+                Hai già un account?{' '}
+                <Link href="/login" style={{ color: '#EC4899', fontWeight: 600, textDecoration: 'none' }}>
+                  Accedi
+                </Link>
+              </p>
+
+              <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+                Con l'account arriva in regalo anche la newsletter di Beautyx, gratuita, ogni martedì e venerdì.
+              </p>
+
+              {/* Prova di competenza reale — i 15 anni sono dei fondatori, mai
+                  dell'azienda Beautyx (regola in vigore in memory/federica.md).
+                  Risponde all'obiezione implicita "sarà un algoritmo che tira
+                  a indovinare". */}
+              <p style={{ fontSize: '13px', color: '#888', fontStyle: 'italic', marginBottom: '8px', lineHeight: 1.6 }}>
+                Dietro ogni identikit ci sono i fondatori di Beautyx: 15 anni di esperienza vera nella gestione di centri estetici. L'AI legge i tuoi dati; il metodo che li interpreta viene da lì.
+              </p>
+
+              {/* Nota di onestà: il questionario è in arrivo, non live oggi */}
+              <p className="bx-hero-p-center" style={{
+                fontSize: '13px',
+                color: '#999',
+                lineHeight: 1.6,
+                maxWidth: '460px',
+                marginTop: '10px',
+              }}>
+                Il questionario completo sta per partire. Registrandoti adesso il tuo account gratuito parte comunque, sei tra le prime ad accedere al report, e i 90 giorni gratis restano tuoi dal primo giorno.
+              </p>
+            </div>
           </div>
-
-          <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
-            Hai già un account?{' '}
-            <Link href="/login" style={{ color: '#EC4899', fontWeight: 600, textDecoration: 'none' }}>
-              Accedi
-            </Link>
-          </p>
-
-          <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
-            Con l'account arriva anche la newsletter gratuita di Beautyx, ogni martedì e venerdì.
-          </p>
-
-          {/* Nota di onestà: il questionario è in arrivo, non live oggi */}
-          <p style={{
-            fontSize: '13px',
-            color: '#999',
-            lineHeight: 1.6,
-            maxWidth: '460px',
-            margin: '18px auto 0',
-          }}>
-            Il questionario completo sta per essere attivato. Registrandoti
-            ora fai partire comunque il tuo account gratuito e sarai tra le
-            prime ad accedere al report, senza perdere i 90 giorni gratis.
-          </p>
         </section>
 
         {/* ── SEPARATORE ── */}
@@ -383,35 +475,45 @@ function ReportPublicLanding() {
           <hr style={{ border: 'none', borderTop: '1px solid #ddd' }} />
         </div>
 
-        {/* ── COSA SCOPRI ── */}
-        <section style={{ maxWidth: '640px', margin: '0 auto', padding: '48px 24px' }}>
-          <p style={{
-            textAlign: 'center',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            color: '#999',
-            marginBottom: '24px',
-          }}>
-            Cosa trovi nel tuo identikit strategico
-          </p>
+        {/* ── COSA SCOPRI ──
+            Redesign 22/09/2026: il pannello ora stacca per colore/consistenza
+            (richiesta esplicita del gate Elena, Parte 3 — "il resto della
+            pagina sotto l'hero resta 100% testo puro"), con una citazione in
+            Playfair grande che riprende testualmente il sottotitolo già
+            approvato (nessun copy nuovo, solo enfasi visiva). */}
+        <section style={{ maxWidth: '700px', margin: '0 auto', padding: '48px 24px' }}>
+          <div className="bx-cosa-trovi-panel">
+            <p className="bx-pull-quote">
+              &ldquo;Dove sei bloccata oggi, e qual è la prima mossa da fare.&rdquo;
+            </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {[
-              {
-                titolo: 'Dove il centro è bloccato',
-                desc: 'Il punto preciso — clienti, personale o spese — dove stai spendendo più energia di quella che ti torna indietro.',
-              },
-              {
-                titolo: 'La leva giusta da muovere per prima',
-                desc: 'Una priorità concreta, quella che oggi sblocca davvero il resto.',
-              },
-              {
-                titolo: 'Un punto di partenza per parlarne con noi',
-                desc: 'La base della tua domanda mensile gratuita al consulente: un percorso che continua con te.',
-              },
-            ].map((v, i) => (
+            <p style={{
+              textAlign: 'center',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: '#999',
+              marginBottom: '24px',
+            }}>
+              Cosa trovi nel tuo identikit strategico
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {[
+                {
+                  titolo: 'Dove il tuo centro sta perdendo energia',
+                  desc: 'Il punto preciso dove oggi dai più di quanto ti torna indietro — che sia nelle clienti che non tornano, nel personale che non rende come dovrebbe, o nelle spese cresciute senza che te ne accorgessi.',
+                },
+                {
+                  titolo: 'La prima mossa, non dieci insieme',
+                  desc: 'Non un elenco di cose da sistemare. Una priorità sola, quella vera — la leva che oggi sblocca davvero il resto.',
+                },
+                {
+                  titolo: 'Il punto di partenza per il confronto con il consulente',
+                  desc: 'La base concreta per la tua domanda mensile gratuita — a un consulente vero, Luigi, che lavora insieme all\'AI che ha già letto i tuoi dati. Un percorso che continua con te, non un file che chiudi e dimentichi.',
+                },
+              ].map((v, i) => (
               <div
                 key={i}
                 style={{
@@ -457,7 +559,8 @@ function ReportPublicLanding() {
                   </p>
                 </div>
               </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
@@ -493,10 +596,10 @@ function ReportPublicLanding() {
             </div>
 
             <p style={{ color: '#555', fontSize: '15px', lineHeight: 1.7 }}>
-              Vale 60€: è il prezzo di una diagnosi scritta sui dati del tuo
-              centro. Hai 90 giorni per farla gratis, proprio ora, dentro il
-              countdown qui sopra. Passata la finestra, torna il prezzo
-              pieno — 60€.
+              Vale 60€: è il prezzo di una diagnosi scritta sui dati veri del
+              tuo centro. Il countdown qui sopra segna il tempo che hai per
+              farla gratis — non uno sconto lampo, è la finestra del lancio.
+              Quando si chiude, il prezzo torna pieno: 60€.
             </p>
           </div>
         </section>
@@ -511,8 +614,9 @@ function ReportPublicLanding() {
             textAlign: 'center',
           }}>
             <p style={{ fontSize: '13.5px', color: '#666', lineHeight: 1.7, marginBottom: '10px' }}>
-              Un regalo che arriva comunque: la miniguida gratuita sui 10
-              errori più comuni, tua da subito, mentre il tuo identikit strategico prende forma.
+              Un regalo che arriva comunque, subito: la miniguida gratuita sui
+              10 errori più comuni. Non aspetta che l'identikit sia pronto —
+              è già tua, da leggere mentre il resto prende forma.
             </p>
             <Link href="/miniguida" style={{ color: '#EC4899', fontWeight: 700, fontSize: '13.5px', textDecoration: 'none' }}>
               Ricevi la miniguida gratuita →
