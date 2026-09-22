@@ -3363,3 +3363,126 @@ stessa disciplina già usata negli audit precedenti di questo progetto.
   29€ e il meccanismo di credito sull'abbonamento (vedi sopra, non esiste
   nemmeno per il report CURA) — task #200 (copy/design pagina 4 pilastri di
   Federica/Chiara) resta un pezzo separato, non toccato qui.
+
+## Primo collaudo dal vivo in produzione di Mason — 3 bug (task #218/#219/#220, 21/9/2026)
+
+- **Contesto:** Mason ha fatto il primo collaudo dal vivo reale su produzione
+  (mai fatto prima in questa sessione) e ha trovato bug seri. Tre task, #218
+  urgente e da risolvere prima degli altri due.
+
+- **Task #218 (URGENTE) — "nessun utente trovato" dopo verifica email:**
+  - **Causa reale trovata sui dati veri** (non un'ipotesi): il trigger
+    `handle_new_user()` su `auth.users` (creato il 7/9, vedi
+    `20260907_fix_user_profiles_schema_drift.sql`) inseriva in
+    `user_profiles` SENZA le colonne `nome`/`cognome`, NOT NULL senza
+    default → l'INSERT falliva SEMPRE, l'errore veniva ingoiato in silenzio
+    dal blocco `EXCEPTION WHEN OTHERS` (solo un `RAISE WARNING` nei log
+    Postgres). Da quando il trigger esiste, **nessuna riga `user_profiles`
+    è mai stata creata via trigger per un signup nuovo** — da qui "nessun
+    utente trovato" sulla pagina di completamento centro, pur con sessione
+    auth reale e attiva (da qui "Listino" funzionante).
+  - **Fix a più livelli, non un cerotto:** (1) trigger corretto per leggere
+    `nome`/`cognome` da `raw_user_meta_data` con fallback `'Nuovo'`/`'Utente'`
+    per non violare mai più il NOT NULL — **già applicato in produzione** via
+    `apply_migration` (nome `fix_handle_new_user_nome_cognome_not_null_20260921`),
+    record nel repo in `supabase/migrations/20260921_fix_handle_new_user_nome_cognome.sql`.
+    (2) `contexts/AuthContext.js`: `signUp()` ora passa l'intera anagrafica
+    del form (non solo nome/cognome) in `options.data`, così non si perde più
+    nulla anche se l'upsert client-side pre-conferma fallisce per RLS (sempre,
+    per design — nessuna sessione prima della conferma email). (3)
+    `app/auth/callback/route.js`: aggiunta `syncProfileFromAuthMetadata()`,
+    chiamata subito dopo `exchangeCodeForSession` con successo — crea il
+    profilo se manca o completa solo i campi vuoti se esiste già, leggendo da
+    `user.user_metadata`. Questo è il vero self-healing: funziona
+    indipendentemente dall'affidabilità del trigger, nel primo momento in cui
+    esiste una sessione autenticata reale.
+  - **Riparazione dati dell'account di test rotto di oggi** (già in
+    produzione, via `execute_sql`): `user_profiles` per `admin@svetage.com`
+    (id `a25a01f1-b839-4e83-bf77-bd86775b4a6f`) collegato al centro
+    "Svetagino" (`e65b8314-2eef-40eb-b07c-50ccbded40b2`) creato orfano dallo
+    stesso test, più assegnazione piano `report_profiling`.
+  - **File modificati:** `contexts/AuthContext.js`, `app/auth/callback/route.js`,
+    `supabase/migrations/20260921_fix_handle_new_user_nome_cognome.sql` (nuovo).
+  - **Verifica:** la shell isolata non si è avviata per tutta la sessione
+    ("VM service not running") — niente `npm run dev`/`next build`/browser
+    reale. Verificato invece: (a) la logica SQL corretta del trigger dentro
+    una transazione `BEGIN...DO $$...ROLLBACK` su Supabase via `execute_sql`,
+    sia con `raw_user_meta_data` popolato sia vuoto — nessuna violazione NOT
+    NULL in nessuno dei due casi; (b) un tentativo di signup reale via API
+    (`/auth/v1/signup`) ha dato 500 "Error sending confirmation email" (limite
+    del servizio email di default di Supabase, non collegato al bug —
+    confermato via `execute_sql` che nessuna riga `auth.users` viene creata
+    quando l'invio email fallisce, quindi test inconcludente e abbandonato).
+    **Resta da fare dal vivo, a cura di Mason:** un signup reale completo →
+    click sul link di conferma email → verificare che la pagina di
+    completamento centro trovi il profilo → verificare che i campi extra del
+    form (residenza, documento, ecc.) siano arrivati in `user_profiles`.
+
+- **Task #219 — CTA "Identikit CURA" contestuale per utenti loggati:**
+  - **Prima:** il click portava sempre alla landing pubblica `/report` con
+    invito a registrarsi, anche per chi era già loggato con account attivo.
+  - **Fix:** due nuovi endpoint, `app/api/identikit/status/route.js` (GET,
+    determina `active` in base al piano — `report_profiling` o un piano
+    piattaforma vero via `isPiattaformaPlanCodice`, `lib/platformPlan.js` —
+    e se attivo lo stage: `completed`/`in_progress`/`not_started` guardando
+    `profiling_reports`/`profiling_sessions`) e
+    `app/api/identikit/activate/route.js` (POST, attiva gratis il piano
+    `report_profiling` se dentro i 90gg — `isWithinReportFreeWindow()`,
+    `lib/report/freeWindow.js` — stesso pattern upsert già usato in
+    `create-centro/route.js`, mai sovrascrive un'assegnazione admin).
+    `app/report/page.js` ristrutturata: resta `ReportPublicLanding()`
+    (landing originale, INTATTA) solo per anonimo; per loggato, nuova
+    `ReportLoggedInGate()` che chiama `/api/identikit/status` e fa
+    redirect automatico a `/questionario/risultato` (completed) o
+    `/questionario` (in corso/non iniziato) se attivo; se non attivo mostra
+    il countdown esistente **riusato** (`<ReportCountdownBanner
+    variant="prominent" />`, non duplicato) con CTA "Attivalo gratis" dentro
+    i 90gg, o un messaggio onesto con contatto `mailto:` fuori dai 90gg
+    (nessun vero checkout Stripe per il solo Identikit — gap già noto, non
+    inventata una finta pagina d'acquisto).
+  - **File modificati:** `app/report/page.js`, `app/api/identikit/status/route.js`
+    (nuovo), `app/api/identikit/activate/route.js` (nuovo).
+  - **Verifica:** solo statica (stessa causa — shell non disponibile).
+    **Resta da fare dal vivo:** login con account senza Identikit dentro i
+    90gg → click "Identikit CURA" da `/listino` → vedere il countdown e
+    l'attivazione funzionare; stesso percorso con account già attivo a vari
+    stadi (questionario in corso / report pronto) → verificare che apra
+    l'esperienza giusta senza passare dalla landing; verificare che un
+    visitatore anonimo veda ancora solo la landing pubblica originale.
+
+- **Task #220 — chiarezza campi tool Listino + nota IVA:**
+  - **Aggiunto:** icone "?" cliccabili/hover (classe `.qtip`, popup `.qtip-pop`,
+    toggle-click aggiunto per touch) accanto a Riempimento %/"postazioni",
+    "Postazioni", Ferie/permessi %, Giorni/mese, ed etichetta "Operatrici" —
+    testo dei popup preso dal contenuto già esistente nella Guida strategica
+    del tool, non reinventato.
+  - **Nota IVA:** nella sezione "Quanto ti costa il negozio", accanto ai tre
+    valori calcolati (giornaliero/mensile/orario) aggiunto il corrispondente
+    importo CON IVA inclusa in testo secondario più piccolo (`id`
+    `totmese-iva`/`speseday-iva`/`hourly-iva` + nota `ivaNote`), mostrato solo
+    quando `state.regime === "ord"`.
+  - **Correzione più a monte, non richiesta esplicitamente ma necessaria per
+    coerenza con la richiesta di Mason:** i valori PRIMARI di "quanto ti costa
+    il negozio" mostravano il lordo (`fixedMese()`); cambiati al netto
+    (`fixedNetMese()`) per essere coerenti con il resto della matematica di
+    pareggio del tool (che lavora tutta al netto) — altrimenti l'etichetta
+    "con IVA" accanto a un valore già lordo sarebbe stata contraddittoria.
+    Aggiunta anche `QTIP_MARGINE` per il tile "Margine/mese" in `computeBanco()`.
+  - **File modificati:** `app/listino/page.js`.
+  - **Verifica:** solo statica — riletto a mano l'intero blocco per
+    bilanciamento backtick/apici (convenzione del file: attributi HTML tra
+    apici singoli dentro stringhe JS a apici singoli, niente doppio escape).
+    **Resta da fare dal vivo:** aprire `/listino`, verificare che i popup "?"
+    si aprano/chiudano su click e su hover desktop, che i valori "con IVA"
+    compaiano solo in regime ordinario e siano coerenti coi totali lordi
+    mostrati altrove nel tool.
+
+- **Nota trasversale — sandbox non disponibile per tutta la sessione:** la
+  shell isolata (`VM service not running`) non si è mai avviata, per nessuno
+  dei tre task — stesso problema già loggato in sessioni precedenti. Nessun
+  `npm run dev`/`next build`/test browser reale è stato possibile su nessuno
+  dei tre fix. Verifica fatta solo via: lettura manuale del codice scritto,
+  query dirette su produzione via Supabase MCP (`execute_sql`,
+  `apply_migration`), un test API black-box inconcludente per il signup.
+  Tutti e tre i "resta da fare dal vivo" sopra sono da eseguire da Mason
+  prima di considerare i fix confermati in campo.
