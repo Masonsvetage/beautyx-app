@@ -2,6 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 import GuidaFooterLink from '@/components/common/GuidaFooterLink'
 import ReportCountdownBanner from '@/components/common/ReportCountdownBanner'
 
@@ -33,7 +36,193 @@ import ReportCountdownBanner from '@/components/common/ReportCountdownBanner'
 // e incanala verso la registrazione gratuita esistente (/signup), NON verso
 // un questionario funzionante. Vedi piano-sviluppo-report-care.md, sezione
 // in cima, per il dettaglio della sequenza.
+// Fix bug (21/09/2026, task #219, segnalato da Mason): "Identikit CURA" da
+// dentro la piattaforma (voce in Navbar, raggiungibile anche da /listino)
+// portava SEMPRE qui, a questa landing pubblica con invito a registrarsi —
+// assurdo per chi ha già un account ed è già loggato. Questa pagina resta la
+// landing pubblica invariata SOLO per un visitatore anonimo (vedi
+// ReportPublicLanding sotto, invariata). Per un utente autenticato, il
+// componente sotto (ReportLoggedInGate) chiede lo stato reale
+// dell'Identikit a /api/identikit/status e decide dove portarlo:
+// - non ancora attivato, dentro i 90gg gratis -> CTA "Attivalo gratis" con
+//   lo stesso countdown già in uso qui sotto (riusato, non duplicato);
+// - non ancora attivato, fuori dai 90gg -> messaggio di acquisto (nessun
+//   checkout reale esiste ancora per l'Identikit da solo, stesso gap già
+//   noto per il Tool Listino — non ne inventiamo uno qui, vedi commento
+//   dedicato più sotto);
+// - già attivato -> apre direttamente il questionario o il report, a
+//   seconda di dove si trova nel suo percorso (mai la landing marketing).
 export default function ReportPage() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f1ea' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid #EC4899', borderTopColor: 'transparent', borderRadius: '50%' }} />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <ReportPublicLanding />
+  }
+
+  return <ReportLoggedInGate />
+}
+
+// ReportLoggedInGate — interroga /api/identikit/status e:
+// (a) mentre carica, mostra uno spinner (mai un flash della landing pubblica
+//     né un flash del questionario sbagliato);
+// (b) se già attivato, fa un redirect immediato (mai un secondo click):
+//     report pronto -> /questionario/risultato, altrimenti -> /questionario
+//     (la pagina del questionario riprende da sola da dove l'utente aveva
+//     lasciato, vedi commento in app/questionario/page.js — non serve
+//     sapere qui il dettaglio esatto dello step);
+// (c) se non attivato, mostra una card di attivazione invece della landing
+//     marketing: dentro i 90gg un vero pulsante "Attivalo gratis" (chiama
+//     /api/identikit/activate) con lo stesso ReportCountdownBanner usato
+//     nella landing pubblica; fuori dai 90gg, un messaggio di acquisto
+//     onesto (vedi nota sotto sul checkout non ancora esistente).
+function ReportLoggedInGate() {
+  const router = useRouter()
+  const [status, setStatus] = useState(null) // { active, stage, withinFreeWindow, hasCentro } | 'error'
+  const [activating, setActivating] = useState(false)
+  const [activateError, setActivateError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/identikit/status')
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return
+        if (data?.error) { setStatus('error'); return }
+        setStatus(data)
+        if (data.active) {
+          router.replace(data.stage === 'completed' ? '/questionario/risultato' : '/questionario')
+        }
+      })
+      .catch(() => { if (!cancelled) setStatus('error') })
+    return () => { cancelled = true }
+  }, [router])
+
+  const handleActivate = async () => {
+    setActivating(true)
+    setActivateError(null)
+    try {
+      const res = await fetch('/api/identikit/activate', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Attivazione non riuscita')
+      router.replace('/questionario')
+    } catch (err) {
+      setActivateError(err.message)
+      setActivating(false)
+    }
+  }
+
+  // Caricamento status, o attivo-e-in-attesa-del-redirect: stesso spinner,
+  // mai un flash di contenuto sbagliato nel mezzo (l'errore reale è gestito
+  // esplicitamente più sotto, come stato distinto).
+  if (status === null || (status && status.active)) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f1ea' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid #EC4899', borderTopColor: 'transparent', borderRadius: '50%' }} />
+      </div>
+    )
+  }
+
+  if (status === 'error') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f1ea', padding: 24 }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <p style={{ fontSize: 15, color: '#555', marginBottom: 16 }}>
+            Non riusciamo a verificare lo stato del tuo Identikit in questo momento.
+          </p>
+          <Link href="/dashboard" style={{ color: '#EC4899', fontWeight: 700, textDecoration: 'none' }}>Torna alla dashboard →</Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Non attivo. Non ha ancora nemmeno un centro (registrazione a metà) —
+  // stesso passo che manca comunque, indipendentemente dall'Identikit.
+  if (!status.hasCentro) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f1ea', padding: 24 }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <p style={{ fontSize: 15, color: '#555', marginBottom: 16 }}>
+            Completa prima la creazione del tuo centro: l&apos;Identikit si attiva insieme.
+          </p>
+          <Link href="/impostazioni?primo-accesso=1" style={{ display: 'inline-block', padding: '14px 28px', background: '#EC4899', color: '#fff', fontWeight: 700, borderRadius: 12, textDecoration: 'none' }}>
+            Crea il tuo centro →
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ background: '#f5f1ea', minHeight: '100vh', fontFamily: "var(--font-inter), system-ui, sans-serif", color: '#1a1a0f' }}>
+      <header style={{ paddingTop: '28px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+        <Image src="/logo_beautyx-oro.png" alt="Beautyx" width={26} height={28} style={{ borderRadius: '4px' }} />
+        <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a0f' }}>Beautyx</span>
+      </header>
+
+      <section style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px 56px', textAlign: 'center' }}>
+        <h1 style={{
+          fontFamily: "var(--font-playfair), Georgia, serif",
+          fontSize: 'clamp(26px, 5.5vw, 36px)', fontWeight: 800, lineHeight: 1.2, marginBottom: '18px',
+        }}>
+          {status.withinFreeWindow ? 'Il tuo Identikit strategico CURA ti aspetta.' : 'Sblocca il tuo Identikit strategico CURA.'}
+        </h1>
+
+        <p style={{ fontSize: 'clamp(15px, 3vw, 17px)', color: '#444', lineHeight: 1.7, marginBottom: '28px' }}>
+          Non è un test online: è la diagnosi scritta sui dati veri del tuo centro — dove sei
+          bloccata oggi e qual è la prima mossa da fare.
+        </p>
+
+        {status.withinFreeWindow ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '22px' }}>
+              <ReportCountdownBanner variant="prominent" />
+            </div>
+            {activateError && (
+              <p style={{ color: '#B0473E', fontSize: 13.5, marginBottom: 12 }}>{activateError}</p>
+            )}
+            <button
+              onClick={handleActivate}
+              disabled={activating}
+              style={{
+                padding: '18px 36px', background: '#EC4899', color: '#fff', fontWeight: 700, fontSize: '16px',
+                borderRadius: '12px', border: 'none', cursor: activating ? 'default' : 'pointer',
+                opacity: activating ? 0.7 : 1,
+              }}
+            >
+              {activating ? 'Attivazione…' : 'Attivalo gratis →'}
+            </button>
+          </>
+        ) : (
+          // Fuori dai 90gg gratuiti: NESSUN checkout Stripe esiste ancora per
+          // l'Identikit acquistato da solo (verificato sul codice reale, stesso
+          // gap già noto e documentato per il Tool Listino — vedi memory/generale.md,
+          // "Modello commerciale corretto"). Non inventiamo un flusso di
+          // pagamento finto: messaggio onesto + contatto, come da convenzione
+          // del team su ciò che non è ancora costruito.
+          <div style={{ background: '#fff', border: '2px solid #1a1a0f', borderRadius: 16, padding: '24px 26px' }}>
+            <p style={{ fontSize: 15, color: '#444', lineHeight: 1.7, marginBottom: 10 }}>
+              La finestra gratuita dei 90 giorni è terminata. L&apos;Identikit strategico CURA
+              costa 60€ una tantum — scrivici e te lo attiviamo noi.
+            </p>
+            <a href="mailto:info@beautyx.it" style={{ color: '#EC4899', fontWeight: 700, textDecoration: 'none' }}>
+              info@beautyx.it →
+            </a>
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
+
+function ReportPublicLanding() {
   return (
     <>
       <style>{`
