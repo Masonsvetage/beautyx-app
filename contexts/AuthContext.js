@@ -673,11 +673,22 @@ export function AuthProvider({ children }) {
       // app/auth/callback/route.js, creata in questo stesso giro). Passare
       // qui l'origin corrente fa sì che il link email porti sempre alla
       // nostra route di scambio sessione, sia in locale sia in produzione.
+      // Fix bug critico (21/09/2026, collaudo live Mason, task #218): prima
+      // qui veniva passato in `options.data` SOLO nome/cognome. Supabase
+      // salva questo oggetto in `auth.users.raw_user_meta_data` SUBITO,
+      // ancora prima che l'email sia confermata (a differenza della riga
+      // user_profiles, che con conferma email obbligatoria non ha ancora
+      // nessuna sessione attiva per passare le policy RLS — vedi upsert più
+      // sotto, che infatti fallisce sempre in silenzio in questo caso). Ora
+      // passiamo l'intera anagrafica raccolta nel form: diventa il dato che
+      // app/auth/callback/route.js userà per popolare user_profiles per
+      // davvero, nel primo momento in cui esiste una sessione autenticata
+      // reale (dopo il click sul link di conferma), invece di perderla.
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { nome: datiExtra.nome, cognome: datiExtra.cognome },
+          data: { ...datiExtra, nome: datiExtra.nome, cognome: datiExtra.cognome },
           emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
         }
       })
@@ -704,6 +715,19 @@ export function AuthProvider({ children }) {
       // sovrascriverebbe silenziosamente l'anagrafica già salvata di
       // quell'account con i dati del nuovo tentativo di signup — bug
       // di integrità dati scoperto insieme al fix del messaggio.
+      // NOTA (21/09/2026, task #218): questo upsert è SOLO un tentativo
+      // best-effort. Quando la conferma email è obbligatoria (il caso
+      // normale di /signup), a questo punto NON esiste ancora una sessione
+      // autenticata (`auth.signUp()` con `session: null` finché l'email non
+      // è confermata) — le policy RLS su user_profiles richiedono
+      // `auth.uid() = id`, quindi questa upsert fallisce SEMPRE con un
+      // errore RLS silenzioso (solo `console.error`, mai propagato
+      // all'utente). Lasciato qui per i casi in cui una sessione esiste già
+      // (conferma email disattivata, o flussi futuri diversi) — ma il punto
+      // che GARANTISCE davvero la creazione/completamento del profilo è
+      // ora `app/auth/callback/route.js`, eseguito quando la sessione reale
+      // esiste per la prima volta, usando gli stessi dati salvati qui sopra
+      // in `options.data` (→ `auth.users.raw_user_meta_data`).
       if (authData.user && !alreadyRegistered) {
         const profileData = {
           id: authData.user.id,

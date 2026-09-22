@@ -2,6 +2,96 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+// Campi anagrafici opzionali che possono arrivare in raw_user_meta_data
+// (impostati da contexts/AuthContext.js signUp(), vedi task #218 21/09/2026).
+// nome/cognome sono gestiti a parte perché NOT NULL su user_profiles (serve
+// un fallback, mai lasciarli assenti dall'INSERT).
+const OPTIONAL_METADATA_FIELDS = [
+  'tipo_soggetto', 'ragione_sociale', 'tipo_societa', 'codice_fiscale', 'partita_iva',
+  'cellulare', 'telefono_fisso', 'pec',
+  'residenza_indirizzo', 'residenza_civico', 'residenza_cap', 'residenza_citta', 'residenza_provincia',
+  'domicilio_diverso', 'domicilio_indirizzo', 'domicilio_civico', 'domicilio_cap', 'domicilio_citta', 'domicilio_provincia',
+  'documento_tipo', 'documento_numero', 'documento_data_scadenza'
+]
+
+// Sincronizza public.user_profiles da auth.users.user_metadata (= raw_user_meta_data)
+// nel primo momento in cui esiste una sessione autenticata reale — vedi
+// spiegazione completa nel commento sopra alla chiamata, dentro GET().
+// Auto-risanante: funziona sia se la riga manca del tutto (crea, come
+// avrebbe dovuto fare il trigger DB) sia se esiste già ma incompleta
+// (completa solo i campi anagrafici mancanti, non tocca mai ruolo/
+// ruolo_livello/piano/attivo/centro_id di una riga già esistente — quelli
+// sono decisioni prese altrove, es. dall'admin o da create-centro).
+async function syncProfileFromAuthMetadata(supabase, user) {
+  const meta = user.user_metadata || {}
+  const nomeFallback = (meta.nome && String(meta.nome).trim()) || 'Nuovo'
+  const cognomeFallback = (meta.cognome && String(meta.cognome).trim()) || 'Utente'
+
+  const { data: existingProfile, error: readError } = await supabase
+    .from('user_profiles')
+    .select('id, nome, cognome, ' + OPTIONAL_METADATA_FIELDS.join(', '))
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (readError) {
+    console.error('[auth/callback] Lettura profilo per sync fallita:', readError.message)
+    return
+  }
+
+  if (!existingProfile) {
+    // Riga mancante (il caso del bug #218): creala per intero.
+    const insertPayload = {
+      id: user.id,
+      email: user.email,
+      nome: nomeFallback,
+      cognome: cognomeFallback,
+      ruolo: 'centro',
+      ruolo_livello: 'titolare',
+      piano: 'demo',
+      attivo: true
+    }
+    for (const field of OPTIONAL_METADATA_FIELDS) {
+      if (meta[field] !== undefined && meta[field] !== null && meta[field] !== '') {
+        insertPayload[field] = meta[field]
+      }
+    }
+    const { error: insertError } = await supabase.from('user_profiles').insert(insertPayload)
+    if (insertError) {
+      console.error('[auth/callback] Creazione profilo self-healing fallita:', insertError.message)
+    }
+    return
+  }
+
+  // Riga già esistente (es. il trigger DB ha funzionato): completa SOLO i
+  // campi anagrafici ancora vuoti, senza mai sovrascrivere un valore già
+  // presente (potrebbe essere stato modificato a mano dall'utente o
+  // dall'admin dopo la creazione).
+  const updatePayload = {}
+  if (!existingProfile.nome || existingProfile.nome === 'Nuovo') {
+    if (meta.nome) updatePayload.nome = meta.nome
+  }
+  if (!existingProfile.cognome || existingProfile.cognome === 'Utente') {
+    if (meta.cognome) updatePayload.cognome = meta.cognome
+  }
+  for (const field of OPTIONAL_METADATA_FIELDS) {
+    const current = existingProfile[field]
+    const isEmpty = current === null || current === undefined || current === ''
+    if (isEmpty && meta[field] !== undefined && meta[field] !== null && meta[field] !== '') {
+      updatePayload[field] = meta[field]
+    }
+  }
+
+  if (Object.keys(updatePayload).length > 0) {
+    const { error: updateError } = await supabase
+      .from('user_profiles')
+      .update(updatePayload)
+      .eq('id', user.id)
+    if (updateError) {
+      console.error('[auth/callback] Completamento profilo self-healing fallito:', updateError.message)
+    }
+  }
+}
+
 // Bug fix (03/09/2026, collaudo Mason — bug #4): "cliccando sul link
 // nell'email di conferma si ottiene un errore, non si riesce ad accedere".
 //
@@ -83,6 +173,50 @@ export async function GET(request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Fix bug critico (21/09/2026, collaudo live Mason, task #218): "nessun
+      // utente trovato" sulla pagina di completamento centro subito dopo la
+      // conferma email, pur essendo l'utente davvero loggato (provato: aprendo
+      // /listino il tool si apriva correttamente).
+      //
+      // Causa reale trovata sui dati veri di produzione (non un'ipotesi): il
+      // trigger `handle_new_user()` su auth.users (creato il 07/09/2026) non
+      // includeva mai le colonne nome/cognome nell'INSERT su user_profiles —
+      // colonne NOT NULL senza default. Ogni INSERT del trigger falliva
+      // SEMPRE con una violazione di vincolo, presa in silenzio dal blocco
+      // EXCEPTION WHEN OTHERS (solo un RAISE WARNING nei log Postgres): da
+      // quando il trigger esiste, NESSUNA riga user_profiles è mai stata
+      // creata per un signup nuovo. Verificato sull'account di test reale di
+      // Mason di oggi (query diretta auth.users/user_profiles) e corretto
+      // anche lato DB (trigger ora legge nome/cognome da raw_user_meta_data,
+      // con fallback se assenti). Quel fix da solo però non basta: il
+      // secondo tentativo di creare il profilo, quello lato client in
+      // contexts/AuthContext.js signUp(), è SEMPRE bloccato dalle policy RLS
+      // in questo punto del flusso (nessuna sessione autenticata esiste
+      // ancora finché l'email non è confermata) — quindi anche con conferma
+      // email il resto dell'anagrafica raccolta nel form (residenza,
+      // documento, ecc.) andava persa in silenzio.
+      //
+      // Fix strutturale: qui, che è il PRIMO momento in cui esiste davvero
+      // una sessione autenticata (cookie appena scritti da
+      // exchangeCodeForSession, quindi `auth.uid()` è valorizzato per le
+      // policy RLS), sincronizziamo il profilo da `user.user_metadata`
+      // (= raw_user_meta_data, dove signUp() ora salva l'intera anagrafica,
+      // non solo nome/cognome — vedi AuthContext.js). Auto-risanante e
+      // indipendente dall'affidabilità del trigger DB: se la riga manca la
+      // crea, se esiste già la completa SENZA sovrascrivere ruolo/piano/
+      // centro_id o dati già presenti. Non blocca mai il redirect: è
+      // avvolto in try/catch, un fallimento qui non deve impedire il login.
+      if (!next.startsWith('/reset-password')) {
+        try {
+          const { data: { user: sessionUser } } = await supabase.auth.getUser()
+          if (sessionUser) {
+            await syncProfileFromAuthMetadata(supabase, sessionUser)
+          }
+        } catch (syncError) {
+          console.error('[auth/callback] Sync profilo da metadata fallito (non bloccante):', syncError.message)
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
 
