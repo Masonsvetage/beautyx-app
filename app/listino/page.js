@@ -178,6 +178,16 @@ const TOOL_CSS = `
   #bx-listino-root .vp-price{font-family:var(--font-playfair),Georgia,serif;font-weight:700;font-size:18px;color:#9A7A22;white-space:nowrap}
   #bx-listino-root .vp-foot{max-width:620px;margin:26px auto 0;text-align:center;color:#a9a9a9;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
   @media print{@page{margin:16mm}#bx-listino-root{background:#fff}#bx-listino-root .banner,#bx-listino-root .tabbar,#bx-listino-root .panel,#bx-listino-root .foot,#bx-listino-root .ttog{display:none!important}#bx-listino-root #vetrina-print{display:block!important}}
+  /* AGGIUNTA (21/09/2026, task #220): icona "?" con popup di spiegazione per i
+     campi segnalati da Mason come poco comprensibili, e riga secondaria "IVA
+     inclusa" sotto ai tre valori di spesa calcolati. */
+  #bx-listino-root label{position:relative}
+  #bx-listino-root .qtip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--chip);color:var(--muted);font-size:10.5px;font-weight:700;cursor:pointer;margin-left:5px;vertical-align:middle;border:1px solid var(--line);position:relative}
+  #bx-listino-root .qtip:hover,#bx-listino-root .qtip.open{background:var(--plum);color:#fff;border-color:var(--plum)}
+  #bx-listino-root .qtip-pop{display:none;position:absolute;z-index:30;left:0;top:22px;width:250px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.18);padding:10px 12px;font-size:12.5px;font-weight:400;line-height:1.5;color:var(--ink);text-align:left;text-transform:none;letter-spacing:normal;cursor:default}
+  #bx-listino-root .qtip:hover .qtip-pop,#bx-listino-root .qtip.open .qtip-pop,#bx-listino-root .qtip:focus .qtip-pop{display:block}
+  #bx-listino-root h2 .qtip{margin-left:6px}
+  #bx-listino-root .viva{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:500}
 `
 
 // ===================================================================
@@ -214,12 +224,12 @@ const TOOL_HTML = `
     <div class="card">
       <div class="fieldrow">
         <div><label>Ore apertura/sett</label><input class="ws" type="number" id="oresett" min="1"></div>
-        <div><label>Riempimento %</label><input class="wxs" type="number" id="fill" min="10" max="100"></div>
-        <div><label>Postazioni</label><input class="wxs" type="number" id="postazioni" min="1"></div>
-        <div><label>Ferie/permessi %</label><input class="wxs" type="number" id="ferie" min="0" max="40"></div>
-        <div><label>Giorni/mese</label><input class="wxs" type="number" id="giorni" min="1" max="31"></div>
+        <div><label>Riempimento %<span class="qtip" tabindex="0">?<span class="qtip-pop">Quanta parte delle ore aperte riesci davvero a riempire di clienti. Nessun centro lavora il 100% del tempo: buchi in agenda, disdette, tempi morti tra un appuntamento e l'altro. Un valore realistico è tra 70% e 85% — il tool lo usa per calcolare le ore che puoi vendere per davvero, non quelle di sola apertura.</span></span></label><input class="wxs" type="number" id="fill" min="10" max="100"></div>
+        <div><label>Postazioni<span class="qtip" tabindex="0">?<span class="qtip-pop">Quante cabine/postazioni di lavoro hai davvero. Se apri 8 ore con 2 postazioni, in teoria vendi fino a 16 ore-cabina al giorno — ma contano anche le persone che le occupano (vedi Operatrici sotto): il tool prende sempre il valore più basso tra postazioni e personale, perché è quello che ti frena davvero.</span></span></label><input class="wxs" type="number" id="postazioni" min="1"></div>
+        <div><label>Ferie/permessi %<span class="qtip" tabindex="0">?<span class="qtip-pop">La quota di ore l'anno in cui il personale NON è al lavoro (ferie, permessi, malattia media). Riduce le ore davvero vendibili: più alta questa percentuale, meno ore il tool considera disponibili per calcolare il costo orario reale del negozio.</span></span></label><input class="wxs" type="number" id="ferie" min="0" max="40"></div>
+        <div><label>Giorni/mese<span class="qtip" tabindex="0">?<span class="qtip-pop">Quanti giorni al mese il centro resta aperto. Serve a trasformare la spesa mensile del negozio in una spesa al giorno — così capisci subito se l'incasso di una giornata copre almeno le spese fisse di quella giornata.</span></span></label><input class="wxs" type="number" id="giorni" min="1" max="31"></div>
       </div>
-      <label style="margin-top:12px">Operatrici <span class="hint">nome + ore a settimana</span></label>
+      <label style="margin-top:12px">Operatrici <span class="hint">nome + ore a settimana</span><span class="qtip" tabindex="0">?<span class="qtip-pop">Le persone che lavorano in cabina, con le ore settimanali di ciascuna (le "licenze"/ore di presenza del personale). Il tool somma le ore di tutto il personale — al netto di Ferie/permessi — e le confronta con le ore delle postazioni: chi dei due frena di più decide quante ore puoi davvero vendere in un mese.</span></span></label>
       <div id="operatori"></div>
       <div class="btnrow"><button class="btn" onclick="addOperatore()">+ Operatrice</button></div>
       <div class="msg" id="bottleneck" style="margin-top:10px"></div>
@@ -234,14 +244,15 @@ const TOOL_HTML = `
       </div>
     </div>
 
-    <h2>Quanto ti costa il negozio</h2>
+    <h2>Quanto ti costa il negozio <span class="hint">valori al netto IVA</span></h2>
     <div class="verdict" id="costsentence" style="color:var(--plum)">—</div>
     <div class="tiles">
-      <div class="tile"><div class="k">al mese</div><div class="v" id="totmese">—</div></div>
-      <div class="tile"><div class="k">al giorno</div><div class="v" id="speseday">—</div></div>
-      <div class="tile"><div class="k">all'ora</div><div class="v" id="hourly">—</div></div>
+      <div class="tile"><div class="k">al mese</div><div class="v" id="totmese">—</div><div class="viva" id="totmese-iva"></div></div>
+      <div class="tile"><div class="k">al giorno</div><div class="v" id="speseday">—</div><div class="viva" id="speseday-iva"></div></div>
+      <div class="tile"><div class="k">all'ora</div><div class="v" id="hourly">—</div><div class="viva" id="hourly-iva"></div></div>
       <div class="tile"><div class="k">Ore prod. / mese</div><div class="v" id="oreprod">—</div></div>
     </div>
+    <p class="hint" id="ivaNote" style="margin-top:8px"></p>
   </section>
 
   <!-- ===== SERVIZIO ===== -->
@@ -524,17 +535,42 @@ function buildToolScript(isFree) {
     tb.querySelectorAll("input").forEach(inp=>{const k=inp.dataset.k;if(k==="share"){inp.addEventListener("change",e=>{redistribute(+e.target.dataset.i,+e.target.value||0);renderRows();recompute();});}else{inp.addEventListener("input",e=>{services[+e.target.dataset.i][k]=e.target.value;recompute();});}});
     tb.querySelectorAll("button[data-lock]").forEach(b=>b.addEventListener("click",e=>toggleLock(+e.currentTarget.dataset.lock)));}
 
+  // AGGIUNTA (21/09/2026, task #220): testo del tooltip "?" sulla tile
+  // "Margine/mese" del banco Prezzo giusto — riusato qui perché tile() è
+  // condivisa anche da recompute()/computeBanco(), non solo dalle label statiche.
+  const QTIP_MARGINE='<span class="qtip" tabindex="0">?<span class="qtip-pop">Quanto ti resterebbe in un mese da questo servizio, ai clienti/mese che hai indicato sopra, al netto dei costi del negozio che quel servizio si porta via col suo tempo. È una proiezione basata sui numeri di oggi, non un incasso già garantito.</span></span>';
   function tile(k,v,col){return '<div class="tile"><div class="k">'+k+'</div><div class="v"'+(col?' style="color:'+col+'"':'')+'>'+v+'</div></div>';}
   function syncToggles(){document.querySelectorAll("#regtoggle button").forEach(b=>b.classList.toggle("on",b.dataset.v===state.regime));document.querySelectorAll("#voltoggle button").forEach(b=>b.classList.toggle("on",b.dataset.v===state.volmode));document.getElementById("ivabox").style.display=state.regime==="ord"?"":"none";document.getElementById("volhead").textContent=state.volmode==="perc"?"%":"Volte/m";const fb=document.getElementById("fattbox");if(fb)fb.style.display=state.volmode==="perc"?"":"none";document.getElementById("volhint").textContent=state.volmode==="perc"?"Quanto pesa ogni servizio sul totale (sempre 100%). Il fatturato viene diviso tra i servizi.":"Quante volte al mese fai ogni servizio (0 se non lo sai).";}
 
   function recompute(){
     syncToggles();const c=cap();const beh=breakEvenHour();const gg=+state.giorni||24;
-    const costOra=c.billMo>0?fixedMese()/c.billMo:0;
-    document.getElementById("hourly").textContent=eur0(costOra);
-    document.getElementById("totmese").textContent=eur0(fixedMese());
-    document.getElementById("speseday").textContent=eur0(fixedMese()/gg);
+    // FIX (21/09/2026, task #220): prima qui si mostrava fixedMese() (il
+    // totale LORDO delle spese, IVA inclusa — le voci si inseriscono "come
+    // le paghi", quindi già IVA inclusa) SENZA dirlo, mentre tutto il resto
+    // del tool (breakEvenHour(), quindi ogni verdetto "regge/frena" nelle
+    // schede Prezzo giusto e Listino) usa fixedNetMese() — il NETTO. Il
+    // risultato era che il numero mostrato qui in negozio e il numero che
+    // decide davvero se un servizio è in perdita erano due cifre diverse,
+    // mai spiegate, mai riconciliate: esattamente la confusione lordo/netto
+    // segnalata da Mason. Ora la cifra PRINCIPALE è il netto (coerente con
+    // tutto il resto del tool), con l'equivalente IVA inclusa mostrato
+    // accanto, più piccolo — così una titolare non pensa "ho incassato 600€
+    // lordi oggi, coprono le mie spese nette di 600€/giorno" quando in
+    // realtà una fetta di quei 600€ è IVA da versare, non margine.
+    const costOraNet=c.billMo>0?fixedNetMese()/c.billMo:0;
+    const costOraGross=c.billMo>0?fixedMese()/c.billMo:0;
+    const totMeseNet=fixedNetMese(),totMeseGross=fixedMese();
+    const speseDayNet=totMeseNet/gg,speseDayGross=totMeseGross/gg;
+    const ordConIva=state.regime==="ord";
+    document.getElementById("hourly").textContent=eur0(costOraNet);
+    document.getElementById("totmese").textContent=eur0(totMeseNet);
+    document.getElementById("speseday").textContent=eur0(speseDayNet);
     document.getElementById("oreprod").textContent=Math.round(c.billMo)+" h";
-    {const cs=document.getElementById("costsentence");if(cs)cs.innerHTML="Il tuo negozio ti costa <b>"+eur0(fixedMese())+"/mese</b> · <b>"+eur0(fixedMese()/gg)+"/giorno</b> · <b>"+eur0(costOra)+"/ora</b>";}
+    {const el=document.getElementById("totmese-iva");if(el)el.textContent=ordConIva?("IVA inclusa: "+eur0(totMeseGross)):"";}
+    {const el=document.getElementById("speseday-iva");if(el)el.textContent=ordConIva?("IVA inclusa: "+eur0(speseDayGross)):"";}
+    {const el=document.getElementById("hourly-iva");if(el)el.textContent=ordConIva?("IVA inclusa: "+eur0(costOraGross)):"";}
+    {const el=document.getElementById("ivaNote");if(el)el.textContent=ordConIva?"I valori grandi sono al netto IVA (quello che ti resta davvero, la base su cui il tool calcola se un servizio regge). Sotto, più piccolo, trovi il corrispondente importo con IVA inclusa — è più alto perché include l'IVA che devi comunque versare, non è margine in più.":"";}
+    {const cs=document.getElementById("costsentence");if(cs)cs.innerHTML="Il tuo negozio ti costa <b>"+eur0(totMeseNet)+"/mese</b> · <b>"+eur0(speseDayNet)+"/giorno</b> · <b>"+eur0(costOraNet)+"/ora</b> <span style='font-weight:400;font-size:12px;color:var(--muted)'>(al netto IVA)</span>";}
     const bn=document.getElementById("bottleneck");const sh=Math.round(c.stationWk),lh=Math.round(c.laborEff);
     if(c.parallel<=0){bn.className="msg a";bn.innerHTML="Aggiungi postazioni e operatrici.";}
     else{const diff=Math.abs(sh-lh)/Math.max(sh,lh,1);
@@ -566,7 +602,7 @@ function buildToolScript(isFree) {
     const obj=(+state.obiettivo||55)/100;const margPct=net>0?Math.round(utileCli/net*100):0;
     const scontoSafe=(net>0&&(1-obj)>0)?Math.max(0,Math.floor((1-quota/((1-obj)*net))*100)):0;
     const scontoLoss=net>0?Math.max(0,Math.floor((1-quota/net)*100)):0;
-    let h='<div class="tiles">'+tile("Utile / cliente",eur(utileCli),utileCli<0?"var(--red)":"var(--green)")+tile("Sconto sicuro",scontoSafe+"%")+tile("Capacità max/mese",M)+(R>0?tile("Margine/mese ("+R+")",eur0(utileCli*R),utileCli<0?"var(--red)":"var(--green)"):"")+'</div>';
+    let h='<div class="tiles">'+tile("Utile / cliente",eur(utileCli),utileCli<0?"var(--red)":"var(--green)")+tile("Sconto sicuro",scontoSafe+"%")+tile("Capacità max/mese",M)+(R>0?tile("Margine/mese ("+R+")"+QTIP_MARGINE,eur0(utileCli*R),utileCli<0?"var(--red)":"var(--green)"):"")+'</div>';
     if(utileCli<0){const dMax=beh>0?Math.floor(net/beh*60):0;h+='<div class="msg r">A <b>'+eur0(p)+'</b> ci perdi <b>'+eur(-utileCli)+'</b> a cliente: sei sotto costo, nessuno sconto è possibile. Sali ad almeno <b>'+eur0(pMin)+'</b> o accorcia a ~<b>'+dMax+' min</b>.</div>';}
     else{h+='<div class="msg g">Da ogni prestazione ricavi un utile di <b>'+eur(utileCli)+'</b> (margine '+margPct+'%). Puoi scontare <b>fino al '+scontoSafe+'%</b> restando sul tuo obiettivo; oltre intacchi il margine, sopra il <b>'+scontoLoss+'%</b> ci perdi. '+(R>0?('A '+R+' clienti/mese: <b>+'+eur0(utileCli*R)+'</b>'+(R>M?' — ⚠️ oltre la capacità ('+M+')':'')+'.'):'')+'</div>';}
     out.innerHTML=h;}
@@ -607,6 +643,21 @@ function buildToolScript(isFree) {
   window.toggleLock=toggleLock;window.sbloccaTutte=sbloccaTutte;window.resetDemo=resetDemo;window.printList=printList;
   window.copiaExcel=copiaExcel;window.printVetrina=printVetrina;window.addBancoToListino=addBancoToListino;
   window.copyCode=copyCode;window.restoreCode=restoreCode;
+
+  // AGGIUNTA (21/09/2026, task #220): tap/click su un'icona "?" apre/chiude
+  // il suo popup di spiegazione (necessario sui touch screen, dove :hover
+  // non esiste) — un click altrove chiude tutti i popup aperti.
+  document.querySelectorAll('#bx-listino-root .qtip').forEach(function(q){
+    q.addEventListener('click', function(e){
+      e.stopPropagation();
+      const wasOpen = q.classList.contains('open');
+      document.querySelectorAll('#bx-listino-root .qtip.open').forEach(function(o){ o.classList.remove('open'); });
+      if (!wasOpen) q.classList.add('open');
+    });
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('#bx-listino-root .qtip.open').forEach(function(o){ o.classList.remove('open'); });
+  });
 
   // ---- AGGIUNTA gating: lucchetto visivo sulle tab gated + segnale a React
   // per il CTA "dopo il primo uso" verso /newsletter (si accende al primo
