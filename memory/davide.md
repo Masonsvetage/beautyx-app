@@ -3486,3 +3486,184 @@ stessa disciplina già usata negli audit precedenti di questo progetto.
   `apply_migration`), un test API black-box inconcludente per il signup.
   Tutti e tre i "resta da fare dal vivo" sopra sono da eseguire da Mason
   prima di considerare i fix confermati in campo.
+
+## Uniformazione visiva hero/banner — task #226/#227 (22/09/2026)
+
+- **Contesto:** Mason ha visto dal vivo il redesign /report+/listino appena
+  fatto (task #226, due colonne su crema con immagine in riquadro/vignettatura
+  sfumata, seguito alla lettera dal gate di Elena del 21/09) e lo ha bocciato
+  lo stesso giorno: voleva lo STESSO trattamento della hero/sezione Identikit
+  di `/newsletter` (foto piena larghezza scura con overlay, non un riquadro su
+  sfondo chiaro). In più, banner countdown topbar giallo→rosa bocciato come
+  stonato, e paragrafo lungo sotto l'hero di `/newsletter` bocciato come
+  illeggibile. Quattro fix, tutti solo CSS/layout/immagini/tipografia,
+  nessuna logica applicativa toccata.
+
+- **Scoperta preliminare importante (verificata sul codice reale, non sulla
+  parola del brief ricevuto):** la descrizione di partenza diceva che l'hero
+  principale di `/newsletter` (quella con "Il tuo lavoro lo sai fare...", righe
+  ~264-346) usasse già gradiente bordeaux + overlay radiale rosa + foto
+  desaturata piena larghezza. Non è così: quella hero è a sfondo piatto
+  `#1a1a0f` con una foto B/N a opacità 0.25, SENZA gradiente bordeaux né
+  overlay radiale. Il gradiente bordeaux (`#2a1420→#23111c→#1f0f18`) + overlay
+  radiale rosa (`radial-gradient(circle at 50% 0%, rgba(236,72,153,0.26),
+  transparent 60%)`) esistono davvero nel codice, ma nella sezione Identikit
+  (`id="report-cura"`, righe ~397-476) subito sotto — quella sezione era
+  esattamente il bersaglio del Task 1 (aggiungerci la foto mancante). Ho preso
+  QUESTO pattern (gradiente+overlay, verificato nel codice) come riferimento
+  canonico da riusare su /report e /listino, non la descrizione ricevuta.
+  Segnalato al Coordinatore perché il brief su questo punto era impreciso.
+
+### Task 1 — Foto nella sezione Identikit di /newsletter
+- Aggiunto un layer `<div>` `position:absolute inset:0` con
+  `backgroundImage: url(/hero-identikit.jpg)`, `backgroundSize: cover`,
+  `backgroundPosition: 'center 30%'`, `filter: 'grayscale(0.35) sepia(0.15)
+  contrast(1.05)'`, `opacity: 0.5` — SOTTO l'overlay radiale rosa esistente e
+  SOPRA il gradiente bordeaux di sfondo della sezione (`app/newsletter/page.js`,
+  dentro `id="report-cura"`).
+- Asset: design Canva `DAHV6fmEs3A` (variante panoramica 1920×1000 del
+  concept "titolare di spalle davanti al lettino vuoto", creata da Chiara
+  apposta per questa sezione — non è lo stesso file verticale usato per
+  /report). Verificata visivamente via browser (screenshot dell'export): la
+  foto è già scura/calda in origine, soggetto sulla destra, ampio spazio
+  vuoto a sinistra — coerente con un uso a piena larghezza con testo sopra.
+- **File NON scaricato su disco** (vedi nota generale sotto) — codice pronto,
+  punta a `/hero-identikit.jpg`, va solo droppato il file quando disponibile.
+
+### Task 2 — Hero /report e /listino: da riquadro a foto piena larghezza
+- `app/report/page.js`: rimosse le classi `.bx-hero-grid`/`.bx-hero-image`/
+  `.bx-hero-text`/`.bx-hero-image-frame` (layout a due colonne + cornice
+  vignettata) e la struttura a due colonne nella sezione hero. Nuova hero:
+  singola sezione full-bleed, stesso pattern di Identikit (gradiente bordeaux
+  di sfondo, layer foto `url(/hero-report.jpg)` con
+  `backgroundPosition:'center 15%'` e `filter: grayscale(0.5) contrast(1.05)
+  brightness(0.85)` opacity 0.55, overlay radiale rosa sopra), testo centrato
+  in colonna singola (max-width 720px) sopra tutto. Copy INVARIATO (badge,
+  H1, sottotitolo, CTA, note) — cambiati solo i colori di testo da
+  scuro-su-crema a chiaro-su-scuro (H1 prima riga `#1a1a0f`→`#fff`, sottotitolo
+  `#444`→`rgba(255,255,255,0.88)`, note secondarie `#888`/`#999`→
+  `rgba(255,255,255,0.5-0.55)`; H1 seconda riga e CTA restano `#EC4899`,
+  già compatibili). Sezioni sotto la hero (separatore, pannello "Cosa
+  scopri", prezzo/countdown, miniguida, footer) INVARIATE, restano sul
+  page-background crema `#f5f1ea` come prima — solo la hero cambia.
+- `app/listino/page.js`: stessa operazione. Rimosse `.bx-listino-hero-grid`/
+  `-hero-image`/`-hero-text`/`-image-glow`/`-image-frame`. Nuova hero
+  full-bleed con lo stesso gradiente bordeaux di base, layer foto
+  `url(/hero-listino.jpg)` (`backgroundPosition:'center 50%'`, SENZA filtro
+  grayscale — vedi scelta sotto), testo centrato sopra.
+  **Scelta di design fatta in autonomia, da segnalare a Mason:** l'overlay
+  radiale qui NON è il rosa `rgba(236,72,153,...)` usato ovunque altrove, ma
+  resta verde/oro (`radial-gradient(...rgba(15,110,86,0.32)...
+  rgba(255,196,66,0.22)...)`), e la foto non è desaturata via CSS filter
+  (solo `brightness(0.8) contrast(1.05)`). Badge e bottone CTA restano nel
+  verde del tool (`#0F6E56`), invariati. Motivo: l'immagine
+  `DAHV0w6QUO8` è stata corretta da zero il 21/09 (vedi
+  `drafts/immagini-redesign-report-listino-2026-09-21.md`, changelog)
+  ESATTAMENTE perché il bagliore leggesse come verde smeraldo (identità del
+  tool) invece che ambra/oro generico — desaturarla o metterci sopra un
+  overlay rosa avrebbe vanificato quel lavoro e confuso l'identità
+  verde/oro del Listino con quella rosa/CURA dell'Identikit, due prodotti
+  che il team ha lavorato a tenere visivamente distinti (vedi
+  `memory/generale.md`, voce "Tool Listino intelligente"). Ho quindi
+  applicato la richiesta di Mason alla lettera sulla STRUTTURA (gradiente
+  bordeaux di base, foto full-bleed, overlay radiale, testo sopra, niente
+  riquadri — questo sì, uniforme su tutte e 4 le aree) ma non sui colori
+  d'accento specifici del prodotto (radiale, badge, CTA), che restano
+  quelli già approvati per il Listino. H1 seconda riga e link "Accedi"
+  schiariti da `#0F6E56` (poco leggibile su fondo scuro) a `#34D399` per
+  restare leggibili senza perdere l'identità verde. **Se Mason vuole
+  l'uniformità totale (radiale rosa anche qui), è un cambio di una riga —
+  segnalarlo esplicitamente, non deciso da solo silenziosamente.**
+- **File immagine NON presenti su disco** (già noto da prima, vedi sezione
+  20/09 sopra): `/hero-report.jpg` e `/hero-listino.jpg` referenziati nel
+  codice ma mai scaricati fisicamente. Verificato di nuovo con Glob:
+  `public/hero-*.jpg` — nessun file trovato. Vedi nota generale sotto per
+  cosa ho provato.
+
+### Task 3 — Banner countdown topbar: via il giallo, oro reale campionato
+- `components/common/ReportCountdownBanner.js`, variant `"topbar"`:
+  - Sfondo barra: da `linear-gradient(90deg, #FFE44D 0%, #EC4899 100%)` a
+    `linear-gradient(90deg, #2a1420 0%, #1f0f18 100%)` (stesso gradiente
+    bordeaux di riferimento, qui orizzontale).
+  - Testo claim ("Identikit strategico CURA gratis" / "rimasti"): da `#1a1a0f`
+    a `#EC4899` (rosa brand, già in uso ovunque).
+  - Bottone CTA "Richiedilo ora →": da chip scuro `#1a1a0f` + testo oro
+    placeholder `#FFE44D` a bottone pieno `#EC4899` con testo bianco (stesso
+    colore di ogni altro CTA primario del sito) + un bordo sottile nell'oro
+    reale (`BRAND_GOLD`, vedi sotto) come unico accento oro sul bottone.
+  - Cifre countdown (`CountdownDigits`, theme `"onBrand"`): colore cifre da
+    `#FFE44D` a `BRAND_GOLD` (oro reale); separatore `:` e anello del pulse
+    ricolorati da toni pensati per sfondo chiaro a toni oro/scuri adatti a
+    sfondo scuro.
+  - Hover del bottone CTA: da `#000` a `#d63d80` (rosa scurito).
+  - **Nuova costante `BRAND_GOLD = '#D1AB3A'`**, con commento che spiega la
+    provenienza (vedi sotto).
+- **Oro reale — come l'ho trovato (non indovinato):** senza shell/npm/sharp
+  disponibili (stesso blocco di sempre), ho aperto
+  `https://beautyx.it/beautyx-wordmark-gold.png` (file di produzione reale,
+  non locale) nel browser pane e usato `javascript_tool` per disegnarlo su un
+  `<canvas>` e leggere i pixel con `getImageData`. Risultato: **123.349 pixel
+  opachi campionati (esclusi bianco e nero), TUTTI identici a RGB
+  `209,171,58`** → hex esatto **`#D1AB3A`** — è un fill piatto, non un
+  gradiente. Incrociato con `https://beautyx.it/logo_beautyx-oro.png` (il
+  monogramma esagonale, quello sì a gradiente/luci-ombre): il bucket di pixel
+  più frequente lì è RGB `210,174,60`, praticamente identico — stesso oro,
+  solo con highlight/shadow aggiunti nel logo. Nessun hex indovinato: è un
+  campionamento diretto sul file reale pubblicato, con oltre 120k pixel di
+  campione sul file piatto.
+
+### Task 4 — Leggibilità paragrafo hero /newsletter
+- `app/newsletter/page.js`, hero, paragrafo "Ti alzi presto...": diviso in 3
+  `<p>` separati (prima: fino a "...quella che fatica a tornare come
+  vorresti."; seconda: da "Conosci bene questa stanchezza..." a "...è
+  rimasto un capitolo bianco."; terza: il resto, da "Oggi però le cose
+  possono prendere un'altra direzione..." fino a "...quando finalmente
+  stacchi."). Nessuna parola del copy toccata, solo gli a-capo.
+  Font: `clamp(16px, 2vw, 19px)` → `clamp(17px, 2.2vw, 21px)`.
+  Colore: `#aaa` → `rgba(255,255,255,0.92)`.
+  `margin-bottom` tra i 3 blocchi: 20px (36px sull'ultimo, come prima, per lo
+  spazio verso il form sotto).
+
+### Cosa NON ho potuto verificare
+- **Sandbox/shell non disponibile per tutta la sessione** (`Workspace
+  unavailable... VM service not running`), come nelle sessioni precedenti:
+  nessun `npm run dev`/`next build`/lint reale eseguito. Verifica fatta
+  rileggendo a mano ogni sezione modificata per intero (bilanciamento
+  JSX/graffe, nomi di classe rimasti orfani — controllato con grep mirato
+  che nessuna pagina referenzi ancora le classi CSS rimosse), non da un
+  compilatore.
+- **Browser pane disponibile e usato** (a differenza di sessioni precedenti
+  dove anche quello mancava): l'ho usato per (a) campionare l'oro reale dal
+  PNG di produzione, (b) aprire in anteprima le 3 immagini Canva esportate
+  oggi e verificarne inquadratura/soggetto prima di scegliere
+  `backgroundPosition`. NON l'ho potuto usare per aprire file locali
+  (`file://` rifiutato: "opening local files is not available in this
+  session") né per scaricare binari nel filesystem del progetto — stesso
+  blocco di sempre sulle immagini (vedi sotto).
+- **Le 3 immagini restano da scaricare fisicamente** in `public/`:
+  `hero-identikit.jpg` (nuovo, Task 1), `hero-report.jpg`, `hero-listino.jpg`
+  (già mancanti da prima, Task 2). Ho riesportato tutti e 3 i design Canva
+  oggi (link freschi, validi indicativamente fino a stamattina tardi
+  22/09 — dopo quell'orario vanno rigenerati con `export-design`, i design
+  restano salvati permanentemente su Canva):
+  - Identikit (`/newsletter`): design `DAHV6fmEs3A` (1920×1000)
+  - Report: design `DAHV0IFvZDE` (1600×2000) — stesso file già noto da prima
+  - Listino: design `DAHV0w6QUO8` (1600×2000) — stesso file corretto da
+    Elena il 21/09 (bagliore verde, non più ambra)
+  Non sono riuscito a portarli sul filesystem: niente shell (bash sempre
+  "Workspace unavailable"), niente accesso file locali dal browser pane, e
+  gli strumenti Read/Write di cui dispongo scrivono solo testo — non byte
+  binari di un JPG/PNG (scrivere una stringa base64 in un file .jpg
+  produrrebbe un file corrotto, non un'immagine valida). **Finché questi 3
+  file non vengono droppati in `public/`, le 3 sezioni mostrano solo il
+  gradiente di sfondo (nessuna foto, nessun errore/crash: gli `<img>` sono
+  diventati `background-image` CSS, quindi un 404 sull'immagine è silenzioso
+  — non rompe la pagina, semplicemente non si vede la foto).**
+- **Collaudo dal vivo mai fatto** su nessuna delle 4 modifiche (nessun
+  `npm run dev`/deploy preview): tutto verificato solo a livello di codice
+  sorgente e (per le immagini) di anteprima isolata nel browser pane. Da
+  fare da Mason/Coordinatore dopo il push: aprire `/newsletter`, `/report`,
+  `/listino` nel browser vero e controllare che i 4 punti sopra si vedano
+  come descritto, specialmente il contrasto testo/sfondo nelle sezioni ora
+  scure (ho calcolato i colori a mente, non misurato un contrast ratio
+  reale).

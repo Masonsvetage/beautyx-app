@@ -287,8 +287,22 @@ export default function NewsletterPage() {
                 <span style={{ fontStyle: 'italic', color: '#EC4899' }}>Gestirlo bene<br />è un&apos;altra storia.</span>
               </h1>
 
-              <p style={{ fontSize: 'clamp(16px, 2vw, 19px)', color: '#aaa', lineHeight: 1.75, marginBottom: '36px', maxWidth: '520px' }}>
-                Ti alzi presto, vai a letto tardi, e in mezzo c&apos;è un centro che sembra reggersi tutto sulle tue spalle: agenda piena, mani sempre impegnate, clienti che aspettano il loro turno. Poi arriva la sera, ti fermi un attimo su quel conto a fine mese — e il numero racconta sempre la stessa storia, quella che fatica a tornare come vorresti. Conosci bene questa stanchezza: va ben oltre le ore di sonno perse, è la sensazione di correre tutto il giorno e restare comunque ferma, un passo indietro rispetto a dove vorresti essere. Ti sei convinta che la colpa sia tua — poca organizzazione, poco polso, poca qualcosa. Ecco la verità, ed è più semplice di quanto pensi: ti hanno insegnato alla perfezione il mestiere delle mani. La gestione, quella vera, è rimasta un capitolo bianco. Oggi però le cose possono prendere un&apos;altra direzione. Un metodo, dieci minuti due volte a settimana, e la gestione comincia a remare insieme a te, con un impegno piccolo e costante — altro che formule fotocopiate: è una visione del tuo lavoro che diventa finalmente tua. E quando il conto torna, cambia molto più del centro: cambia l&apos;umore quando rientri la sera, la testa leggera a cena con chi ami, una vacanza vissuta davvero, con la testa lì e basta. La serenità economica è anche la conferma che sei brava — ma soprattutto è la sicurezza che porti con te ovunque: a casa, in famiglia, anche in vacanza, quando finalmente stacchi.
+              {/* Leggibilità paragrafo hero — richiesta diretta di Mason
+                  (22/09/2026): "ci vuole la lente d'ingrandimento", blocco
+                  unico grigio (#aaa) troppo piccolo su sfondo foto scura.
+                  Font ingrandito, colore portato a un bianco/crema quasi
+                  pieno (rgba(255,255,255,0.92), non più grigio), testo
+                  spezzato in 3 blocchi su punti di senso compiuto — nessuna
+                  parola del copy originale toccata, solo dimensione,
+                  colore e a-capo. */}
+              <p style={{ fontSize: 'clamp(17px, 2.2vw, 21px)', color: 'rgba(255,255,255,0.92)', lineHeight: 1.75, marginBottom: '20px', maxWidth: '520px' }}>
+                Ti alzi presto, vai a letto tardi, e in mezzo c&apos;è un centro che sembra reggersi tutto sulle tue spalle: agenda piena, mani sempre impegnate, clienti che aspettano il loro turno. Poi arriva la sera, ti fermi un attimo su quel conto a fine mese — e il numero racconta sempre la stessa storia, quella che fatica a tornare come vorresti.
+              </p>
+              <p style={{ fontSize: 'clamp(17px, 2.2vw, 21px)', color: 'rgba(255,255,255,0.92)', lineHeight: 1.75, marginBottom: '20px', maxWidth: '520px' }}>
+                Conosci bene questa stanchezza: va ben oltre le ore di sonno perse, è la sensazione di correre tutto il giorno e restare comunque ferma, un passo indietro rispetto a dove vorresti essere. Ti sei convinta che la colpa sia tua — poca organizzazione, poco polso, poca qualcosa. Ecco la verità, ed è più semplice di quanto pensi: ti hanno insegnato alla perfezione il mestiere delle mani. La gestione, quella vera, è rimasta un capitolo bianco.
+              </p>
+              <p style={{ fontSize: 'clamp(17px, 2.2vw, 21px)', color: 'rgba(255,255,255,0.92)', lineHeight: 1.75, marginBottom: '36px', maxWidth: '520px' }}>
+                Oggi però le cose possono prendere un&apos;altra direzione. Un metodo, dieci minuti due volte a settimana, e la gestione comincia a remare insieme a te, con un impegno piccolo e costante — altro che formule fotocopiate: è una visione del tuo lavoro che diventa finalmente tua. E quando il conto torna, cambia molto più del centro: cambia l&apos;umore quando rientri la sera, la testa leggera a cena con chi ami, una vacanza vissuta davvero, con la testa lì e basta. La serenità economica è anche la conferma che sei brava — ma soprattutto è la sicurezza che porti con te ovunque: a casa, in famiglia, anche in vacanza, quando finalmente stacchi.
               </p>
 
               {/* Form email compatto in hero — riusa STESSI state/handler del form completo
@@ -405,6 +419,31 @@ export default function NewsletterPage() {
             overflow: 'hidden',
           }}
         >
+          {/* Task 1 (22/09/2026) — foto desaturata a piena larghezza, stesso
+              trattamento della hero principale di /newsletter (foto sotto,
+              overlay radiale rosa sopra, testo in cima) invece del gradiente
+              piatto senza immagine di prima. Asset: design Canva `DAHV6fmEs3A`
+              (variante panoramica full-width del concept "titolare di spalle
+              davanti al lettino vuoto" già usato per l'hero di /report,
+              creata da Chiara appositamente per questa sezione — vedi
+              drafts/immagini-redesign-report-listino-2026-09-21.md per il
+              concept originale verticale). File NON ancora scaricato nel
+              repository (stesso blocco tecnico noto: shell/sandbox
+              "Workspace unavailable" per tutta la sessione, niente accesso a
+              file locali dal browser pane) — path pronto, va solo droppato
+              /public/hero-identikit.jpg quando disponibile, stesso pattern
+              già in uso per /hero-report.jpg e /hero-listino.jpg. La foto
+              sorgente è già desaturata/calda in origine (stessa palette
+              luce-calda-desaturata del concept), qui aggiunto anche un filtro
+              CSS leggero per coerenza tonale con l'overlay bordeaux/rosa. */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'url(/hero-identikit.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 30%',
+            filter: 'grayscale(0.35) sepia(0.15) contrast(1.05)',
+            opacity: 0.5,
+          }} />
           <div style={{
             position: 'absolute', inset: 0,
             background: 'radial-gradient(circle at 50% 0%, rgba(236,72,153,0.26), transparent 60%)',

@@ -56,6 +56,18 @@ const MS_PER_HOUR = 60 * 60 * 1000
 const MS_PER_MINUTE = 60 * 1000
 const PLACEHOLDER_FALLBACK_DAYS = 60 // istruzione Mason 05/09/2026, vedi nota sopra
 
+// Oro reale del brand (22/09/2026, task #227) — campionato via canvas pixel
+// sampling sul PNG di produzione https://beautyx.it/beautyx-wordmark-gold.png
+// (fill piatto, non gradiente: 123.349 pixel opachi campionati, tutti
+// identici a RGB 209,171,58) e incrociato col tono medio del gradiente di
+// public/logo_beautyx-oro.png (bucket dominante RGB 210,174,60 — stesso
+// oro, lì solo con luci/ombre aggiunte). NON un hex indovinato: prima di
+// questa verifica il colore "oro" usato nel banner topbar (#FFE44D) era un
+// giallo acceso placeholder, mai preso dal logo reale — bocciato da Mason
+// come stonato. Vedi report di Davide in memory/davide.md per il dettaglio
+// del campionamento.
+const BRAND_GOLD = '#D1AB3A'
+
 // La data/costante di lancio (env var + regola dei 90gg) vive in
 // lib/report/freeWindow.js — stessa fonte usata dal redirect server-side
 // della root in proxy.js, per non avere due calcoli della stessa scadenza
@@ -121,11 +133,13 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg', theme = '
   // theme "dark" (default, invariato): chip rosa translucido/nero translucido
   // su sfondo scuro (#1a1a0f) — uso hero pill, richiamo di chiusura, sezione
   // Report CURA, /report.
-  // theme "onBrand" (nuovo, 05/09/2026): per la variant "topbar", montata su
-  // uno sfondo pieno e CHIARO (gradiente oro→rosa) — un chip translucido chiaro
-  // sparirebbe. Chip scuro OPACO con cifre oro: stesso principio "display
-  // digitale autosufficiente" della variante "lg", solo con i colori invertiti
-  // per restare leggibile sul suo sfondo specifico invece di dipendere da esso.
+  // theme "onBrand" (05/09/2026, ricolorato 22/09/2026 — task #227): per la
+  // variant "topbar". Montata oggi su uno sfondo pieno SCURO (gradiente
+  // bordeaux, non più il giallo→rosa di prima) — chip scuro opaco con cifre
+  // nell'ORO REALE del brand (BRAND_GOLD, campionato dal logo — vedi sopra),
+  // stesso principio "display digitale autosufficiente" della variante "lg",
+  // solo con un tono dedicato per restare leggibile e riconoscibile come
+  // brand sul suo sfondo specifico invece di dipendere da esso.
   const isOnBrand = theme === 'onBrand'
 
   const numStyle = {
@@ -146,7 +160,7 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg', theme = '
     // e nel richiamo di chiusura, entrambi su sfondo #1a1a0f) stanno su sfondo
     // scuro — testo chiaro in entrambi i casi (bug di contrasto testo scuro
     // su scuro nella versione precedente della pill, corretto qui).
-    color: isOnBrand ? '#FFE44D' : '#fff',
+    color: isOnBrand ? BRAND_GOLD : '#fff',
     background: isOnBrand ? '#1a1a0f' : (isLg ? 'rgba(0,0,0,0.32)' : 'rgba(236,72,153,0.28)'),
     borderRadius: isLg ? '12px' : '5px',
     padding: isLg ? '14px 10px' : '3px 6px',
@@ -172,9 +186,10 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg', theme = '
     fontSize: isLg ? 'clamp(24px, 5vw, 34px)' : '13px',
     // Il separatore, a differenza dei numeri, sta DIRETTAMENTE sullo sfondo
     // del genitore (non dentro il chip scuro) — su "onBrand" quello sfondo è
-    // il gradiente chiaro oro→rosa, quindi serve un tono scuro per restare
-    // visibile; su "dark" resta lo sfondo scuro esistente, tono chiaro.
-    color: isOnBrand ? 'rgba(26,26,15,0.55)' : 'rgba(255,255,255,0.4)',
+    // oggi il gradiente bordeaux scuro (non più il chiaro oro→rosa di prima),
+    // quindi serve un tono chiaro/oro traslucido per restare visibile; su
+    // "dark" resta lo sfondo scuro esistente, stesso tono chiaro.
+    color: isOnBrand ? 'rgba(209,171,58,0.55)' : 'rgba(255,255,255,0.4)',
     alignSelf: 'flex-start',
     marginTop: isLg ? '8px' : '2px',
   }
@@ -212,9 +227,11 @@ function CountdownDigits({ days, hours, minutes, seconds, size = 'lg', theme = '
 // bocciato la pill in testa hero perché contenuta nella colonna centrale
 // (max-width 640px) su sfondo scuro poco diverso dal resto — "invisibile e
 // incomprensibile". "topbar" è pensata per essere un elemento a sé: barra a
-// piena larghezza pagina, sfondo pieno (gradiente oro→rosa brand, MAI un tint
-// trasparente), un solo claim breve + countdown incorporato nella stessa
-// riga. Va montata dal chiamante FUORI da qualsiasi contenitore con
+// piena larghezza pagina, sfondo pieno a contrasto forte (dal 22/09/2026 il
+// gradiente bordeaux di brand — vedi nota nel corpo della variante più sotto
+// — non più il giallo→rosa iniziale), MAI un tint trasparente, un solo claim
+// breve + countdown incorporato nella stessa riga. Va montata dal chiamante
+// FUORI da qualsiasi contenitore con
 // max-width (vedi app/newsletter/page.js, subito sotto l'header, prima
 // dell'intera sezione hero) — qui non applichiamo noi stessi un max-width
 // perché lo scopo è occupare la larghezza intera del viewport.
@@ -293,14 +310,28 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
     //    di referente chiaro in un banner letto di corsa;
     // 2) aggiunto un vero bottone cliccabile verso /report (prima il banner era
     //    solo testo + countdown, senza alcun invito all'azione dentro la barra
-    //    stessa) — bottone chip scuro opaco con testo oro, stesso principio di
-    //    contrasto forte del chip countdown "onBrand", cosi i due elementi più
-    //    rilevanti della barra (countdown + CTA) si leggono come una coppia
-    //    coerente sullo sfondo pieno oro→rosa. Font del claim aumentato
-    //    (14px → clamp 16-19px) perché doveva leggersi a colpo d'occhio.
-    //    Testo del claim è una versione diretta di Davide, non definitiva:
-    //    Federica lavora in parallelo sul resto della sezione e può affinarlo
-    //    sopra senza toccare bottone/countdown.
+    //    stessa). Font del claim aumentato (14px → clamp 16-19px) perché
+    //    doveva leggersi a colpo d'occhio. Testo del claim è una versione
+    //    diretta di Davide, non definitiva: Federica lavora in parallelo sul
+    //    resto della sezione e può affinarlo sopra senza toccare
+    //    bottone/countdown.
+    //
+    // *** RICOLORATO 22/09/2026 (task #227, correzione diretta di Mason) —
+    // il gradiente giallo acceso→rosa (#FFE44D→#EC4899) è stato bocciato come
+    // "stonato", mai preso dalla vera palette del brand. Nuova base: stesso
+    // gradiente bordeaux già stabilito come riferimento nella sezione
+    // Identikit di /newsletter (#2a1420→#1f0f18), qui in orizzontale perché
+    // la barra è orizzontale. Testo del claim ora rosa (#EC4899, già in uso
+    // ovunque nel sito) invece di nero su sfondo chiaro. Il bottone CTA passa
+    // da "chip scuro opaco + testo oro" (aveva senso SOLO su uno sfondo
+    // chiaro, per fare contrasto) a rosa pieno con testo bianco — stesso
+    // colore di ogni altro CTA primario del sito (hero /newsletter, sezione
+    // Identikit, /report, /listino), cosi la barra non introduce un terzo
+    // colore di bottone. L'oro reale del brand (BRAND_GOLD, vedi sopra)
+    // resta come accento riservato alle cifre del countdown (chip
+    // "onBrand") — non sul bottone, per non affollare la barra di 3 colori
+    // diversi con pari peso. Struttura/logica/countdown invariati: solo
+    // colori.
     return (
       <div
         className={`bx-report-countdown bx-report-countdown--topbar ${className}`}
@@ -320,16 +351,21 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
             lento (2.6s) e ampiezza contenuta = percepibile ma signorile;
             rispetta prefers-reduced-motion (si disattiva del tutto). */}
         <style>{`
+          /* Anello del pulse ricolorato (22/09/2026, task #227): era un
+             alone scuro (rgba(26,26,15,...)) pensato per staccare su uno
+             sfondo CHIARO — su bordeaux scuro sarebbe quasi invisibile. Ora
+             un alone nell'oro reale del brand (BRAND_GOLD), coerente con
+             l'accento oro riservato alle cifre del countdown. */
           @keyframes bx-topbar-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(26,26,15,0), 0 2px 6px rgba(26,26,15,0.35); }
-            50% { box-shadow: 0 0 0 5px rgba(26,26,15,0.12), 0 2px 6px rgba(26,26,15,0.35); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(209,171,58,0), 0 2px 6px rgba(0,0,0,0.35); }
+            50% { box-shadow: 0 0 0 5px rgba(209,171,58,0.35), 0 2px 6px rgba(0,0,0,0.35); }
           }
           .bx-topbar-pulse { animation: bx-topbar-pulse 2.6s ease-in-out infinite; border-radius: 8px; }
           @media (prefers-reduced-motion: reduce) {
             .bx-topbar-pulse { animation: none; }
           }
           .bx-topbar-cta { transition: background 0.15s ease, transform 0.1s ease; }
-          .bx-topbar-cta:hover, .bx-topbar-cta:focus-visible { background: #000 !important; }
+          .bx-topbar-cta:hover, .bx-topbar-cta:focus-visible { background: #d63d80 !important; }
           .bx-topbar-cta:active { transform: scale(0.97); }
           @media (max-width: 560px) {
             .bx-topbar-row { padding: 12px 16px !important; gap: 8px !important; }
@@ -341,10 +377,14 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
           className="bx-topbar-row"
           style={{
             width: '100%',
-            // Sfondo PIENO a contrasto forte (gradiente oro→rosa brand), non un
-            // tint pallido: richiesta esplicita di Mason dopo la bocciatura
-            // della pill ("deve saltare all'occhio nel primo mezzo secondo").
-            background: 'linear-gradient(90deg, #FFE44D 0%, #EC4899 100%)',
+            // Sfondo PIENO a contrasto forte, non un tint pallido: richiesta
+            // esplicita di Mason dopo la bocciatura della pill ("deve saltare
+            // all'occhio nel primo mezzo secondo") — quel principio resta
+            // valido, cambia solo la palette (22/09/2026, task #227): non più
+            // il giallo→rosa acceso (stonato, mai preso dal brand reale), ora
+            // lo stesso gradiente bordeaux di riferimento (sezione Identikit
+            // /newsletter), qui in orizzontale.
+            background: 'linear-gradient(90deg, #2a1420 0%, #1f0f18 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -363,7 +403,10 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
               // allo schermo.
               fontSize: 'clamp(16px, 2.6vw, 19px)',
               fontWeight: 800,
-              color: '#1a1a0f',
+              // Testo rosa (22/09/2026, task #227) — era nero, pensato per lo
+              // sfondo chiaro giallo→rosa di prima; su sfondo bordeaux scuro
+              // serve il rosa brand già in uso ovunque nel sito (#EC4899).
+              color: '#EC4899',
               textAlign: 'center',
               lineHeight: 1.25,
             }}
@@ -379,7 +422,7 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
               fontFamily: 'var(--font-inter), sans-serif',
               fontSize: 'clamp(16px, 2.6vw, 19px)',
               fontWeight: 800,
-              color: '#1a1a0f',
+              color: '#EC4899',
               textAlign: 'center',
               lineHeight: 1.25,
             }}
@@ -394,12 +437,17 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              // Bottone vero (non un link testuale sottolineato): chip scuro
-              // opaco con testo oro, contrasto forte rispetto allo sfondo
-              // oro→rosa del banner — stesso principio del chip countdown
-              // "onBrand", cosi countdown e CTA si leggono come coppia.
-              background: '#1a1a0f',
-              color: '#FFE44D',
+              // Bottone vero (non un link testuale sottolineato). Ricolorato
+              // 22/09/2026 (task #227): prima era un chip scuro opaco con
+              // testo oro — aveva senso SOLO come contrasto su uno sfondo
+              // chiaro. Ora che la barra è scura, il bottone passa a rosa
+              // pieno con testo bianco, lo STESSO colore di ogni altro CTA
+              // primario del sito (hero /newsletter, Identikit, /report,
+              // /listino) — cosi la barra non introduce un terzo colore di
+              // bottone. L'oro reale (BRAND_GOLD) resta riservato alle cifre
+              // del countdown, non duplicato qui.
+              background: '#EC4899',
+              color: '#fff',
               fontFamily: 'var(--font-inter), sans-serif',
               fontWeight: 800,
               fontSize: 'clamp(14px, 2vw, 16px)',
@@ -408,8 +456,8 @@ export default function ReportCountdownBanner({ className = '', variant = 'pill'
               borderRadius: '999px',
               textDecoration: 'none',
               whiteSpace: 'nowrap',
-              boxShadow: '0 2px 10px rgba(26,26,15,0.4)',
-              border: '1.5px solid rgba(26,26,15,0.2)',
+              boxShadow: '0 2px 14px rgba(236,72,153,0.45)',
+              border: `1.5px solid ${BRAND_GOLD}`,
             }}
           >
             Richiedilo ora →

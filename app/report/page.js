@@ -228,43 +228,20 @@ function ReportPublicLanding() {
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Redesign 22/09/2026 (task #226) — hero a due colonne con immagine +
-           rinforzo di gerarchia visiva sotto la hero, come richiesto dal gate
-           di Elena del 21/09 (drafts/gate-elena-redesign-report-listino-2026-09-21.md).
-           Le regole di layout vivono qui perché gli stili inline non supportano
-           media query: mobile-first, immagine sopra al testo, colonna singola;
-           da 900px in su, riga invertita (row-reverse) cosi' il testo (primo nel
-           DOM, per restare sopra su mobile) appare a sinistra e l'immagine a destra. */
-        .bx-hero-grid { display: flex; flex-direction: column; gap: 32px; }
-        .bx-hero-text { text-align: center; }
+        /* Redesign 22/09/2026 (task #227) — SOSTITUISCE il redesign del task
+           #226 di poche ore prima. Quello (hero a due colonne, immagine dentro
+           un riquadro con bordi arrotondati/vignettatura sfumata su sfondo
+           crema) seguiva alla lettera il gate di Elena del 21/09
+           (drafts/gate-elena-redesign-report-listino-2026-09-21.md), ma Mason
+           lo ha bocciato lo stesso giorno appena visto dal vivo: vuole lo
+           STESSO trattamento della hero/sezione Identikit di /newsletter —
+           foto desaturata a piena larghezza con overlay scuro, non un
+           riquadro su sfondo chiaro. Le classi .bx-hero-grid/.bx-hero-image-frame
+           (layout a due colonne, cornice/vignettatura) sono quindi rimosse:
+           la nuova hero è una sezione full-bleed unica, niente breakpoint per
+           il layout immagine (niente più immagine "a parte" da disporre in
+           colonna — è lo sfondo dell'intera sezione), copy invariato. */
         .bx-hero-p-center { margin-left: auto; margin-right: auto; }
-        .bx-hero-image-frame {
-          position: relative;
-          width: 100%;
-          max-width: 420px;
-          margin: 0 auto;
-          border-radius: 28px;
-          overflow: hidden;
-          box-shadow: 0 24px 48px -20px rgba(26,26,15,0.35);
-        }
-        .bx-hero-image-frame::after {
-          /* sfumatura ai bordi che si fonde nel crema di sfondo (#f5f1ea),
-             invece del rettangolo netto segnalato come problema dal gate Elena */
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 28px;
-          box-shadow: inset 0 0 70px 34px #f5f1ea;
-          pointer-events: none;
-        }
-        .bx-hero-image-frame img { display: block; width: 100%; height: auto; }
-        @media (min-width: 900px) {
-          .bx-hero-grid { flex-direction: row-reverse; align-items: center; gap: 56px; }
-          .bx-hero-text { text-align: left; flex: 1.05; }
-          .bx-hero-image { flex: 0.95; }
-          .bx-hero-p-center { margin-left: 0; margin-right: 0; }
-          .bx-hero-image-frame { max-width: 460px; margin: 0; }
-        }
 
         /* Pannello "Cosa trovi" — pass da testo puro a blocco che stacca per
            colore/consistenza (richiesta esplicita del gate Elena, Parte 3). */
@@ -320,153 +297,158 @@ function ReportPublicLanding() {
         </header>
 
         {/* ── HERO ──
-            Redesign 22/09/2026 (task #226): copy finale di Federica
-            (drafts/copy-redesign-report-listino-2026-09-21.md) + immagine hero
-            di Chiara (design Canva DAHV0IFvZDE, drafts/immagini-redesign-report-listino-2026-09-21.md)
-            dentro un vero layout a due colonne, come richiesto dal gate di
-            Elena (drafts/gate-elena-redesign-report-listino-2026-09-21.md,
-            Parte 3): immagine sopra il testo su mobile, colonna con testo a
-            sinistra/immagine a destra da 900px in su (vedi .bx-hero-grid nello
-            style sopra), bordi dell'immagine sfumati nel crema di sfondo
-            invece del rettangolo netto segnalato come problema. */}
+            Redesign 22/09/2026 (task #227, sostituisce il task #226 di poche
+            ore prima — vedi commento nello style sopra). Copy INVARIATO
+            (Federica, drafts/copy-redesign-report-listino-2026-09-21.md):
+            solo il contenitore cambia, da due colonne su crema con immagine
+            in riquadro a foto piena larghezza desaturata con overlay scuro +
+            testo sopra — stesso identico pattern della sezione Identikit su
+            /newsletter (gradiente bordeaux di base, overlay radiale rosa,
+            foto full-bleed sotto). Immagine: design Canva DAHV0IFvZDE
+            (Chiara, drafts/immagini-redesign-report-listino-2026-09-21.md) —
+            stesso file di prima, cambia solo come viene mostrato. */}
         <section style={{
-          maxWidth: '1040px',
-          margin: '0 auto',
-          padding: '20px 24px 0',
+          position: 'relative',
+          background: 'linear-gradient(180deg, #2a1420 0%, #23111c 55%, #1f0f18 100%)',
+          padding: '72px 24px 96px',
+          overflow: 'hidden',
         }}>
-          <div className="bx-hero-grid">
+          {/* Foto full-bleed — desaturata via filtro CSS (il sorgente Canva è
+              a colori pieni, non pre-desaturato come /images/hero-titolare-bw.jpg
+              usato nella hero di /newsletter) + opacità ridotta cosi il
+              gradiente bordeaux sotto resta il vero "colore" della sezione e
+              il testo sopra resta leggibile senza un secondo scrim dedicato.
+              File NON ancora presente su disco — vedi nota nel report di
+              Davide: stesso path già referenziato da prima (/hero-report.jpg),
+              cambia solo il trattamento CSS, non il nome del file. */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'url(/hero-report.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 15%',
+            filter: 'grayscale(0.5) contrast(1.05) brightness(0.85)',
+            opacity: 0.55,
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'radial-gradient(circle at 50% 0%, rgba(236,72,153,0.26), transparent 60%)',
+            pointerEvents: 'none',
+          }} />
 
-            {/* Immagine hero — titolare di spalle davanti al lettino vuoto,
-                luce dorata, tocco rosa cipria (concept "riconoscimento, non
-                stupore tecnologico" di Chiara). File da salvare in public/ —
-                vedi nota nel report finale di Davide se non ancora presente. */}
-            <div className="bx-hero-image">
-              <div className="bx-hero-image-frame">
-                <Image
-                  src="/hero-report.jpg"
-                  alt="Titolare di un centro estetico che si ferma un istante davanti al lettino vuoto, nella luce calda del tardo pomeriggio"
-                  width={800}
-                  height={1000}
-                  priority
-                  style={{ width: '100%', height: 'auto' }}
-                />
-              </div>
+          <div style={{ position: 'relative', maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+            {/* Badge — invariato */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#FFE44D',
+              color: '#1a1a0f',
+              fontWeight: 700,
+              fontSize: '11px',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: '6px 14px',
+              borderRadius: '100px',
+              marginBottom: '28px',
+            }}>
+              Identikit strategico CURA · La diagnosi del tuo centro, gratis per il lancio
             </div>
 
-            <div className="bx-hero-text">
-              {/* Badge */}
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#FFE44D',
-                color: '#1a1a0f',
+            {/* Headline — dolore concreto, non il doppio senso della parola.
+                Prima riga passata da scuro (#1a1a0f, pensato per sfondo
+                crema) a bianco: unico cambio di colore nell'H1, la seconda
+                riga era già rosa ed è rimasta identica. */}
+            <h1 style={{
+              fontFamily: "var(--font-playfair), Georgia, serif",
+              lineHeight: 1.1,
+              marginBottom: '22px',
+            }}>
+              <span style={{
+                display: 'block',
+                fontSize: 'clamp(32px, 7vw, 52px)',
+                fontWeight: 900,
+                color: '#fff',
+              }}>
+                Ti prendi cura di tutte.
+              </span>
+              <span style={{
+                display: 'block',
+                fontSize: 'clamp(32px, 7vw, 52px)',
                 fontWeight: 700,
-                fontSize: '11px',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                padding: '6px 14px',
-                borderRadius: '100px',
-                marginBottom: '28px',
+                color: '#EC4899',
               }}>
-                Identikit strategico CURA · La diagnosi del tuo centro, gratis per il lancio
-              </div>
+                Chi si prende CURA di te?
+              </span>
+            </h1>
 
-              {/* Headline — dolore concreto, non il doppio senso della parola */}
-              <h1 style={{
-                fontFamily: "var(--font-playfair), Georgia, serif",
-                lineHeight: 1.1,
-                marginBottom: '22px',
-              }}>
-                <span style={{
-                  display: 'block',
-                  fontSize: 'clamp(32px, 7vw, 52px)',
-                  fontWeight: 900,
-                  color: '#1a1a0f',
-                }}>
-                  Ti prendi cura di tutte.
-                </span>
-                <span style={{
-                  display: 'block',
-                  fontSize: 'clamp(32px, 7vw, 52px)',
+            {/* Sottotitolo — copy invariato (Federica, 21/09/2026), solo
+                colore portato da grigio scuro (#444) a bianco quasi pieno per
+                restare leggibile sopra la foto scura. */}
+            <p className="bx-hero-p-center" style={{
+              fontSize: 'clamp(16px, 4vw, 19px)',
+              color: 'rgba(255,255,255,0.88)',
+              lineHeight: 1.65,
+              marginBottom: '20px',
+              maxWidth: '520px',
+            }}>
+              Non è un test online, né un oroscopo: è una diagnosi seria.
+              L'Identikit strategico CURA guarda dentro i numeri veri del
+              tuo centro — chi sono le tue clienti, come si muove la tua
+              agenda, come stanno davvero i conti — e torna con due cose
+              sole, chiare: dove sei bloccata oggi, e qual è la prima mossa
+              da fare. Fatto apposta per il tuo centro, quello vero.
+            </p>
+
+            {/* ── CTA PRINCIPALE — invariata ── */}
+            <div style={{ marginBottom: '14px' }}>
+              <Link
+                href="/signup"
+                style={{
+                  display: 'inline-block',
+                  padding: '18px 36px',
+                  background: '#EC4899',
+                  color: '#fff',
                   fontWeight: 700,
-                  color: '#EC4899',
-                }}>
-                  Chi si prende CURA di te?
-                </span>
-              </h1>
-
-              {/* Sottotitolo — riscritto da Federica il 21/09/2026 (correzione
-                  post-gate Elena: la doppia negazione "non è un test online e
-                  non è un oroscopo" è stata ridotta a una sola clausola
-                  negativa con oggetto composto, chiusa da un positivo, vedi
-                  changelog nel draft copy). */}
-              <p className="bx-hero-p-center" style={{
-                fontSize: 'clamp(16px, 4vw, 19px)',
-                color: '#444',
-                lineHeight: 1.65,
-                marginBottom: '20px',
-                maxWidth: '520px',
-              }}>
-                Non è un test online, né un oroscopo: è una diagnosi seria.
-                L'Identikit strategico CURA guarda dentro i numeri veri del
-                tuo centro — chi sono le tue clienti, come si muove la tua
-                agenda, come stanno davvero i conti — e torna con due cose
-                sole, chiare: dove sei bloccata oggi, e qual è la prima mossa
-                da fare. Fatto apposta per il tuo centro, quello vero.
-              </p>
-
-              {/* ── CTA PRINCIPALE ── */}
-              <div style={{ marginBottom: '14px' }}>
-                <Link
-                  href="/signup"
-                  style={{
-                    display: 'inline-block',
-                    padding: '18px 36px',
-                    background: '#EC4899',
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: '16px',
-                    borderRadius: '12px',
-                    textDecoration: 'none',
-                    fontFamily: "var(--font-inter), sans-serif",
-                    letterSpacing: '0.01em',
-                  }}
-                >
-                  Crea il tuo account gratuito →
-                </Link>
-              </div>
-
-              <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
-                Hai già un account?{' '}
-                <Link href="/login" style={{ color: '#EC4899', fontWeight: 600, textDecoration: 'none' }}>
-                  Accedi
-                </Link>
-              </p>
-
-              <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
-                Con l'account arriva in regalo anche la newsletter di Beautyx, gratuita, ogni martedì e venerdì.
-              </p>
-
-              {/* Prova di competenza reale — i 15 anni sono dei fondatori, mai
-                  dell'azienda Beautyx (regola in vigore in memory/federica.md).
-                  Risponde all'obiezione implicita "sarà un algoritmo che tira
-                  a indovinare". */}
-              <p style={{ fontSize: '13px', color: '#888', fontStyle: 'italic', marginBottom: '8px', lineHeight: 1.6 }}>
-                Dietro ogni identikit ci sono i fondatori di Beautyx: 15 anni di esperienza vera nella gestione di centri estetici. L'AI legge i tuoi dati; il metodo che li interpreta viene da lì.
-              </p>
-
-              {/* Nota di onestà: il questionario è in arrivo, non live oggi */}
-              <p className="bx-hero-p-center" style={{
-                fontSize: '13px',
-                color: '#999',
-                lineHeight: 1.6,
-                maxWidth: '460px',
-                marginTop: '10px',
-              }}>
-                Il questionario completo sta per partire. Registrandoti adesso il tuo account gratuito parte comunque, sei tra le prime ad accedere al report, e i 90 giorni gratis restano tuoi dal primo giorno.
-              </p>
+                  fontSize: '16px',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  fontFamily: "var(--font-inter), sans-serif",
+                  letterSpacing: '0.01em',
+                }}
+              >
+                Crea il tuo account gratuito →
+              </Link>
             </div>
+
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '8px' }}>
+              Hai già un account?{' '}
+              <Link href="/login" style={{ color: '#EC4899', fontWeight: 600, textDecoration: 'none' }}>
+                Accedi
+              </Link>
+            </p>
+
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '8px' }}>
+              Con l'account arriva in regalo anche la newsletter di Beautyx, gratuita, ogni martedì e venerdì.
+            </p>
+
+            {/* Prova di competenza reale — i 15 anni sono dei fondatori, mai
+                dell'azienda Beautyx (regola in vigore in memory/federica.md).
+                Risponde all'obiezione implicita "sarà un algoritmo che tira
+                a indovinare". */}
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', fontStyle: 'italic', marginBottom: '8px', lineHeight: 1.6 }}>
+              Dietro ogni identikit ci sono i fondatori di Beautyx: 15 anni di esperienza vera nella gestione di centri estetici. L'AI legge i tuoi dati; il metodo che li interpreta viene da lì.
+            </p>
+
+            {/* Nota di onestà: il questionario è in arrivo, non live oggi */}
+            <p className="bx-hero-p-center" style={{
+              fontSize: '13px',
+              color: 'rgba(255,255,255,0.5)',
+              lineHeight: 1.6,
+              maxWidth: '460px',
+              marginTop: '10px',
+            }}>
+              Il questionario completo sta per partire. Registrandoti adesso il tuo account gratuito parte comunque, sei tra le prime ad accedere al report, e i 90 giorni gratis restano tuoi dal primo giorno.
+            </p>
           </div>
         </section>
 

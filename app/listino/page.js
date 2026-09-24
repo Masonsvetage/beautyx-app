@@ -793,53 +793,17 @@ function ListinoWall() {
       color: '#1a1a0f',
     }}>
       <style>{`
-        .bx-listino-hero-grid { display: flex; flex-direction: column; gap: 32px; }
-        .bx-listino-hero-text { text-align: center; }
+        /* Redesign 22/09/2026 (task #227) — SOSTITUISCE il redesign a due
+           colonne con immagine in riquadro/fascia-glow (task #226, poche ore
+           prima, dal gate Elena del 21/09). Mason lo ha bocciato appena
+           visto dal vivo: vuole lo stesso trattamento full-bleed scuro con
+           overlay della hero/Identikit di /newsletter, non un riquadro su
+           crema — vedi stesso identico cambio applicato a /report. Le classi
+           .bx-listino-hero-grid/-image-glow/-image-frame sono rimosse: la
+           nuova hero è una sezione unica, il badge/CTA verde del tool
+           restano invariati (solo il CONTENITORE cambia, non il copy né
+           l'identità cromatica verde/oro del tool nel resto della pagina). */
         .bx-listino-p-center { margin-left: auto; margin-right: auto; }
-        .bx-listino-image-glow {
-          position: relative;
-          width: 100%;
-          max-width: 420px;
-          margin: 0 auto;
-        }
-        .bx-listino-image-glow::before {
-          /* fascia di colore verde/oro coerente con la palette del tool,
-             richiesta esplicita del gate Elena ("manca ancora qualcosa...
-             una fascia di colore coerente con la palette del tool dietro o
-             accanto all'hero") */
-          content: '';
-          position: absolute;
-          inset: -28px;
-          background:
-            radial-gradient(circle at 28% 28%, rgba(15,110,86,0.38), transparent 60%),
-            radial-gradient(circle at 74% 70%, rgba(255,196,66,0.28), transparent 55%);
-          filter: blur(6px);
-          border-radius: 40px;
-          z-index: 0;
-        }
-        .bx-listino-image-frame {
-          position: relative;
-          z-index: 1;
-          border-radius: 28px;
-          overflow: hidden;
-          box-shadow: 0 24px 48px -20px rgba(15,110,86,0.45);
-        }
-        .bx-listino-image-frame::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 28px;
-          box-shadow: inset 0 0 70px 34px #f5f1ea;
-          pointer-events: none;
-        }
-        .bx-listino-image-frame img { display: block; width: 100%; height: auto; }
-        @media (min-width: 900px) {
-          .bx-listino-hero-grid { flex-direction: row-reverse; align-items: center; gap: 56px; }
-          .bx-listino-hero-text { text-align: left; flex: 1.05; }
-          .bx-listino-hero-image { flex: 0.95; }
-          .bx-listino-p-center { margin-left: 0; margin-right: 0; }
-          .bx-listino-image-glow { max-width: 460px; margin: 0; }
-        }
         .bx-listino-features {
           display: grid;
           grid-template-columns: 1fr;
@@ -855,95 +819,118 @@ function ListinoWall() {
         <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a0f', letterSpacing: '0.01em' }}>Beautyx</span>
       </header>
 
-      {/* ── HERO — due colonne, immagine con fascia verde/oro dietro ── */}
-      <section style={{ maxWidth: '1040px', margin: '0 auto', padding: '32px 24px 0' }}>
-        <div className="bx-listino-hero-grid">
+      {/* ── HERO — foto piena larghezza scura + overlay, non più due colonne
+          con immagine in riquadro (redesign 22/09/2026, task #227). Stesso
+          contenitore full-bleed di /report e della sezione Identikit di
+          /newsletter (gradiente bordeaux di base, foto sotto, overlay sopra,
+          testo in cima) — MA con una differenza voluta e documentata: il
+          glow radiale qui resta verde/oro (non rosa) e la foto NON viene
+          desaturata via filtro CSS. Motivo: l'immagine (design Canva
+          DAHV0w6QUO8) è stata corretta da zero il 21/09 proprio perché il
+          bagliore nel punto di contatto leggesse come verde smeraldo
+          (#0F6E56, l'identità cromatica del tool) invece che ambra/oro
+          generico (vedi drafts/immagini-redesign-report-listino-2026-09-21.md,
+          changelog) — un filtro grayscale o un overlay rosa sopra
+          vanificherebbe esattamente quel lavoro. Il badge e il bottone CTA
+          restano quindi nel verde del tool, invariati: qui cambia SOLO il
+          contenitore (da riquadro su crema a foto piena larghezza scura),
+          non il copy né l'identità cromatica verde/oro già approvata per
+          questo prodotto — vedi nota per il Coordinatore nel report finale
+          di Davide su questa scelta. */}
+      <section style={{
+        position: 'relative',
+        background: 'linear-gradient(180deg, #2a1420 0%, #23111c 55%, #1f0f18 100%)',
+        padding: '64px 24px 88px',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'url(/hero-listino.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 50%',
+          filter: 'brightness(0.8) contrast(1.05)',
+          opacity: 0.6,
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background:
+            'radial-gradient(circle at 30% 15%, rgba(15,110,86,0.32), transparent 55%), radial-gradient(circle at 75% 10%, rgba(255,196,66,0.22), transparent 55%)',
+          pointerEvents: 'none',
+        }} />
 
-          <div className="bx-listino-hero-image">
-            <div className="bx-listino-image-glow">
-              <div className="bx-listino-image-frame">
-                <Image
-                  src="/hero-listino.jpg"
-                  alt="Un dito sfiora un cartellino prezzo su un bancone di legno chiaro, nel punto in cui si accende un bagliore verde smeraldo"
-                  width={800}
-                  height={1000}
-                  priority
-                  style={{ width: '100%', height: 'auto' }}
-                />
-              </div>
-            </div>
+        <div style={{ position: 'relative', maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+          {/* Badge — invariato (verde/oro, identità del tool) */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            background: 'linear-gradient(135deg, #0F6E56, #12876A)', color: '#fff', fontWeight: 700, fontSize: '12.5px',
+            letterSpacing: '0.09em', textTransform: 'uppercase', padding: '9px 18px',
+            borderRadius: '100px', marginBottom: '28px',
+            boxShadow: '0 8px 20px -8px rgba(15,110,86,0.55)',
+          }}>
+            Listino intelligente · il prezzo giusto dei tuoi servizi, gratis nei primi 90 giorni
           </div>
 
-          <div className="bx-listino-hero-text">
-            {/* Badge — reso più prominente (font/padding maggiori, ombra),
-                richiesta esplicita del gate Elena come alternativa/aggiunta
-                alla fascia di colore. */}
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: 'linear-gradient(135deg, #0F6E56, #12876A)', color: '#fff', fontWeight: 700, fontSize: '12.5px',
-              letterSpacing: '0.09em', textTransform: 'uppercase', padding: '9px 18px',
-              borderRadius: '100px', marginBottom: '28px',
-              boxShadow: '0 8px 20px -8px rgba(15,110,86,0.55)',
-            }}>
-              Listino intelligente · il prezzo giusto dei tuoi servizi, gratis nei primi 90 giorni
-            </div>
+          {/* Headline — prima riga passata da scuro (#1a1a0f, pensato per
+              sfondo crema) a bianco; seconda riga passata dal verde brand
+              scuro (#0F6E56, poco leggibile su fondo già scuro) a un verde
+              smeraldo più chiaro (#34D399) per restare leggibile senza
+              perdere l'identità cromatica del tool. */}
+          <h1 style={{
+            fontFamily: "var(--font-playfair), Georgia, serif",
+            lineHeight: 1.12, marginBottom: '20px',
+          }}>
+            <span style={{ display: 'block', fontSize: 'clamp(30px, 6.5vw, 46px)', fontWeight: 900, color: '#fff' }}>
+              Quanto ti costa davvero
+            </span>
+            <span style={{ display: 'block', fontSize: 'clamp(30px, 6.5vw, 46px)', fontWeight: 700, color: '#34D399' }}>
+              un&apos;ora del tuo centro?
+            </span>
+          </h1>
 
-            <h1 style={{
-              fontFamily: "var(--font-playfair), Georgia, serif",
-              lineHeight: 1.12, marginBottom: '20px',
-            }}>
-              <span style={{ display: 'block', fontSize: 'clamp(30px, 6.5vw, 46px)', fontWeight: 900, color: '#1a1a0f' }}>
-                Quanto ti costa davvero
-              </span>
-              <span style={{ display: 'block', fontSize: 'clamp(30px, 6.5vw, 46px)', fontWeight: 700, color: '#0F6E56' }}>
-                un&apos;ora del tuo centro?
-              </span>
-            </h1>
+          <p className="bx-listino-p-center" style={{ fontSize: 'clamp(15px, 3vw, 17px)', color: 'rgba(255,255,255,0.88)', lineHeight: 1.7, marginBottom: '18px', maxWidth: '540px' }}>
+            La maggior parte dei prezzi in un centro estetico nasce a
+            sensazione — un numero che sembra giusto, non un calcolo. Il
+            Listino intelligente il calcolo lo fa al posto tuo: ti dice
+            quanto ti costa davvero un&apos;ora di negozio, ti dice se un
+            prezzo è in perdita anche quando sembra funzionare bene, e ti
+            dice qual è il servizio che credevi marginale e invece ti tiene
+            in piedi il mese. Non sulle medie del settore — sui tuoi numeri,
+            quelli veri.
+          </p>
 
-            <p className="bx-listino-p-center" style={{ fontSize: 'clamp(15px, 3vw, 17px)', color: '#444', lineHeight: 1.7, marginBottom: '18px', maxWidth: '540px' }}>
-              La maggior parte dei prezzi in un centro estetico nasce a
-              sensazione — un numero che sembra giusto, non un calcolo. Il
-              Listino intelligente il calcolo lo fa al posto tuo: ti dice
-              quanto ti costa davvero un&apos;ora di negozio, ti dice se un
-              prezzo è in perdita anche quando sembra funzionare bene, e ti
-              dice qual è il servizio che credevi marginale e invece ti tiene
-              in piedi il mese. Non sulle medie del settore — sui tuoi numeri,
-              quelli veri.
-            </p>
+          <p className="bx-listino-p-center" style={{ fontSize: '14px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, marginBottom: '26px', maxWidth: '540px' }}>
+            Niente fogli di calcolo da costruire da zero: inserisci i numeri
+            del tuo centro, il resto lo fa il tool. Bastano pochi minuti per
+            avere il quadro vero del tuo centro.
+          </p>
 
-            <p className="bx-listino-p-center" style={{ fontSize: '14px', color: '#555', lineHeight: 1.6, marginBottom: '26px', maxWidth: '540px' }}>
-              Niente fogli di calcolo da costruire da zero: inserisci i numeri
-              del tuo centro, il resto lo fa il tool. Bastano pochi minuti per
-              avere il quadro vero del tuo centro.
-            </p>
-
-            <div style={{ marginBottom: '14px' }}>
-              <Link
-                href="/signup?risorsa=tool"
-                style={{
-                  display: 'inline-block', padding: '18px 36px', background: '#0F6E56', color: '#fff',
-                  fontWeight: 700, fontSize: '16px', borderRadius: '12px', textDecoration: 'none',
-                }}
-              >
-                Crea il tuo account gratuito →
-              </Link>
-            </div>
-
-            <p style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
-              Hai già un account?{' '}
-              <Link href="/login" style={{ color: '#0F6E56', fontWeight: 600, textDecoration: 'none' }}>
-                Accedi
-              </Link>
-            </p>
-
-            <p className="bx-listino-p-center" style={{ fontSize: '13px', color: '#888', lineHeight: 1.6, marginBottom: '8px', maxWidth: '540px' }}>
-              Ti serve un account gratuito — lo stesso che usi per l&apos;Identikit strategico CURA: un&apos;unica scheda con i dati del tuo centro, mai da reinserire due volte. Hai 90 giorni per usare il Listino intelligente gratis, tutto sbloccato. Dopo, restano gratis per sempre il costo orario e il prezzo di un singolo servizio; il listino completo passa a 29€ una tantum.
-            </p>
-
-            <p className="bx-listino-p-center" style={{ fontSize: '13px', color: '#888', fontStyle: 'italic', lineHeight: 1.6, maxWidth: '540px' }}>
-              Anche il Listino intelligente nasce dalla stessa esperienza dell&apos;Identikit: i fondatori di Beautyx portano 15 anni di gestione vera di centri estetici, non teoria da corso online.
-            </p>
+          <div style={{ marginBottom: '14px' }}>
+            <Link
+              href="/signup?risorsa=tool"
+              style={{
+                display: 'inline-block', padding: '18px 36px', background: '#0F6E56', color: '#fff',
+                fontWeight: 700, fontSize: '16px', borderRadius: '12px', textDecoration: 'none',
+                boxShadow: '0 10px 28px -8px rgba(15,110,86,0.65)',
+              }}
+            >
+              Crea il tuo account gratuito →
+            </Link>
           </div>
+
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: '8px' }}>
+            Hai già un account?{' '}
+            <Link href="/login" style={{ color: '#34D399', fontWeight: 600, textDecoration: 'none' }}>
+              Accedi
+            </Link>
+          </p>
+
+          <p className="bx-listino-p-center" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: '8px', maxWidth: '540px' }}>
+            Ti serve un account gratuito — lo stesso che usi per l&apos;Identikit strategico CURA: un&apos;unica scheda con i dati del tuo centro, mai da reinserire due volte. Hai 90 giorni per usare il Listino intelligente gratis, tutto sbloccato. Dopo, restano gratis per sempre il costo orario e il prezzo di un singolo servizio; il listino completo passa a 29€ una tantum.
+          </p>
+
+          <p className="bx-listino-p-center" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', lineHeight: 1.6, maxWidth: '540px' }}>
+            Anche il Listino intelligente nasce dalla stessa esperienza dell&apos;Identikit: i fondatori di Beautyx portano 15 anni di gestione vera di centri estetici, non teoria da corso online.
+          </p>
         </div>
       </section>
 
