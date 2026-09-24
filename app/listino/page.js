@@ -845,7 +845,7 @@ function ListinoWall() {
       }}>
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: 'url(/hero-listino.jpg)',
+          backgroundImage: 'url(/images/hero-titolare-bw.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center 50%',
           filter: 'brightness(0.8) contrast(1.05)',

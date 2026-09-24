@@ -323,10 +323,9 @@ function ReportPublicLanding() {
               cambia solo il trattamento CSS, non il nome del file. */}
           <div style={{
             position: 'absolute', inset: 0,
-            backgroundImage: 'url(/hero-report.jpg)',
+            backgroundImage: 'url(/images/hero-titolare-bw.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center 15%',
-            filter: 'grayscale(0.5) contrast(1.05) brightness(0.85)',
             opacity: 0.55,
           }} />
           <div style={{

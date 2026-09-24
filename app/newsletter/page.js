@@ -438,10 +438,9 @@ export default function NewsletterPage() {
               CSS leggero per coerenza tonale con l'overlay bordeaux/rosa. */}
           <div style={{
             position: 'absolute', inset: 0,
-            backgroundImage: 'url(/hero-identikit.jpg)',
+            backgroundImage: 'url(/images/hero-titolare-bw.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center 30%',
-            filter: 'grayscale(0.35) sepia(0.15) contrast(1.05)',
             opacity: 0.5,
           }} />
           <div style={{
