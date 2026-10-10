@@ -40,13 +40,16 @@ Fonte originale recuperata (23/08/2026): documento "come guadagnare in estetica 
 - **Fuoco** 🔥 — la motivazione: energia, passione, ciò che fa "ardere" di desiderio e sorregge la spinta verso l'obiettivo.
 - **Acqua** 💧 — la consapevolezza: movimento e azione, ma richiede di essere consapevoli per non esserne travolti; simbolo di scoperta e comunicazione.
 - **Aria** 🌪️ — la rivoluzione/il cambiamento (nel testo originale chiamato anche "Vento" — usare sempre "Aria" per coerenza): capacità di riconoscere ciò che non funziona, rivoluzionarlo, ripartire con nuova grinta.
+  - *Corrispondenza con la tradizione (2026-10-06, decisione di Mason, uso interno, mai nel testo per la titolare):* Aria = Legno. Certezza media (mappa-cicli-proposta, sez. 1): il Legno ha anche un lato di rabbia e azione diretta che nel banco domande è del Fuoco.
 - **Terra** 🏔️ — il consolidamento: solidità, sicurezza, accoglienza, ciò che permette di comprendere e mantenere quanto conquistato.
 - **Metallo** ⚙️ — la rifinitura/la qualità (nuovo elemento, reintegrato 25/08/2026): capacità di raffinare, mantenere standard, tagliare ciò che non serve più e lasciar andare — in eccesso diventa rigidità/freddezza/distacco, in carenza mancanza di cura del dettaglio e degli standard.
 
 Ogni persona ha un elemento dominante ma nessuno è "puro" — gli elementi sono interdipendenti secondo **due cicli distinti**, entrambi da armonizzare nell'applicazione pratica (confermato da Mason 23/08/2026, struttura a 5 elementi ridefinita il 25/08/2026):
 
-- **Ciclo di controllo/compensazione** (ordine confermato da Mason, il testuale originale copriva solo 4 elementi, Metallo inserito nel punto di chiusura del cerchio il 25/08/2026): Fuoco → si compensa con Acqua → si compensa con Aria → si compensa con Terra → si compensa con Metallo → si compensa con Fuoco (cerchio chiuso a 5). Serve a correggere gli squilibri: l'eccesso di un elemento si bilancia lavorando su quello successivo nel ciclo.
-- **Ciclo generativo/di nutrimento** (ridefinito il 25/08/2026: i due esempi originali del documento sorgente — "il fuoco riscalda la terra", "l'aria muove l'acqua" — sono stati eliminati su decisione esplicita di Mason perché non si allineavano in una direzione coerente una volta reintegrato Metallo; sostituiti dalla stella a cinque punte matematicamente pulita, coerente con la tradizione da cui deriva il metodo): Fuoco nutre Aria → Aria nutre Metallo → Metallo nutre Acqua → Acqua nutre Terra → Terra nutre Fuoco (richiude il cerchio). Da usare in positivo nel report: mostra cosa il dominante rinforza già bene senza sforzo, non solo cosa manca.
+- **Ciclo di controllo/compensazione — IN VIGORE dal 2026-10-06 (cicli della tradizione, Aria = Legno; decisione di Mason, mappa in `memory/riferimenti/elementi-personalita/mappa-cicli-proposta.md`, sez. 2.1):** chi controlla chi: Aria → Terra → Acqua → Fuoco → Metallo → Aria. Ogni elemento è controllato dal precedente e si compensa lavorando su di lui: Fuoco con Acqua, Acqua con Terra, Terra con Aria, Aria con Metallo, Metallo con Fuoco. Serve a correggere gli squilibri: l'eccesso di un elemento si bilancia lavorando sul suo controllore.
+- **Ciclo generativo/di nutrimento — IN VIGORE dal 2026-10-06 (stessa decisione):** Aria nutre Fuoco → Fuoco nutre Terra → Terra nutre Metallo → Metallo nutre Acqua → Acqua nutre Aria (cerchio chiuso a 5). Da usare in positivo nel report: mostra cosa il dominante rinforza già bene senza sforzo, non solo cosa manca.
+- ~~Sostituito (2026-10-06, storico): **Ciclo di controllo/compensazione** (ordine confermato da Mason, il testuale originale copriva solo 4 elementi, Metallo inserito nel punto di chiusura del cerchio il 25/08/2026): Fuoco → si compensa con Acqua → si compensa con Aria → si compensa con Terra → si compensa con Metallo → si compensa con Fuoco (cerchio chiuso a 5). Serve a correggere gli squilibri: l'eccesso di un elemento si bilancia lavorando su quello successivo nel ciclo.~~
+- ~~Sostituito (2026-10-06, storico): **Ciclo generativo/di nutrimento** (ridefinito il 25/08/2026: i due esempi originali del documento sorgente — "il fuoco riscalda la terra", "l'aria muove l'acqua" — sono stati eliminati su decisione esplicita di Mason perché non si allineavano in una direzione coerente una volta reintegrato Metallo; sostituiti dalla stella a cinque punte matematicamente pulita, coerente con la tradizione da cui deriva il metodo): Fuoco nutre Aria → Aria nutre Metallo → Metallo nutre Acqua → Acqua nutre Terra → Terra nutre Fuoco (richiude il cerchio). Da usare in positivo nel report: mostra cosa il dominante rinforza già bene senza sforzo, non solo cosa manca.~~
 
 **Principio guida (Mason, 25/08/2026): il potenziale ottimale è quando il ciclo fluisce liberamente tra tutti gli elementi, senza blocchi.** Il compito di ogni consulenza Beautyx — e del report di profiling, che ne è il punto di partenza — è individuare DOVE il flusso è bloccato (un elemento in eccesso che non trova il suo compensatore naturale, o un elemento in carenza che non riceve il nutrimento che dovrebbe ricevere dal suo predecessore nel ciclo generativo) e usare gli strumenti della maieutica per aiutare la titolare a far rifluire da sé l'energia — mai un consiglio prescrittivo diretto, ma la creazione delle condizioni perché la titolare veda da sola il blocco e la strada per scioglierlo. **Questo è un mast (vincolo non negoziabile) per tutte le consulenze Beautyx, non solo per questo report** — vedi anche la regola gemella in `memory/generale.md`.
 
@@ -87,17 +90,35 @@ Motivo del testo libero + follow-up (non solo scelta multipla): raccontando un e
 
 **Riequilibrio:** non si agisce riducendo/limitando direttamente l'elemento in eccesso. Si agisce rinforzando il controllore carente C(E), e lo si fa **riattivando il ciclo generativo proprio in quel punto**: si lavora sull'elemento che nutre C(E) nel ciclo generativo (il suo predecessore diretto). Questo è l'unico "esercizio"/spunto pratico da offrire — un set unico per elemento, non due percorsi separati per eccesso/carenza (decisione Mason 25/08/2026).
 
+**Nota 2026-10-06 (mappa-cicli-proposta, sez. 1.5) — cosa è della tradizione e cosa no:** i due cicli (chi nutre chi, chi controlla chi) sono quelli della tradizione (Wu Xing). La regola dei 3 nodi qui sopra (l'eccesso di E implica la carenza del suo controllore C(E)) e la leva (si agisce sul nutritore di C(E)) sono invece un'impostazione del metodo di Mason: la tradizione descrive anche l'altro schema (l'elemento troppo forte sopraffà quello che controlla) e la leva non è stata trovata in nessuna fonte esterna. Quindi "cicli della tradizione" sì, "secondo la tradizione" per debole e leva no. Uso interno.
+
 Tabella completa dei 5 casi (ricavata dai due cicli già confermati sopra):
+
+**In vigore dal 2026-10-06 — cicli della tradizione, Aria = Legno (decisione di Mason; blocchi derivati in `memory/riferimenti/elementi-personalita/mappa-cicli-proposta.md`, sez. 2.1 e 3.2):**
 
 | Eccesso rilevato (E) | Controllore carente C(E) | Leva di riequilibrio — nutritore di C(E) nel ciclo generativo |
 |---|---|---|
 | Fuoco | Acqua | Metallo |
-| Acqua | Aria | Fuoco |
-| Aria | Terra | Acqua |
-| Terra | Metallo | Aria |
-| Metallo | Fuoco | Terra |
+| Acqua | Terra | Fuoco |
+| Aria | Metallo | Terra |
+| Terra | Aria | Acqua |
+| Metallo | Fuoco | Aria |
+
+Cambiano 4 casi su 5 rispetto alla tabella del 25/08/2026 (resta identico solo il caso del Fuoco).
+
+**Tabella del 25/08/2026 — SOSTITUITA il 2026-10-06 (storico, non in vigore):**
+
+> | Eccesso rilevato (E) | Controllore carente C(E) | Leva di riequilibrio — nutritore di C(E) nel ciclo generativo |
+> |---|---|---|
+> | Fuoco | Acqua | Metallo |
+> | Acqua | Aria | Fuoco |
+> | Aria | Terra | Acqua |
+> | Terra | Metallo | Aria |
+> | Metallo | Fuoco | Terra |
 
 Esempio guida di Mason: troppo Fuoco → carenza di Acqua (il suo controllore) → si riequilibra migliorando la capacità nutritiva del Metallo verso l'Acqua (non limitando il Fuoco direttamente).
+
+*Verificato 2026-10-06:* l'esempio guida resta valido con i cicli della tradizione (Fuoco → Acqua → Metallo invariato: Acqua controlla il Fuoco e Metallo nutre l'Acqua).
 
 Il report deve costruirsi intorno a QUESTO blocco (dove si concentra il valore reale per la titolare), non solo intorno alla dichiarazione dell'elemento dominante. Stesso principio di matrice pesata già validato nel quiz v3 psicometrico della miniguida "10 errori", qui portato a un livello superiore (non solo dominante/non-dominante, una mappa di flusso a meccanismo fisso).
 

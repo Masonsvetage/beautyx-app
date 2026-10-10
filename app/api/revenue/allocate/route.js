@@ -46,7 +46,8 @@ export async function POST(request) {
       0
     )
 
-    if (totalAllocated > parseFloat(dailyRevenue.importo_totale)) {
+    // confronto in centesimi interi (0,1+0,2 > 0,3 in virgola mobile: respingeva allocazioni valide)
+    if (Math.round(totalAllocated * 100) > Math.round(parseFloat(dailyRevenue.importo_totale) * 100)) {
       return NextResponse.json(
         {
           error: 'Le allocazioni superano l\'importo totale dell\'incasso',

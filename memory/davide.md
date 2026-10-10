@@ -10,6 +10,43 @@ come sostituite con la data (storico).
 
 ---
 
+## PROPOSTA TECNICA (non decisione presa) — fattibilità programma referral rappresentanti in piattaforma (2026-09-25)
+
+**Contesto:** Mason chiede se Beautyx è in grado di gestire i referral da piattaforma o serve un tool esterno. Analisi tecnica, non business (già coperta da Alessia in `memory/alessia.md`, voci 25/09 "PROPOSTA — programma segnalazione" e "EVOLUZIONE STRUTTURALE"). Verificato sul codice reale, non per assunzione.
+
+- **Cosa esiste già e riusabile:** il pattern `?risorsa=tool|identikit` in `app/signup/page.js` (righe ~107-114) legge un query param al caricamento della pagina e preseleziona uno stato — stesso identico meccanismo servirebbe per un `?ref=codice`. La tabella `user_resource_access` (`supabase/migrations/20260920_user_resource_access.sql`, predisposta ma NON applicata al DB produzione) e l'endpoint `app/api/user/resource-access/route.js` sono già un modello di tracciamento "chi ha ottenuto cosa e quanto ha pagato realmente" — stessa forma di dato che servirebbe per un referral (chi ha segnalato, chi è arrivato, quanto è maturato). Autenticazione Supabase (`@supabase/ssr`) e tabella `user_profiles` già forniscono l'identità utente su cui agganciare l'attribution.
+- **Cosa manca e andrebbe costruito (fattibile, non enorme):** (1) tabella `referral_codes` (rappresentante↔codice) e `referral_attributions` (chi si è registrato con quel codice, quando, stato: registrato/attivato/pagante); (2) persistenza del codice oltre il solo query param — se il cliente non si registra subito ma torna dopo giorni, un query param da solo si perde: serve un cookie di attribution (stesso pattern già in uso per `guida_access_token`, `ACCESS_COOKIE` in `app/newsletter/page.js`) scritto al primo arrivo con `?ref=`, letto al momento del signup anche giorni dopo (attribution "last touch", finestra tipica 30-90gg, non serve multi-touch complesso per un test a 2-3 persone); (3) un trigger/endpoint che, quando l'utente passa da "registrato" ad "attivato/pagante" (evento aggamciabile al webhook Stripe esistente o a un cambio di stato piano), scrive quanto matura per il segnalatore; (4) una dashboard minima — anche solo una vista admin che legge le tabelle sopra, riusando componenti già esistenti in `app/admin/*` (es. `app/admin/abbonamenti/page.js` come riferimento di pattern tabellare admin).
+- **Cosa NON è tracciamento e sarebbe un'altra categoria di problema:** il payout reale ai segnalatori (bonifici, fatture, ritenute, compliance fiscale) non ha nulla a che fare con Stripe Checkout o con Supabase — è un processo amministrativo esterno alla piattaforma, che resta manuale (bonifico mensile su base report) indipendentemente da quanto si costruisce in-house o si compra esternamente. Nessun tool di referral (interno o esterno) automatizza questa parte per un piccolo numero di segnalatori italiani con compensi non ricorrenti — è un problema legale/contabile, non tecnico.
+- **Verificato: NIENTE checkout Stripe reale per l'abbonamento piattaforma (`subscription_plans`) oggi.** `app/api/subscriptions/checkout/route.js` gestisce SOLO due casi: pacchetti minuti HPA (`subscription_packages`) e addon token AI (`addon_packages`) — mai un acquisto/upgrade su `subscription_plans` (nessun branch scrive mai `user_subscriptions.plan_id`), gap già segnalato in `piano-sviluppo-report-care.md` (28/08/2026). Qualunque automazione "paga il segnalatore quando il cliente sottoscrive l'abbonamento" è quindi bloccata a monte da un prerequisito mancante che esiste indipendentemente dal referral — prima serve il checkout piattaforma reale, poi si può agganciare un trigger di payout/maturazione a quell'evento.
+- **Costruire in casa vs tool esterno (Rewardful/Tolt/FirstPromoter/PostAffiliatePro/PartnerStack — categoria nota, non verificati in dettaglio le feature specifiche di ciascuno, da non dare per certe):** questi tool sono pensati per SaaS con Stripe Billing già maturo e funzionante — il loro valore aggiunto principale è automatizzare payout legati a eventi di fatturazione Stripe reali (spesso via Stripe Connect) e dashboard self-service per l'affiliato. Con **zero checkout piattaforma funzionante oggi**, gran parte del loro vantaggio (automazione payout agganciata a Stripe) è inutilizzabile finché quel prerequisito non c'è — resterebbe solo la parte di tracciamento (codici, link, dashboard), che è anche la parte più semplice da costruire in casa. Un tool esterno introduce inoltre un altro account/abbonamento da gestire, un'integrazione da mantenere, e dati di un processo (chi è cliente, chi paga cosa) che oggi vivono tutti in Supabase — spezzare quel dato su un sistema terzo per 2-3 segnalatori è sproporzionato.
+- **Raccomandazione pragmatica per la fase attuale (test 2-3 persone):** costruire in casa SOLO tracciamento minimo — tabella referral + cookie attribution + upsert allo stato "registrato"/"attivato" letto a mano da Mason/Coordinatore per calcolare il bonifico mensile manuale, riusando esattamente i pattern già in `user_resource_access`/`?risorsa=`. Non costruire ora nessuna logica di payout automatico (bloccata comunque dall'assenza del checkout piattaforma) né valutare un tool esterno (poco valore con zero utenti paganti via Stripe). Questo percorso non blocca una futura migrazione: se il programma scala, i dati raccolti (chi ha segnalato chi, quando, con che esito) sono già nella forma giusta per essere o formalizzati in un vero motore interno più ricco, o esportati/re-implementati su un tool esterno una volta che il checkout piattaforma esiste davvero e ha senso automatizzare i payout.
+
+---
+
+## PROPOSTA TECNICA — metodi di pagamento oltre Stripe per abbonamento piattaforma (2026-09-25)
+
+**Contesto:** Mason chiede "possiamo attivare più opzioni di pagamento non solo Stripe?", pensando sia all'abbonamento piattaforma (checkout ancora da costruire, vedi voce sopra) sia in prospettiva al payout referral. Analisi tecnica pragmatica, non consulenza fiscale/finanziaria.
+
+- **Chiarita l'ambiguità a Mason:** "più metodi dentro Stripe" (carta + SEPA + altri nello stesso Checkout Stripe) e "più processori indipendenti da Stripe" (PayPal, Satispay come sistemi separati) sono due cose diverse — nella risposta ho distinto le due letture invece di assumerne una.
+- **Verificato sul codice reale:** `app/api/subscriptions/checkout/route.js` riga 139 ha oggi `payment_method_types: ['card']` **hardcoded** — solo carta, per i pacchetti minuti HPA e addon token AI (nessun checkout per `subscription_plans` esiste ancora, coerente con la voce sopra). Aggiungere altri metodi supportati nativamente da Stripe (es. SEPA Direct Debit) è una modifica piccola su quell'array o passaggio ad `automatic_payment_methods`, non un nuovo sistema.
+- **Non verificato/da non dare per certo:** dettagli di integrazione precisi di PayPal/Satispay lato Supabase — non ho controllato SDK o webhook reali di questi provider in questo giro, l'ho segnalato esplicitamente come stima, non fatto accertato.
+- **Raccomandazione data:** partire da Stripe solo carta per sbloccare il checkout abbonamento (prerequisito anche per il referral), aggiungere altri metodi solo se richiesti da clienti reali — evitare over-engineering multi-processore prima di validare la domanda.
+
+---
+
+## PROPOSTA TECNICA (non decisione presa) — Stripe puro vs Merchant of Record (Lemon Squeezy/Paddle) per abbonamento piattaforma (2026-09-25)
+
+**Contesto:** Mason valuta se, invece di Stripe puro, convenga un MoR (Lemon Squeezy o Paddle) che gestisce IVA/riscossione in ogni paese al posto suo, a fronte di commissioni più alte (~5% vs 1,5-1,9%+0,25€ Stripe). Analisi tecnica pragmatica, non fiscale/legale (resta al commercialista di Mason).
+
+- **Fattibilità integrazione su stack attuale:** pattern generale certo — è un "redirect a checkout ospitato + webhook che conferma il pagamento", concettualmente identico a Stripe Checkout (già in uso in `app/api/subscriptions/checkout/route.js` e `app/api/webhooks/stripe/route.js`). **Non verificato/incerto:** dettagli precisi dell'SDK/API di Lemon Squeezy o Paddle (nomi esatti degli endpoint, formato payload webhook, meccanismo di firma) — non li ho controllati in questo giro, li segnalo come stima sul pattern generale, non fatto accertato.
+- **Cosa è riusabile 1:1:** lo schema Supabase è agnostico dal processore — `user_profiles`, `client_subscriptions`, il gating piani (`requirePiattaformaPlan` su `verifyCentroOwnership`), l'auth `@supabase/ssr` per identificare l'utente prima del redirect al checkout. Questa è la parte più corposa del lavoro già fatto e resterebbe valida con qualunque processore.
+- **Cosa andrebbe rifatto specificamente:** l'endpoint di creazione sessione (oggi `stripe.checkout.sessions.create`) e soprattutto il webhook handler — `handleCheckoutCompleted`/`handleInvoicePaid` in `app/api/webhooks/stripe/route.js` leggono `session.metadata`, `session.customer`, `event.type` in formato Stripe; un MoR avrà proprio schema di evento e proprio meccanismo di firma, quindi il webhook va riscritto da zero (stessa logica di business, altro parsing). La creazione customer (`stripe.customers.create`) e il collegamento centro_id/user_id via metadata andrebbero riadattati al modello dati del provider scelto.
+- **Convivenza Stripe (minuti HPA + addon token AI, oggi funzionanti) + MoR per l'abbonamento piattaforma:** tecnicamente possibile — sono processori indipendenti, non si toccano a livello di codice. Onestamente sconsiglio la convivenza come assetto permanente: significa mantenere due webhook handler, due modelli di riconciliazione pagamenti, due dashboard/provider da monitorare, e due fonti di verità su "chi ha pagato cosa" da tenere sincronizzate con Supabase. Per un solo team tecnico è più superficie di manutenzione e più punti di guasto silenzioso (es. idempotenza già gestita ad-hoc lato Stripe, andrebbe reimplementata separatamente lato MoR). Se il vantaggio fiscale del MoR convince Mason, la scelta più pulita nel medio termine è migrare tutto a un solo processore, non frazionare per prodotto.
+- **Stima di sforzo qualitativa:** (a) Stripe puro per l'abbonamento piattaforma — **giorni**, perché il pattern (checkout, customer, webhook, metadata→Supabase) esiste già e va solo esteso da `subscription_packages`/`addon_packages` a `subscription_plans`. (b) Lemon Squeezy/Paddle da zero al posto di Stripe — probabilmente ordine di grandezza comparabile per la parte Supabase (già pronta), ma con overhead aggiuntivo per la curva di apprendimento su un'API non ancora verificata nel dettaglio e per riscrivere webhook/firma/customer — realisticamente verso l'estremità alta dei "giorni" o primi giorni di "settimana", non lo affermo con certezza senza aver controllato la documentazione reale del provider.
+- **Raccomandazione pragmatica:** prima di impegnarsi, vale la pena una verifica tecnica mirata (anche breve) della documentazione reale di Lemon Squeezy/Paddle sui punti critici — formato webhook, come si lega un pagamento a un utente esterno, gestione upgrade/downgrade piano — invece di stimare alla cieca; il costo di quella verifica è basso rispetto al rischio di sottostimare la riscrittura del webhook.
+
+---
+
 ## STACK E INFRASTRUTTURA — stato attuale
 
 - **Framework:** Next.js 16, App Router, TailwindCSS v4
@@ -3667,3 +3704,419 @@ stessa disciplina già usata negli audit precedenti di questo progetto.
   come descritto, specialmente il contrasto testo/sfondo nelle sezioni ora
   scure (ho calcolato i colori a mente, non misurato un contrast ratio
   reale).
+
+## Nexi XPay — valutazione tecnica onesta su richiesta di Mason (proposta, non incarico) (2026-09-25)
+
+Contesto: Mason ha espresso una **preferenza** per Nexi XPay al posto di Stripe/Lemon
+Squeezy per il checkout abbonamento piattaforma, motivata da fiscalità (Nexi è
+italiana, niente fatture irlandesi/esterometro). Non è una decisione presa — mi ha
+chiesto di verificare la fattibilità tecnica prima di impegnarmi. Ho fatto ricerca
+web mirata su `developer.nexi.it` (nessun accesso a un vero account merchant Nexi,
+quindi quanto segue è basato solo su documentazione pubblica, non su prova diretta).
+
+- **Sandbox pubblica confermata, senza contratto commerciale firmato**: la pagina
+  Test Area (`developer.nexi.it/en/area-test/introduzione`) dichiara esplicitamente
+  che basta "registrarsi e creare un account dedicato" (solo email+password, nessun
+  dato aziendale) per generare credenziali di test e provare le API in sandbox. Non
+  è quindi vincolato a un iter commerciale come temevo — questo è un dato positivo
+  che riduce il rischio segnalato in precedenza. Riserva: non ho potuto verificarlo
+  aprendo davvero il flusso di registrazione (nessuna sandbox testata a mano).
+- **Contratto commerciale resta necessario solo per la produzione**: le API-Key di
+  produzione si generano da XPay Web Back Office dopo login a Nexi Business, che
+  presuppone un contratto merchant attivo. Per test locali/sviluppo iniziale non
+  serve.
+- **Autenticazione**: header `X-Api-Key` per-terminale su ogni chiamata REST diretta
+  (non OAuth/redirect obbligatorio per tutte le integrazioni). Esistono più modalità
+  di integrazione in parallelo: Hosted Payment Page (redirect a pagina Nexi ospitata
+  + callback/notifica), Server-to-Server (API dirette, ma richiede certificazione
+  PCI-DSS SAQ-D in produzione se si raccolgono dati carta sul proprio server), e
+  "XPay Build" (via componenti embedded). Per gli abbonamenti (MIT/ricorrenza) esiste
+  un endpoint dedicato `POST /orders/mit`.
+- **DX/maturità vs Stripe — impressione onesta, non misurata**: la documentazione
+  pubblica esiste ed è organizzata (API reference con parametri, SDK ufficiali per
+  Java/PHP/iOS/Android), ma il grosso del materiale è tagliato per plugin CMS
+  pronti (WooCommerce, Magento, PrestaShop, Shopware...), non per integrazione
+  custom "a mano". Non ho trovato SDK Node/JS ufficiale — per Next.js si
+  dovrebbe chiamare le REST API direttamente (fattibile, ma senza il livello di
+  comodità/idempotenza/webhook-verification che offre `stripe-node`). Non posso
+  affermare con certezza quanto sia solida l'esperienza reale di integrazione
+  finché non si prova la sandbox: questo resta un rischio non verificato.
+- **Riuso di Supabase/gating già fatto**: confermato, stesso discorso già fatto per
+  Lemon Squeezy — schema utenti, gating piani/moduli, auth restano validi a
+  prescindere dal processore. Cambia solo il layer di checkout/webhook e la
+  tabella/logica che marca "piano attivo" dopo la conferma pagamento.
+- **Stima di sforzo (qualitativa, incerta)**: integrazione Nexi XPay da zero per
+  un solo sviluppatore, stimo **giorni-settimane** per il solo sviluppo (redirect
+  HPP + gestione notifica/callback + endpoint MIT per rinnovo), simile o poco sopra
+  Stripe puro per via della minor familiarità e mancanza di SDK Node ufficiale. Il
+  vero rischio di tempo non tecnico è l'attivazione del **contratto commerciale
+  Nexi per la produzione** (iter con account manager, tempi non sotto il mio
+  controllo) — questo può aggiungere settimane PRIMA di poter incassare un euro
+  reale, a differenza di Stripe dove il self-service arriva a produzione in
+  giornata. Consiglio a Mason: avviare in parallelo (a) i miei test in sandbox
+  gratuita e (b) l'iter commerciale con Nexi, così i due tempi si sovrappongono
+  invece di sommarsi.
+
+---
+
+## AUDIT TECNICO (non decisione presa) — verifica onesta piani abbonamento/gestionale in vista del pivot "solo non-AI" (2026-09-26)
+
+**Contesto:** Mason valuta di lanciare offrendo solo le funzioni non-AI esistenti (newsletter, miniguida, Identikit CURA, Listino, gestione spese/utili) lasciando la chat Beautyx AI a un gruppo ristretto. Verifica diretta del codice, non supposizioni.
+
+**1) "Gestione spese" e "gestione utili" — mapping trovato, non 1:1 pulito:**
+- **Gestione spese** mappa su `/movimenti` (pagina) + `app/api/bank/movements/route.js`: import estratto conto (CSV/xlsx), categorizzazione, paginazione reale a 1000 righe (gestisce già centri con molti movimenti). Solido, gating piano già applicato (`requirePiattaformaPlan: true`).
+- **Gestione utili** non è UN endpoint ma DUE sistemi distinti collegati: `app/api/revenue/daily` (registra l'incasso giornaliero e calcola allocazioni suggerite verso i fondi) + `app/api/revenue/allocate` (conferma l'allocazione, crea i movimenti reali) + `app/api/accantonamenti/*` (i "fondi" — IVA, TFR, tasse — con saldo, movimenti, calcolo liquidità disponibile in `accantonamenti/liquidity`). **Attenzione:** `revenue/daily` e `revenue/allocate` NON hanno `requirePiattaformaPlan` (solo `verifyCentroOwnership` semplice) — a differenza di `accantonamenti/*` che ce l'ha. Se si vende un piano che include "gestione utili" ma non altro, oggi il gating è incoerente tra i due pezzi dello stesso flusso — da sistemare prima di vendere questa funzione isolata.
+
+**2) Audit onesto completezza (accantonamenti, movimenti, obiettivi, pianificazione, analytics_base):**
+- **Movimenti (bank_movements):** completo e testabile — CRUD reale, paginazione, categorizzazione, import file. Il pezzo più maturo del gruppo.
+- **Accantonamenti:** completo — CRUD, saldo calcolato via trigger DB (non in app), collegamento a movimenti bancari, calcolo liquidità disponibile. Testabile oggi.
+- **Revenue daily/allocate:** funzionale ma più giovane — flusso a due passi (registra incasso → conferma allocazione) mai menzionato nelle memorie precedenti come collaudato dal vivo con un utente reale. Il codice è completo e coerente, ma non ho trovato traccia di un test end-to-end reale (solo verifica statica, coerente con la regola generale del team su questo punto).
+- **Obiettivi:** più iterazioni di fix critici recenti (task #118-#128: auth mancante, centro_id scrivibile, esfiltrazione cross-tenant, tabelle ricreate da zero) — funzionante ORA ma è l'area con più bug di sicurezza sanati di recente, segno di maturità più bassa delle altre.
+- **Pianificazione:** è un contenitore UI (tab budget/accantonamenti/dipendenti), non un sistema a sé — la sua solidità dipende da budget+accantonamenti+employees sottostanti, verificati gated correttamente.
+- **Analytics_base:** non ho trovato un endpoint `/api/analytics/*` dedicato con questo nome — il dato analitico sembra derivare da `get_financials` dentro il dataHub della chat AI (`lib/beautyx/dataHub.js`), pensato per essere consumato dall'AI, non necessariamente da una pagina UI standalone. **Da segnalare onestamente:** se "analytics_base" nel piano Starter deve diventare una funzione visibile SENZA AI, va verificato se esiste già una pagina UI che la mostra indipendentemente dalla chat — non l'ho trovata in questo giro, potrebbe non esistere ancora come vista autonoma.
+
+**3) L'AI si può isolare? Sì, tecnicamente separata — verificato:**
+`app/api/beautyx/chat/route.js` è un pezzo a sé: legge dati via un set di "tool" (`get_financials`, `get_accantonamenti`, `get_obiettivi`, ecc.) che interrogano le STESSE tabelle Supabase usate dalle pagine gestionali dirette (`/movimenti`, `/pianificazione`, obiettivi), ma tramite un layer di lettura separato (`lib/beautyx/dataHub.js`) — non scrive nulla che le pagine dirette non scrivano già autonomamente. Disattivare l'accesso alla chat (bloccare la route o nasconderla in UI) non rompe le pagine gestionali dirette: sono percorsi di lettura/scrittura indipendenti sullo stesso database. La piattaforma gestionale (movimenti, accantonamenti, obiettivi, pianificazione) ha senso e resta operativa da sola, senza l'AI — è coerente con l'architettura "livello 3" già a più pezzi.
+
+**4) Cosa manca per collegare i 4 pilastri alla struttura piani esistente — stima onesta:**
+Oggi i 4 pilastri (newsletter, miniguida, Identikit, Listino) vivono FUORI dal sistema `subscription_plans`/`user_subscriptions` — hanno un proprio tracciamento nascente (`user_resource_access`, migration scritta ma **non applicata in produzione**, verificato in memoria team 20/09). Il lavoro per farli confluire nei piani Demo/Starter/ecc.:
+- **Se l'obiettivo è solo "includerli come funzionalita nell'array del piano"** (stesso pattern già usato per accantonamenti/obiettivi/ecc. nell'array `funzionalita` di `subscription_plans`): è un lavoro di **giorni**, perché il pattern di gating (`requirePiattaformaPlan`, array `funzionalita`) esiste già e i pilastri sono pagine/endpoint separati da ricollegare, non da riscrivere.
+- **Se l'obiettivo è un vero checkout unico piani con trial 30gg** (il pivot che Mason sta valutando, voce "homepage unica + abbonamento entry-level" già in `memory/generale.md` e `memory/alessia.md`): qui c'è un ostacolo strutturale reale, non solo di collegamento — **non esiste ancora nessun checkout Stripe funzionante per `subscription_plans`** (verificato: `app/api/subscriptions/checkout/route.js` gestisce solo pacchetti minuti HPA e addon token AI, mai un piano dell'abbonamento base). Questo prerequisito, già segnalato nella proposta referral del 25/09, blocca a monte qualunque "abbonamento entry-level con prova 30gg" — non è un dettaglio, è la parte mancante più grossa. Stima: **primi giorni di una settimana** per un checkout Stripe reale su `subscription_plans` (il pattern esiste già per gli altri due casi, va esteso), poi ancora del lavoro (non quantificato con certezza, dipende da quanti piani/tier decide Mason) per il collegamento dei 4 pilastri dentro quel nuovo checkout unico e la migrazione/applicazione della tabella `user_resource_access` in produzione.
+
+---
+
+## SCOPING (non impegno di sviluppo) — integrazione Listino in piattaforma + promozioni/pacchetti (2026-09-26)
+
+**Richiesta di Mason:** integrare il Listino intelligente nella piattaforma vera (livello 3, come movimenti/accantonamenti) invece di lasciarlo pagina pubblica, ed estenderlo con promozioni (sconti temporanei) e pacchetti. Verificato sul codice reale, non solo a memoria.
+
+**Scoperta chiave — sono DUE sistemi separati, non uno:**
+1. **Tool pubblico `/listino`** (`app/listino/page.js`): porting quasi verbatim di `calcolatore-margine.html`. Gira interamente nel browser — stato in memoria JS, "salvataggio" solo come codice testuale da copiare/incollare, **nessuna scrittura nel database**. Gating a 90gg/lite-completo via `lib/report/freeWindow.js` — confermato NON è lo stesso sistema di `subscription_plans`/`requirePiattaformaPlan` usato per movimenti/accantonamenti. Ha già in UI una colonna "Promo%" per riga servizio, ma è solo un numero client-side, si perde, non collegato a nulla di reale.
+2. **Gestionale prezzi reale, già dentro `/centro`** (dashboard, gated con `requirePiattaformaPlanForUser`, stesso pattern di movimenti/accantonamenti): tabelle vere `servizi`, `servizi_materiali`, `iva_aliquote`, e — sorpresa utile — **`pacchetti`/`pacchetti_items` esistono già** con API CRUD (`app/api/centro/pacchetti/*`), collegate a `app/centro/page.js`. Motore di calcolo proprio (`lib/listino-calc.js`), più dettagliato di quello del tool pubblico (tempi di sovrapposizione operatrici, congelamento prezzo con `servizi/[id]/congela`).
+
+**1) Integrazione in piattaforma:** non è uno spostamento file/routing — sono due motori di calcolo e due modelli dati diversi che vanno riconciliati o scelti. Bisogna decidere quale UX/logica tenere (quella amichevole a tab del tool pubblico vs. quella già tecnica del gestionale) e ricollegare tutto a `subscription_plans`/`requirePiattaformaPlan`. Stima onesta: settimane, non giorni.
+
+**2) Promozioni:** nessuna tabella esiste oggi. Dato minimo servirebbe: servizio_id (o pacchetto_id), tipo (percentuale/importo fisso), valore, data_inizio, data_fine. È la parte più semplice — stima pochi giorni.
+
+**3) Pacchetti:** base dati e API già esistenti (`pacchetti`/`pacchetti_items`), ma senza logica di prezzo scontato del pacchetto né UI dedicata per la titolare. È un nuovo "prodotto" composito, non solo uno sconto — stima una-due settimane.
+
+**4) Priorità (fatti per Mason, non decisione mia):** in coda rispetto al buco di gating già segnalato su `revenue/daily`+`revenue/allocate` (tocca soldi/dati) e al checkout abbonamento reale ancora inesistente su `subscription_plans` — entrambi più urgenti di una nuova feature prodotto.
+
+Nessun codice del Listino risultava palesemente rotto durante questa lettura — non ho fatto un audit di sicurezza dedicato, solo lo scoping richiesto.
+- **Incertezza onesta:** non ho stimato il lavoro di UI/homepage unica (fuori dal mio scope tecnico in questo giro, competenza già notata come da definire con Federica/Chiara/Alessia).
+
+---
+
+## SCOPING (non impegno di sviluppo) — listino unificato + AI ruolo operativo piano base + stima costi token (2026-09-27)
+
+**Decisioni di Mason recepite:** niente checkout finché la piattaforma non è completa; fondere i due sistemi di listino (non sceglierne uno); confermato l'impianto accantonamenti/utili così com'è (solo sistemare il gate `revenue/daily`/`revenue/allocate` già segnalato il 26/09); nuovo piano BASE con AI ristretta a supporto operativo (no consulenza strategica).
+
+**1) Cosa rende `app/listino/page.js` più previsionale di `lib/listino-calc.js` (letto il codice, non supposto):**
+Non è un motore "migliore" per lo stesso calcolo — sono due calcoli a due livelli diversi. `lib/listino-calc.js` (`calcolaServizio`) calcola SOLO il costo/prezzo di UN servizio alla volta: costo vivo, prezzo con ricarico, margine, sconto massimo mantenendo un margine minimo. Il tool pubblico (funzioni `cap()`, `breakEvenHour()`, `kFactor()`/`metrics()`/`recompute()` dentro `buildToolScript`) fa questo E in più simula TUTTO IL MESE del centro insieme: calcola la capacità reale incrociando ore-cabina e ore-personale e prende il collo di bottiglia vero (non un numero a caso); da lì ricava il costo orario reale del negozio; poi, su tutti i servizi insieme con i volumi stimati, produce un bilancio mensile completo (incassi netti, costi netti, utile/perdita del mese, quante clienti servono per il pareggio, quanta capacità è usata) e se il carico supera la capacità dice di preciso di quanto accorciare le durate o alzare i prezzi (o quanto personale manca). Questo — simulazione whole-listino/whole-mese con vincolo di capacità reale — oggi non esiste da nessuna parte nel gestionale.
+
+**2) Direzione fusione:** più realistico portare la logica di capacità/simulazione mensile del tool pubblico DENTRO `lib/listino-calc.js`, non il contrario — il gestionale ha già i dati veri collegati (`servizi`, `pacchetti`, `iva_aliquote`, gating piani), il tool pubblico lavora su dati finti incollati a mano dall'utente. Non è "copia una formula": va portato un modello di capacità (postazioni/operatrici/ferie/riempimento) che oggi il gestionale non ha per niente. Stima confermata: **settimane**, non giorni.
+
+**3) AI ristretta a supporto operativo nel piano base — fattibilità:**
+- Promemoria fine giornata (collegato a `revenue/daily`), spiegazione indicatori senza consigliare, motivazione quotidiana: soprattutto vincolo di **system prompt/scope dei tool disponibili** (lo stesso pattern già usato per separare la modalità profiling da quella normale in `app/api/beautyx/chat/route.js`, funzione `executeProfilingToolsInParallel` vs quella normale — la chat già sa "restringersi" a un set di tool per un contesto). Stima: **giorni**. Rischio reale da non sottovalutare: impedire che l'AI scivoli comunque in consiglio strategico è un lavoro di test/prompt-tuning ripetuto, non un interruttore secco.
+- **"Fa lei da indicatori" / monitor:** buona notizia verificata sul codice — **esiste già** un pannello Monitor (`components/beautyx/MonitorPanel.js` + `lib/beautyx/monitorExtractor.js`): durante la chat, Beautyx genera un marker `[MONITOR_START]...[MONITOR_END]` con schede (breakdown, metrics, chart) che vengono mostrate in un pannello laterale mentre l'AI ne parla a parole nella risposta. Non è audio/voce vera e propria (nessun text-to-speech nel progetto, verificato — solo un paio di match irrilevanti su "audio" per le chiamate HPA). Se Mason intende "racconta a parole invece di mostrare solo numeri/grafici" → già costruito, va solo riusato/esteso per il piano base. Se intende letteralmente voce parlata (TTS) → quello è nuovo e non stimato oggi.
+- Verifica coerenza listino (prezzo sotto costo/incoerente tra pacchetti): il calcolo di "sotto costo" esiste già (`analizzaCongelato` in `lib/listino-calc.js` produce già gli stati `perdita`/`critico`); manca solo un nuovo tool-function da esporre alla chat che lo richiami sui servizi/pacchetti del centro. Stima: **giorni**, non nuova architettura.
+- **In sintesi:** circa l'80% del lavoro è vincolo di prompt/scope-tool (giorni), il 20% nuovo è il tool di verifica coerenza listino (giorni) — il monitor non è costo aggiuntivo perché esiste già. Nessuna nuova architettura dati necessaria per queste 5 funzioni.
+
+**4) Stima costi token piano base — congettura ragionata, non stima solida:**
+Dalla migration `ESEGUI_align_subscription_plans.sql`: il costo per risposta è ~fisso (~$0.02/risposta con claude-sonnet-4, ~250 token di output ≈ 1000 caratteri), i piani attuali differiscono solo per QUANTE risposte/mese sono incluse (Demo 15, Starter 50, Pro 150, Enterprise 300). Ipotesi per l'uso ristretto del piano base: ~1 promemoria/giorno + ~1 interazione/giorno di spiegazione-indicatori-o-motivazione (non sempre uno scambio unico, a volte 2-3 messaggi in una sessione) + verifica coerenza listino non quotidiana (poche volte/mese, su richiesta o quando si toccano i prezzi) → stimo **60-100 risposte/mese per centro**, cioè **~1,20-2 $/mese per centro**. Se invece l'uso quotidiano diventa un vero "check-in" con più botta-risposta per sessione (3-5 messaggi invece di 1), si sale a 150-300 risposte/mese, **~3-6 $/mese** — cioè vicino ai piani Pro/Enterprise attuali. **Onestà:** questa è una congettura basata su ipotesi di frequenza d'uso che non abbiamo ancora osservato con utenti reali, non un dato misurato — va verificata con uso reale prima di fissare il prezzo.
+
+---
+
+## PROPOSTA TECNICA (non decisione presa) — costi infrastruttura a scala + guardrail AI piano base (2026-09-27)
+
+**Contesto:** due punti sollevati da Mason. Verificato lo stack reale sul codice, non supposto.
+
+**A) Stack reale in uso (verificato da `package.json` + `.env.local` + codice):**
+Vercel (hosting/deploy, dominio `VERCEL_TOKEN` in env), Supabase (`@supabase/supabase-js`, `@supabase/ssr` — DB+auth, chiave servizio in env), Upstash Redis (`@upstash/redis` + `@upstash/ratelimit`, usato in `lib/rateLimit.js` per il rate limiting, task #40/#53), Anthropic API (costo token AI, già stimato a parte in sezione sopra — NON incluso nei numeri infra qui sotto), Stripe (pagamenti, costo a %, non infrastruttura fissa), Beehiiv (newsletter, servizio esterno separato). Oggi risultano tutti su piani gratuiti o entry-level tranne dove già segnalato in memoria (Upstash attivato in produzione in attesa env var Vercel).
+
+**B) Stima costi infrastruttura a scala — con onestà sulle fonti:**
+Prezzi Vercel verificati IN DIRETTA su vercel.com/pricing oggi (27/09). Prezzi Supabase e Upstash presi da conoscenza pregressa (il fetch live è fallito per timeout due volte, non verificati in questa sessione) — **da confermare su supabase.com/pricing e upstash.com/pricing prima di fissare qualunque prezzo definitivo**.
+- **Vercel:** Hobby $0 (non commerciale, va abbandonato appena si vende); Pro $20/mese/seat + uso a consumo oltre le soglie incluse (function invocations, banda, ecc.); Enterprise prezzo custom (contatto vendite), scatta quando servono SLA/supporto/regioni multiple, non per forza per volume di centri.
+- **Supabase:** Free $0; Pro ~$25/mese base (include quota generosa di storage/banda/auth, poi a consumo); Team ~$599/mese (SLA/compliance, non necessariamente per più dati); Enterprise custom.
+- **Upstash Redis:** Free (10k comandi/giorno); a consumo, molto economico per un uso leggero come rate limiting (poche verifiche per richiesta) — tipicamente pochi $/mese anche con traffico moderato.
+
+**Stima indicativa per centro/mese (esclusi i costi AI, già stimati sopra), a diversi livelli di scala — NUMERI CONGETTURALI, non misurati con traffico reale:**
+- **100 centri attivi:** infrastruttura fissa minima (Vercel Pro + Supabase Pro + Upstash quasi gratis) ≈ $50-80/mese totali → **~€0,45-0,75/centro/mese**.
+- **500 centri attivi:** i costi fissi restano quasi gli stessi, cresce solo l'uso a consumo (più banda/storage/richieste) ≈ $150-350/mese totali → **~€0,25-0,60/centro/mese**.
+- **1000 centri attivi:** qui c'è un bivio reale: se il carico resta gestibile su Supabase Pro, ≈ $300-700/mese; se servono garanzie SLA/compliance che spingono a Supabase Team, si sale a ≈ $800-1300/mese → **~€0,25-1,10/centro/mese** (range ampio apposta, dipende da una soglia che oggi non possiamo prevedere con certezza).
+- **Perché il costo per centro scende con la scala:** i costi fissi (piano base Vercel/Supabase) si spalmano su più centri; ma non è garantito che scenda linearmente all'infinito — oltre una soglia di traffico/dati si passa a piani con salti di prezzo (es. Supabase Team), non a un aumento graduale.
+- **Onestà totale:** questi numeri sono una stima ragionata da prezzi di listino pubblici, non da un test di carico reale con utenti Beautyx — l'uso vero (quanti dati per centro, quante richieste/giorno) non è ancora stato osservato. Vanno trattati come ordine di grandezza per il pricing, non come budget impegnativo, e ri-verificati quando ci saranno i primi 50-100 clienti reali con dati di utilizzo osservati.
+
+**C) Guardrail per impedire consulenza strategica nel piano base — approccio a più livelli, nessuno affidabile al 100% da solo:**
+1. **Restrizione tool/dati per piano (esiste già il pattern):** stesso meccanismo già usato in `app/api/beautyx/chat/route.js` per separare la modalità profiling (`isProfilingMode ? PROFILING_TOOLS : BEAUTYX_TOOLS`, righe ~1086-1103) — si estende con un terzo set, es. `BASE_PLAN_TOOLS` (solo lettura di promemoria/indicatori/coerenza-listino, NESSUN tool che espone proiezioni/scenari/raccomandazioni di business). Se un tool per "consigliare" non esiste nel set caricato, l'AI non può usarlo per definizione — questo è il livello più affidabile perché non dipende dal comportamento del modello, è un vincolo strutturale lato codice.
+2. **Istruzioni di sistema esplicite sul confine:** system prompt dedicato per il piano base che elenca ESPLICITAMENTE cosa è consentito (promemoria, spiegazione indicatori senza consigliare, motivazione, verifica coerenza listino) e cosa è vietato (consigli su prezzi/strategia/investimenti/assunzioni/marketing) — utile ma da solo non affidabile, un LLM può comunque interpretare male o essere convinto ad aggirarlo (prompt injection dell'utente stesso, tipo "fingiamo che...").
+3. **Rilevamento di richieste strategiche + rifiuto guidato verso l'upsell:** serve un secondo passaggio (classificatore leggero, anche un prompt Claude dedicato "questa richiesta è operativa o strategica?") che intercetta ANCHE quando l'utente prova a forzare la mano, e la risposta corretta non è un rifiuto secco ma un messaggio tipo "questo tipo di consiglio fa parte del piano Premium/Advanced — vuoi passare?" con CTA reale. Va scritto e testato con casi limite reali (richieste ambigue, richieste "furbe" per aggirare il limite), non basta scriverlo una volta.
+4. **Verifica nel tempo che il limite tenga:** log delle conversazioni piano-base già esistono (stessa tabella messaggi usata ovunque) — si può aggiungere un controllo automatico periodico (anche con l'AI stessa, in batch, non in tempo reale) che rilegge un campione di conversazioni piano-base e segnala quelle dove sembra essere scivolata in consiglio strategico, più controlli a campione umani (Riccardo/Mason) specialmente nelle prime settimane.
+5. **Onestà su affidabilità:** nessuno di questi livelli, da solo o insieme, garantisce zero scivolamenti — un LLM conversazionale può sempre essere spinto fuori dai binari con un prompt abbastanza insistente o ambiguo. Il livello (1) — restrizione tool/dati — è quello strutturalmente più solido perché non dipende dal "buon comportamento" del modello: anche se il modello volesse consigliare strategia, non avrebbe i dati/tool per farlo in modo concreto (non può proporre scenari finanziari che non può calcolare). I livelli (2)-(4) riducono il rischio residuo (l'AI che dà un parere generico a parole, senza dati, tipo "prova ad alzare i prezzi") ma vanno testati con casi reali prima del lancio, non solo scritti e dati per buoni. Stima lavoro: (1)+(2) giorni (pattern già pronto), (3) giorni di scrittura + iterazioni di test, (4) giorni per il meccanismo di campionamento, poi tempo continuativo di monitoraggio umano.
+
+---
+
+## PROPOSTA TECNICA (non decisione presa) — limite token+addon: verifica completezza reale; reviewer AI a campione sulle chat (2026-09-27)
+
+**Contesto:** due richieste dirette di Mason, verificate sul codice reale (non sul riassunto storico).
+
+**A) Limite mensile token + acquisto integrativo — esiste, ma è ROTTO nel collegamento finale (bug concreto, non "manca il pezzo"):**
+- Il meccanismo di tetto esiste davvero ed è completo lato database: `check_ai_limit`/`track_ai_usage` (`ESEGUI_align_subscription_plans.sql` + aggiornati in `ESEGUI_addon_token_bonus.sql`) calcolano il limite come `token_ai_mensili (piano) + token_ai_bonus (addon acquistati)`, bloccano l'uso quando superato (`allowed: false`), e la chat (`app/api/beautyx/chat/route.js` riga ~1020) lo rispetta davvero: se il limite è superato risponde con un messaggio esplicito "Hai raggiunto il limite... puoi acquistare un pacchetto aggiuntivo" invece di chiamare Claude — quindi non è solo teoria, il blocco reale del consumo funziona.
+- Esiste anche l'interfaccia utente per comprare l'addon: `app/impostazioni/abbonamento/page.js` ha una sezione `AddonSection` con pulsanti "acquista" per pacchetti di token, e un endpoint checkout Stripe dedicato (`app/api/subscriptions/checkout/route.js`, ramo `isAddon`) più un webhook (`app/api/webhooks/stripe/route.js`, `handleAddonCheckoutCompleted`) che accredita davvero `token_ai_bonus` sull'utente dopo il pagamento. Tutti i pezzi ci sono.
+- **Il bug trovato:** il pulsante "acquista" in `page.js` (funzione `handleAddonPurchase`, riga 114-120) manda al server `{ addon_id: addonId }`, ma l'endpoint checkout (riga 30) legge `{ package_id, tipo }` — nomi diversi. Il risultato è che oggi, cliccando "acquista addon" in produzione, la richiesta arriva senza `package_id` e l'endpoint risponde con l'errore "package_id richiesto" (o "Pacchetto non trovato"): **l'acquisto addon non funziona da UI**, nonostante tutto il resto (DB, webhook, gating) sia a posto. Stessa cosa lato acquisto piano (`handleCheckout` manda `plan_id`, l'endpoint si aspetta `package_id`) — probabilmente collegato al gap già segnalato il 26/09 sull'assenza di un checkout reale per `subscription_plans`.
+- **In sintesi per Mason:** non serve costruire nulla da zero — serve un fix di pochi minuti/ore (allineare i nomi dei campi tra frontend e API) per rendere operativo l'acquisto addon già progettato e già collegato a Stripe.
+
+---
+
+## FIX APPLICATO — bug reale "acquista pacchetto token" (addon_id vs package_id) (2026-09-27)
+
+**Richiesta di Mason:** sistemare subito il bug reale segnalato sopra (punto A), prima di continuare col resto.
+
+**Verifica pre-fix (nome canonico del campo):** controllato `app/api/subscriptions/checkout/route.js` (legge `package_id`/`tipo` dal body, riga 30), `app/api/webhooks/stripe/route.js` (metadata Stripe usa `package_id`, riga 61 e 150; `client_subscriptions.package_id` colonna scritta a righe 104/132), e la tabella sorgente `addon_packages` (letta da `app/api/subscriptions/addons/route.js` riga 23, id passato al bottone come `addon.id`). Il nome canonico lato dati/API è `package_id` — non serve nessuna migrazione, `ESEGUI_addon_token_bonus.sql` riguarda solo la colonna `token_ai_bonus` e non tocca questo mismatch di naming. Il lato sbagliato era il frontend.
+
+**File modificato:** `app/impostazioni/abbonamento/page.js`, funzione `handleAddonPurchase` (riga 120).
+- **Prima:** `body: JSON.stringify({ addon_id: addonId })`
+- **Dopo:** `body: JSON.stringify({ package_id: addonId, tipo: 'addon' })`
+
+**Perché anche `tipo: 'addon'`, non solo il rinominare il campo:** il body originale non includeva affatto `tipo`. Senza `tipo: 'addon'`, l'endpoint (`isAddon = tipo === 'addon'`) avrebbe cercato `addonId` nella tabella `subscription_packages` invece che in `addon_packages`, fallendo comunque con "Pacchetto non trovato" anche dopo aver corretto solo il nome del campo. Il fix minimo corretto copre entrambi.
+
+**Verifica statica end-to-end dopo il fix (riletto ogni pezzo toccato):**
+1. `AddonSection` (riga ~565, stesso file) passa `addon.id` — id di riga da `addon_packages` (confermato via `/api/subscriptions/addons`, riga 23) — a `onPurchase` → `handleAddonPurchase(addon.id)`.
+2. `handleAddonPurchase` ora invia `{ package_id: addon.id, tipo: 'addon' }` a `POST /api/subscriptions/checkout`.
+3. `checkout/route.js` riga 30: `const { package_id, tipo } = body` → `package_id` presente, non 400. Riga 48-56: `isAddon = tipo === 'addon'` → true → `tableName = 'addon_packages'` → lookup corretto per id.
+4. Riga 108-114: crea sessione Stripe con `metadata = { centro_id, user_id, package_id, tipo_acquisto: 'addon', token_ai_bonus }`.
+5. Webhook `handleCheckoutCompleted` (riga 61): legge `package_id`/`tipo_acquisto` da `session.metadata` → se `tipo_acquisto === 'addon'` chiama `handleAddonCheckoutCompleted({ session, user_id, package_id, token_ai_bonus })` (riga 70).
+6. `handleAddonCheckoutCompleted` (riga 150+) usa `package_id` per scrivere `user_purchases.addon_package_id` (riga 201) e accredita `token_ai_bonus` sull'utente.
+
+Catena nomi coerente in ogni passaggio: `addon.id` → `package_id` (body, metadata Stripe, tabella `addon_packages`) → `addon_package_id` (colonna dedicata in `user_purchases`, nome diverso ma corretto per quella tabella, non un mismatch).
+
+**Fuori scope, notato ma NON toccato (nessuna istruzione di Mason su questo):** `handleCheckout` (riga 92-98, acquisto piano non-addon) manda ancora `{ plan_id: planId, periodo }` allo stesso endpoint che si aspetta `package_id` — stesso tipo di mismatch, ma per il flusso di acquisto piano (`subscription_plans`/`subscription_packages`), già segnalato il 26/09 come gap distinto (assenza di un checkout reale per i piani). Non modificato: non era l'oggetto della richiesta odierna di Mason e tocca un flusso diverso da verificare a parte.
+
+**Nessuna migrazione applicata né necessaria:** il fix è stato solo lato codice applicativo (rinominare/aggiungere campi nel body inviato dal frontend), nessuno schema mancante.
+
+---
+
+## FIX APPLICATO — bug gemello "acquista piano abbonamento" (plan_id vs package_id) (2026-09-27)
+
+**Richiesta di Mason:** autorizzato esplicitamente ("procedi sia sul bug che con il resto") il fix del secondo bug gemello segnalato sopra, nella stessa sezione, riga 3892.
+
+**Verifica pre-fix (non dato per scontato uguale al caso addon):** riletto `handleCheckout` (`app/impostazioni/abbonamento/page.js`, righe 92-112) e l'endpoint `app/api/subscriptions/checkout/route.js` per interi (righe 1-155), in particolare la logica di branching righe 30/48-56:
+- `const { package_id, tipo } = body` → `isAddon = tipo === 'addon'` → se `isAddon` falso, `tableName = 'subscription_packages'` (non `addon_packages`).
+- A differenza del caso addon, qui **non serve nessun `tipo` esplicito**: per il ramo piano basta che `tipo` sia assente/diverso da `'addon'` — `isAddon` risulta `false` di default e il branch va correttamente su `subscription_packages`. Aggiungere un `tipo: 'piano'` (o simile) sarebbe stato superfluo e non richiesto dalla logica reale dell'endpoint: confermato leggendo il codice, non indovinato.
+- Il branch non-addon (righe 116-134) costruisce `metadata` senza `tipo_acquisto` — coerente con il webhook (`handleCheckoutCompleted`, riga 69: `if (tipo_acquisto === 'addon')`), che se `tipo_acquisto` è assente prosegue nel ramo "Pacchetto HPA minuti/piano" (righe 74-148), esattamente il comportamento voluto per un acquisto di piano.
+
+**File modificato:** `app/impostazioni/abbonamento/page.js`, funzione `handleCheckout` (riga 98).
+- **Prima:** `body: JSON.stringify({ plan_id: planId, periodo })`
+- **Dopo:** `body: JSON.stringify({ package_id: planId, periodo })`
+
+Nessun altro campo aggiunto o rimosso: `tipo` resta assente nel body (corretto per questo ramo, vedi sopra) e `periodo` resta invariato (l'endpoint non lo legge affatto — usa `pkg.periodo` letto dal DB per decidere `recurring`/`checkoutMode`; comportamento preesistente, non toccato perché fuori dall'oggetto del bug segnalato).
+
+**Verifica statica end-to-end dopo il fix (riletta ogni parte toccata):**
+1. Bottone piano (stesso file, sezione piani) passa l'id riga di `subscription_packages`/`subscription_plans` a `handleCheckout(planId)`.
+2. `handleCheckout` ora invia `{ package_id: planId, periodo }` a `POST /api/subscriptions/checkout`.
+3. `checkout/route.js` riga 30: `package_id` presente → non più 400 "package_id richiesto". Riga 48: `tipo` undefined → `isAddon = false` → `tableName = 'subscription_packages'` → lookup corretto per id (riga 51-56).
+4. Righe 116-134: costruisce `lineItem` con `recurring` se `pkg.periodo === 'mensile'`, `checkoutMode` = `'subscription'` o `'payment'` di conseguenza, e `metadata = { centro_id, package_id, minuti_inclusi }` (nessun `tipo_acquisto`, corretto).
+5. Sessione Stripe creata (riga 137-145) e `url` restituito al client → redirect a Stripe checkout, stesso meccanismo già verificato per l'addon.
+6. Webhook `handleCheckoutCompleted` (riga 60-72): legge `centro_id`/`package_id` da `session.metadata` (presenti) → `tipo_acquisto` assente → **non** entra nel ramo addon → prosegue nel ramo piano (righe 74-148): calcola `minuti_inclusi`/scadenza, e con guard idempotenza esistente (`metadata.stripe_checkout_session_id`) crea o aggiorna `client_subscriptions` (`package_id`, `minuti_totali`, `stato: 'attivo'`, `stripe_subscription_id`, `stripe_customer_id`) — attivazione piano lato DB confermata, stesso path già usato per i pacchetti minuti HPA.
+
+Catena nomi coerente in ogni passaggio: id piano → `package_id` (body, metadata Stripe, tabella `subscription_packages`, colonna `client_subscriptions.package_id`) — nessun mismatch residuo.
+
+**Nessuna migrazione applicata né necessaria:** fix solo lato codice applicativo (un rename di campo nel body inviato dal frontend), nessuno schema mancante o da modificare. Se in futuro emergesse la necessità di una migrazione per questo flusso, va segnalata a Mason per autorizzazione prima di applicarla — non applicata qui perché non serviva.
+
+**B) Reviewer AI sulle conversazioni per verificare il rispetto dei limiti del piano base:**
+- **Fattibilità tecnica — sì, confermata:** lo storico chat esiste già in tabella `beautyx_messages` (testo semplice, colonne `sender`/`contenuto`/`conversation_id`/`timestamp`, con indici per leggerle rapidamente per conversazione), facilmente leggibile da un'altra chiamata AI senza lavoro di parsing aggiuntivo — è la stessa tabella già citata al punto (4) della proposta guardrail del 27/09.
+- **Costo — a campione conviene molto, e di parecchio:** usando la stessa stima già data (~0,02$/risposta AI con Claude Sonnet):
+  - Controllare OGNI conversazione (es. 1 volta/giorno per centro, sui 60-100 messaggi/mese stimati per il piano base) costerebbe, se il reviewer legge tutta la conversazione del giorno in una chiamata, circa **30 chiamate/mese/centro** → **~0,60$/mese/centro** solo di controllo, che si somma al costo AI vero del piano base già stimato (1,20-2$/mese/centro) — quasi +50% di costo aggiuntivo "invisibile" all'utente.
+  - A campione (1 conversazione su 10, o 1 controllo al giorno per centro invece che per conversazione — le due opzioni di Mason coincidono quasi, dato l'uso stimato basso): scende a **~3 chiamate/mese/centro** → **~0,06$/mese/centro**, cioè un decimo. Su una base di 100 centri: ~6$/mese totali vs ~60$/mese per il controllo integrale — differenza reale e non marginale.
+  - **Onestà:** questi numeri presuppongono che il reviewer legga tutta la conversazione in una sola chiamata (non un round per messaggio, che moltiplicherebbe il costo per il numero di messaggi) — è così che andrebbe costruito.
+- **Alternativa più economica — ha senso, va raccomandata come prima scelta:** un controllo a parole chiave ("investimento", "assunzione", "strategia di prezzo", "quanto dovrei alzare", ecc.) è quasi gratis (nessuna chiamata AI, solo string matching) ma grezzo — falsi positivi/negativi frequenti perché il linguaggio naturale non si presta bene a un elenco fisso di parole. Un modello economico/piccolo usato SOLO per una classificazione binaria "dentro i limiti sì/no" (non un'analisi completa) è una via di mezzo sensata: costo per chiamata molto più basso di un modello completo (i modelli "mini/piccoli" costano tipicamente un ordine di grandezza in meno per token rispetto a Sonnet), e per un compito binario semplice la qualità è adeguata. **Proposta concreta:** parole chiave come primo filtro gratuito (scarta il grosso del traffico chiaramente innocuo) + modello economico solo sui casi ambigui che il filtro non riesce a escludere con certezza + il campionamento (1 su 10) sopra come rete di sicurezza aggiuntiva, non alternativa. Combinando i tre livelli il costo scende ulteriormente rispetto anche al solo "a campione con modello pieno".
+- **Raccomandazione onesta:** non serve un'AI costosa che rilegge tutto — a campione con parole chiave + modello economico per i casi dubbi tiene il costo vicino a zero e comunque dà segnale utile per i controlli umani (Riccardo/Mason) nelle prime settimane, che restano comunque necessari (nessun controllo automatico è affidabile al 100%, coerente con l'onestà già data sul punto guardrail C.5 sopra).
+
+## VERIFICA TECNICA (non impegno di sviluppo) — fattibilità tariffazione variabile 3-5% su aumento utile operativo (2026-09-29)
+
+**Richiesta:** il team valuta una fee variabile 3-5% sui piani Premium/Advanced calcolata sull'aumento di "utile operativo" (incassi reali - spese reali) del centro, usando dati già tracciati. Verifica onesta sul codice reale, non in teoria.
+
+**1) Oggi NON esiste un percorso pulito incassi-spese — scoperta più importante: ci sono DUE sistemi spese separati e non collegati:**
+- `registro_giornate` (tabella "viva", alimentata da registro manuale + bridge Koibox) ha già una colonna `spese_totali` per giorno — MA questa viene ricalcolata da `registro_spese` (`app/api/registro/spese/route.js`), un log spese manuale rapido (descrizione/importo/categoria/metodo/fornitore), **non da `bank_movements`**.
+- `bank_movements` (il vero import estratto conto CSV/xlsx, pagina `/movimenti`) è un sistema completamente separato — nessun collegamento, nessun dedup, nessuna riconciliazione tra i due. Un centro può inserire una spesa a mano in `registro_spese` E poi importarla di nuovo via CSV in `bank_movements`: rischio concreto di doppio conteggio se si sommassero ingenuamente, oppure di buco se si usa solo uno dei due canali in modo incompleto.
+- Sul lato incassi c'è la stessa doppia fonte: `daily_revenues` (legacy, scritto da `revenue/daily`) + `registro_giornate` (fonte "vera" attuale, con bridge Koibox) — `lib/beautyx/dataHub.js` le unifica con una logica di override manuale (registro_giornate vince), ma è un artefatto applicativo, non uno schema DB pulito.
+
+**2) Nessuna vista/tabella aggregata "utile mensile" pronta:** `app/api/registro/stats/route.js` fa già un aggregato incassi+spese per periodo, ma **legge `spese_totali` da `registro_giornate`** (quindi solo le spese manuali di `registro_spese`, non l'estratto conto vero). `app/api/budget/comparison/route.js` invece ricalcola dal vivo su `bank_movements` per anno intero (nessuna tabella mensile precalcolata, ricalcolo ad ogni chiamata — accettabile per performance dato 1 centro alla volta, ma non è la fonte "spese" usata da registro/stats). Servirebbe costruire ex novo la vista che incrocia le due fonti corrette (incassi da registro_giornate/Koibox, spese da bank_movements categorizzato), non esiste oggi.
+
+**3) Rischio pratico dati mancanti — alto e concreto, non teorico:** `bank_movements` esiste SOLO se il centro carica manualmente l'estratto conto (nessuna connessione bancaria automatica/open banking). Un centro che paga fornitori in parte con carta/contanti fuori dal conto tracciato, o che semplicemente non carica l'estratto conto ogni mese, produce spese sottostimate → utile operativo calcolato da Beautyx **sovrastimato** (le spese mancanti gonfiano l'utile apparente). Questo è lo scenario più probabile nella fase iniziale con clienti reali: nessun controllo di completezza automatico oggi verifica che l'estratto conto caricato copra l'intero mese o l'intero flusso di spesa del centro.
+
+**Parere onesto:** calcolare oggi un "utile operativo mensile" affidabile per fatturare una fee su di esso non è pronto — non tanto per mancanza di dati, quanto perché i dati esistono in due sistemi spese/incassi paralleli e non riconciliati, e la fonte spese più completa (bank_movements) dipende da un import manuale che nessun centro è obbligato/verificato a tenere aggiornato e completo. Fatturare una % su un numero che può essere gonfiato da spese mancanti è un rischio di credibilità concreto verso i clienti, non solo un dettaglio tecnico. Prima di costruire la fee servirebbe: (a) unificare le due fonti spese o sceglierne una sola come "ufficiale", (b) una vista mensile aggregata incassi-spese vera, (c) un controllo minimo di completezza (es. alert se un mese ha zero movimenti bancari importati) prima di usare il numero per fatturare.
+
+## VERIFICA TECNICA (non impegno di sviluppo) — migrazione clienti Identikit 60€/Listino 29€ una tantum verso futuro abbonamento (2026-09-30)
+
+**Domanda di Mason:** se si lancia ora col modello attuale (Identikit 60€ una tantum, Listino 29€ una tantum), sarà semplice in futuro far transitare quei clienti verso l'abbonamento (Base 40€/mese+)?
+
+**1) Stato reale di `user_resource_access` — solo file, mai applicata:**
+- `supabase/migrations/20260920_user_resource_access.sql` esiste solo come migration scritta il 20/09, **non applicata al DB di produzione** (dichiarato esplicitamente in testa al file stesso, e coerente con `memory/generale.md` riga 148). Nessun cambiamento di stato da allora: nessuna voce successiva ne segnala l'applicazione, e la sandbox non è mai partita nella sessione in cui è stata scritta — quindi **mai testata dal vivo**, nemmeno una volta.
+- `app/api/user/resource-access/route.js` (POST/GET) è scritto per usarla ma **fallisce in silenzio** se la tabella non esiste (try/catch che ritorna `success:false` senza bloccare nulla, o `data:[]` lato GET) — quindi oggi, con la tabella assente, ogni chiamata a questo endpoint semplicemente non salva/non legge niente, senza errore visibile a nessuno.
+- Schema minimo previsto (se applicata) c'è tutto: `user_id`, `risorsa` (identikit/tool/bundle), `tipo_accesso` (gratuito_90gg/pagato/bundle_pagato), **`importo_pagato`** (valore REALMENTE pagato, non nominale — pensato apposta per il bundle 70€≠60+29), `stripe_checkout_session_id`, `data_concessione`. Sulla carta è il minimo giusto per una migrazione pulita (chi, cosa, quanto, quando).
+- **Scoperta più importante per onestà verso Mason:** oggi, anche se la tabella fosse applicata, ogni riga scritta avrebbe `importo_pagato = 0` e `tipo_accesso = 'gratuito_90gg'`, perché **non esiste ancora nessun checkout Stripe reale per i 60€ Identikit né per i 29€ Listino** (verificato: solo `api/subscriptions/checkout` esiste ed è funzionante, per gli abbonamenti piattaforma — nessun endpoint equivalente per i due prodotti one-time). Il codice del route stesso lo dichiara: fuori dalla finestra 90gg gratuiti, POST ritorna `skipped: true, reason: "nessun checkout reale disponibile"` invece di scrivere una riga "pagato". In pratica: oggi nessun cliente sta davvero pagando 60€/29€ nel codice — è tutto gratis lancio, e il "modello attuale" descritto nella domanda di Mason non ha ancora un binario di pagamento costruito.
+
+**2a) Riconoscere accesso permanente alla singola funzione (es. Identikit incluso nel Base):**
+- Più semplice da implementare oggi. Basta: applicare la migration, un check nel codice che concede/nasconde la feature ("hai già Identikit incluso") in base a una riga `user_resource_access` con `tipo_accesso='pagato'` e `risorsa='identikit'`, indipendente dallo stato abbonamento. Nessuna logica di fatturazione nuova, nessun collegamento a Stripe subscriptions: è puro gating booleano lato applicazione, pattern già usato altrove nel codice per il gating lite/completo su `/listino`.
+
+**2b) Convertire i 60€ già pagati in credito/sconto sui primi mesi di abbonamento:**
+- Più complesso. Serve: leggere `importo_pagato` dalla riga storica, calcolare quanti mesi di sconto equivalgono (60€ su un piano da 40€/mese = 1,5 mesi), e applicarlo nel checkout Stripe dell'abbonamento (coupon/credito una tantum su Stripe, o proration manuale) — tocca il sistema subscription già in produzione (`20260211_subscription_system.sql`, `api/subscriptions/checkout`, webhook), non solo un flag interno. Più superficie di rischio (importi in centesimi, arrotondamenti, coupon Stripe da configurare per ogni caso, gestione se l'importo non divide esattamente in mesi interi).
+- **Oggi (2a) è nettamente più semplice** col sistema che esiste: richiede solo che la tabella sia applicata e popolata con dati reali (cosa che oggi non accade, vedi punto 1) — (2b) richiede in più lavoro di integrazione con Stripe che non esiste ancora per questo scopo specifico.
+
+**3) Rischi di complessità nascosta, onestamente:**
+- **Fiscale (fuori mia competenza, da verificare con commercialista):** un 60€ una tantum fatturato oggi e un abbonamento mensile fatturato domani sono probabilmente due tipi di documento fiscale diversi — convertire un pagamento passato in "credito" su fatture future può avere implicazioni IVA/momento impositivo che non è un problema di codice, va chiesto a chi segue la parte fiscale prima di promettere (2b) a un cliente.
+- **Utenti con acquisti parziali/multipli:** lo schema gestisce già bene i casi noti (solo Identikit, solo Tool, bundle 70€) grazie al vincolo UNIQUE(user_id, risorsa) e alla riga 'bundle' separata — ma un cliente che ha comprato Identikit oggi e Listino tra 3 mesi a prezzo pieno avrà due righe con due `importo_pagato` diversi in momenti diversi: la logica "quanto sconto gli spetta" dovrà sommarle correttamente, non è automatico, va scritta quando si costruisce la migrazione vera.
+- **Il rischio più grande non è nello schema, è che oggi non c'è nulla da migrare davvero:** finché non esiste un vero checkout Stripe per i 60€/29€, `user_resource_access` non si popolerà mai con `importo_pagato` reali — è una tabella pronta a ricevere dati che oggi nessun flusso di pagamento produce. Prima di preoccuparsi di "come migrare i clienti", serve costruire il checkout one-time vero (non esiste) e applicare la migration (non applicata).
+
+**Risposta diretta alla domanda di Mason:** lo schema pensato per la tracciabilità è adeguato e onestamente ben progettato per lo scopo (dati minimi giusti: chi, cosa, quanto pagato davvero, quando) — ma oggi è solo un file SQL mai applicato, mai testato, e comunque inutile finché non esiste un vero pagamento one-time da tracciare (oggi tutto è gratis lancio). Lanciare ora col modello attuale NON crea un problema di migrazione futura di per sé — il rischio reale è opposto: se si lancia "a pagamento" credendo che il tracciamento sia già operativo, in realtà non lo è, e va costruito (migration + checkout Stripe one-time + gating) prima che il primo euro venga davvero incassato, altrimenti quei primi clienti paganti non lasceranno traccia utilizzabile per lo sconto futuro.
+
+---
+
+## VERIFICA TECNICA (scoping, nessun codice toccato) — HPA da limite mensile a monte-ore per periodo di abbonamento (2026-10-01)
+
+**Richiesta del Coordinatore (in parallelo al lavoro di Alessia #235 su prezzi):** valutare se passare da "ore HPA incluse nel piano, limite che si resetta ogni mese" a "monte-ore totale per il periodo di abbonamento (3/6/12 mesi), consumabile liberamente nel tempo senza reset mensile".
+
+**1) Come funziona oggi — verificato sul codice reale, non su riassunti precedenti. Scoperta principale: esistono DUE sistemi HPA paralleli e SCOLLEGATI tra loro, non uno:**
+
+- **Sistema A — "ore incluse nel piano" (`subscription_plans.ore_hpa_mensili` + `user_subscriptions.ore_hpa_usate`/`mese_conteggio`):** è quello che la UI mostra (`app/impostazioni/abbonamento/page.js` riga 277: "Ore HPA: {sub.ore_hpa_usate}h / {plan.ore_hpa_mensili}h"), che il cron mensile resetta (`vercel.json`, `/api/cron/reset-counters` il giorno 1 di ogni mese chiama la RPC `reset_monthly_counters`, `20260211_subscription_system.sql` riga 400: azzera sia `token_ai_usati` sia `ore_hpa_usate` se `mese_conteggio` è cambiato), ed è quello letto anche da `app/api/subscriptions/balance/route.js` e `app/api/user/onboarding-checklist/route.js`.
+  - **Ma `ore_hpa_usate` non viene MAI incrementato da nessun flusso reale.** Ho cercato in tutto `app/` ogni UPDATE/scrittura su quel campo: l'unico punto che lo tocca è `app/api/admin/subscriptions/route.js` (un reset manuale admin a 0), nessun altro. Non esiste l'equivalente HPA di `track_ai_usage` per i token AI. Risultato concreto: le "3 ore/mese incluse nel piano Professional" dichiarate in `ESEGUI_align_subscription_plans.sql` sono oggi **puro dato visualizzato, non un limite realmente fatto rispettare né un consumo realmente tracciato** — un cliente Professional non "consuma" mai queste ore nel senso di booking reale.
+- **Sistema B — "pacchetti minuti HPA" (`subscription_packages` + `client_subscriptions.minuti_totali`/`minuti_usati`/`minuti_rimanenti` + `minute_transactions`, `20260205_04_subscriptions.sql`):** è il sistema REALMENTE agganciato al booking. `app/api/booking/route.js` (riga 104) chiama `get_minute_balance(centro_id)` che legge SOLO da `client_subscriptions`, verifica `minuti_rimanenti >= durata`, e se l'appuntamento si completa chiama `consume_appointment_minutes` che decrementa `minuti_usati` e scrive una riga di log in `minute_transactions`. **Punto chiave: questo sistema NON si resetta mai a calendario.** `minuti_totali`/`minuti_usati` vivono per tutta la durata di `client_subscriptions.data_scadenza` (legata a `data_inizio` + `periodo` del pacchetto acquistato: mensile/trimestrale/annuale/una_tantum) — è già, meccanicamente, un monte-ore-per-periodo che si consuma liberamente nel tempo, esattamente il modello che vuole Mason. Solo che oggi è cablato a un acquisto SEPARATO di "pacchetto minuti" (Starter 60min/29€, Professional 120min/49€, Enterprise 240min/89€ — dati in `20260205_04_subscriptions.sql` righe 290-298), non al piano principale (`subscription_plans`) che il cliente compra per l'AI/gestionale.
+- **Conseguenza pratica per Mason, verificata non presunta:** oggi un cliente che paga un piano con "X ore HPA incluse" NON può prenotare nemmeno un minuto HPA a meno che non esista ANCHE una riga `client_subscriptions` attiva per il suo centro (creata solo comprando un pacchetto minuti separato, o a mano da un admin) — il booking non guarda affatto le ore dichiarate nel piano. Le due cose sono scollegate in produzione oggi, non solo "da cambiare per il nuovo modello": è già un gap indipendentemente dalla richiesta di Mason.
+
+**2) Fattibilità del cambio a monte-ore-per-periodo:**
+- **Buona notizia concreta:** il meccanismo che Mason descrive ("non si resetta finché il periodo non finisce, consumo libero nel tempo") **esiste già, è scritto, testato nel booking, e funziona** — è il Sistema B sopra (`client_subscriptions`/`consume_appointment_minutes`/`minute_transactions`). Non va costruito da zero: va RIUSATO come unico backend delle ore HPA, anche per quelle incluse nei piani principali, al posto del Sistema A rotto.
+- **Modifiche concrete da fare:**
+  1. Smettere di azzerare `ore_hpa_usate` nel reset mensile (`reset_monthly_counters` — togliere solo quel campo, i token AI restano mensili salvo diversa decisione) — piccola modifica SQL.
+  2. Quando un cliente acquista/rinnova un piano per un periodo di 3/6/12 mesi, creare o aggiornare una riga `client_subscriptions` con `minuti_totali` = monte-ore di quel periodo (non più mensile), `data_inizio`/`data_fine` = durata reale del periodo scelto — riusando `add_bonus_minutes`/pattern esistente, non logica nuova.
+  3. L'enum `periodo` di `subscription_packages` oggi ammette solo `mensile/trimestrale/annuale/una_tantum` — trimestrale=3 mesi e annuale=12 mesi già coprono due dei tre periodi richiesti da Mason, ma manca "6 mesi" (serve aggiungere `semestrale` al CHECK constraint — piccola migration, drop+recreate del CHECK come già fatto altre volte in questo progetto).
+  4. Aggiornare la UI (`app/impostazioni/abbonamento/page.js` e `MinuteBalance.js`) per mostrare "ore residue nel periodo" invece di "ore/mese" — cosmetico ma necessario, oggi il testo dice esplicitamente "al mese".
+  5. Deprecare/ritirare `subscription_plans.ore_hpa_mensili` e `user_subscriptions.ore_hpa_usate`/`mese_conteggio` come fonte di verità (restano eventualmente solo per i token AI, che Mason non ha chiesto di cambiare).
+- **Stima onesta per la SOLA meccanica monte-ore (riusando Sistema B):** piccola, ordine di **pochi giorni** — il pattern di consumo/non-reset esiste già testato, non è R&D.
+- **MA — dipendenza più grande e già nota, non aggiunta da questa richiesta:** oggi non esiste ancora un vero checkout Stripe per l'acquisto di un piano `subscription_plans` su 3/6/12 mesi (verificato di nuovo oggi: `api/subscriptions/checkout/route.js` gestisce solo pacchetti minuti e addon token — nessun branch scrive `user_subscriptions.plan_id` da un pagamento reale, stesso gap già segnalato il 26-27/09 e il 30/09 su `user_resource_access`). Il monte-ore-per-periodo da solo è leggero; **collegarlo a un vero acquisto di piano per 3/6/12 mesi richiede comunque di costruire quel checkout**, che è un pezzo a parte, già stimato in precedenza come settimane di lavoro, non giorni. Non è un costo aggiunto dalla richiesta di Mason sulle ore — è un prerequisito che esisteva già.
+
+**3) Sistema "ore extra a consumo" per chi non ha HPA incluso — esiste già, ma solo in parte:**
+- Il catalogo `addon_packages` (`20260211_subscription_system.sql` riga 184) prevede ESPLICITAMENTE un tipo `'ore_hpa'` nel CHECK (accanto a `'token_ai'` e `'upgrade_temporaneo'`) — lo schema per vendere ore HPA extra a consumo come addon esiste sulla carta.
+- **Ma non è mai stato popolato né cablato:** nessuna riga `addon_packages` con `tipo='ore_hpa'` risulta inserita in nessuna migration, e soprattutto il webhook che accredita gli addon (`handleAddonCheckoutCompleted`, `app/api/webhooks/stripe/route.js` riga 150) legge e accredita SOLO `token_ai_bonus` — non tocca mai `ore_hpa_bonus` anche se la colonna esiste sulla tabella `addon_packages`. Comprare un ipotetico addon "ore HPA extra" oggi non accrediterebbe nulla, stesso tipo di bug di naming/collegamento mancante già risolto il 27/09 per gli addon token.
+- **Il vero "a consumo" che funziona oggi per chi non ha HPA incluso è il Sistema B stesso** (pacchetti `subscription_packages` da 29/49/89€ per 60/120/240 minuti, comprabili a parte, già agganciati a Stripe e al booking) — è un acquisto ricorrente mensile indipendente dal piano principale, non un vero addon one-time dentro il piano.
+- **Per il vincolo di Mason ("il prezzo per ora dentro l'abbonamento deve essere sempre più conveniente del prezzo a consumo per chi non ha HPA incluso"):** oggi è calcolabile e confrontabile perché entrambi i numeri esistono già in chiaro — prezzo/minuto dei pacchetti Sistema B (es. Professional: 49€/120min ≈ 0,41€/min) va confrontato col prezzo/ora effettivo dentro ciascun piano una volta che Alessia (#235) definisce quante ore e a quale prezzo totale. È un controllo aritmetico da fare quando i numeri di Alessia sono pronti, non un problema tecnico.
+
+**4) Stima complessiva per Mason:**
+- **Il cambio di modello delle ore HPA in sé (da mensile-reset a monte-ore-di-periodo) è a BASSO attrito**: pochi giorni, perché il meccanismo corretto esiste già e funziona nel Sistema B — si tratta di ricollegarlo come fonte unica di verità e spegnere il reset mensile, non di inventare nulla.
+- **Il collo di bottiglia reale per lanciare questo sul piano principale è un prerequisito già noto e indipendente:** il checkout reale per l'acquisto di un piano `subscription_plans` su più mesi non esiste ancora — quello resta nell'ordine di settimane, con o senza questa richiesta sulle ore.
+- **Rischi di prodotto da far decidere a Mason/Alessia, non tecnici — nessuna logica esiste oggi per nessuno di questi tre casi:**
+  1. **Abbonamento a metà periodo:** nessun problema — il monte-ore parte pieno da `data_inizio` (data di acquisto), consumabile liberamente fino a `data_fine`. È già il comportamento naturale del Sistema B.
+  2. **Cambio piano a metà periodo con monte-ore residuo:** da decidere — le ore non consumate del piano vecchio si perdono, si convertono proporzionalmente, o si somma al nuovo monte? Nessuna regola scritta oggi.
+  3. **Rinnovo anticipato:** da decidere — le ore residue del periodo che finisce si accumulano sul nuovo periodo (tecnicamente il pattern esistente, `add_bonus_minutes`, fa proprio un ADD e quindi accumulerebbe per default se riusato senza modifiche) o vanno azzerate al rinnovo? Il comportamento di default del codice esistente sarebbe "si accumulano" — se Mason vuole il contrario, va scritta una regola di azzeramento esplicita, non è automatico il contrario.
+
+## INVENTARIO CALCOLI + PRIMA SUITE DI TEST AUTOMATICI (2026-10-04)
+
+**Richiesta di Mason:** "come posso essere sicuro che siano affidabili tutti i calcoli dell'intera piattaforma". Prima di oggi nessuna funzione di calcolo aveva test. Fatto: inventario (fase 1) + test con valori calcolati a mano (fase 2). **Comando: `npm test`** (node:test, nessuna dipendenza nuova, richiede Node >= 21; `tests/register-resolver.js` serve solo perché `lib/analytics.js` importa `./analytics-alerts` senza estensione, ok per Next ma non per Node puro).
+
+**Regola dei test (da mantenere):** il valore atteso si calcola a mano PRIMA e si scrive col calcolo nel commento; mai copiato dall'output della funzione. Bug noti non corretti = `{ todo }` (visibili nell'output, non rompono la suite).
+
+### Inventario — funzioni che calcolano denaro / % / limiti / saldi (rischio: A=alto, M=medio, B=basso)
+Legenda: [T]=testata oggi · [-]=non testata · [SQL]=da testare sul DB
+
+**Listino / prezzi**
+- A [T] `lib/listino-calc.js` `calcolaServizio`: costo personale (minuti pieni + 2/3 sovrapponibili, x costo/min x nrOp servizio / (nrOp centro x 0,5)), materiali, costo vivo, prezzo netto/lordo (ricarico + IVA), prezzo minimo (margine 20% sul costo), sconto max, margine %.
+- A [T] `lib/listino-calc.js` `analizzaCongelato`: utile, utile %, prezzo minimo (tiene 40% dell'utile), sconto max, stato perdita/critico/attenzione/migliorato (soglie 20% e +-5%), delta costo.
+- A [-] `app/centro/page.js` ~r.609-642 `calcBreakdown` INLINE: duplicato di `analizzaCongelato` (netto, IVA, utile, sconto max) + conversione prezzo Koibox/manuale lordo<->netto. Rischio di divergenza dalla lib testata: andrebbe sostituito con `analizzaCongelato`.
+- A [-] `app/api/centro/costi-esercizio/route.js` GET: costo orario auto = somma uscite 365gg (tabella `movimenti`, |importo|) / (ore settimanali x 52); fallback silenzioso 40 EUR/h. Alimenta TUTTI i prezzi. Rischi: legge `movimenti` (altrove si usa `bank_movements`), include giroconti/finanziamenti che Analytics esclude, orari a cavallo di mezzanotte danno ore negative, 52 settimane senza chiusure.
+- M [-] `app/api/centro/pacchetti` (+`pacchetti_items`): NESSUN calcolo di prezzo pacchetto; solo `sconto_percentuale` DECIMAL(5,2) senza CHECK né validazione server (negativo / >100 / oltre lo sconto max del servizio accettati).
+- A [T parziale] `app/listino/page.js` `buildToolScript` (tool pubblico): costi fissi lordi/netti, IVA a credito, capacità (min postazioni/personale x riempimento x 4,33), break-even orario, utile/margine/stato per servizio, prezzo minimo, fatturato->netto. Testato estraendo le righe REALI da page.js. NON testati: `kFactor`/`count`, `ceilingMo`, `rebalance` (quote %), `computeBanco` (sconto sicuro), clienti per pareggio, IVA da versare.
+
+**Finanza piattaforma**
+- A [T] `lib/analytics.js` `calculateKPIs`: entrate/uscite/saldo, compensazione giroconti/POS, IVA detraibile fissa 22% (uscite x 22/122), giorni lavorativi (chiusure eccezionali/annuali/mensili), ore, costi e medie giornalieri/orari, margine. Vedi bug ore sotto.
+- M [T parziale] `lib/analytics.js` `calculateYoYKPIs`, `groupByCategory`, `filterMovementsByPeriod`; [-] `groupByDay/Week/Month`, `groupCategoriesByTime`, `getYoYTrendData`, `getYoYCategoryComparison`, `detectAnomalies`, `analyzeProductivity`; [-] `lib/analytics-alerts.js` (soglie, trend, deviazione standard, alert margine).
+- A [T] `lib/movement-classifier.js`: operativo/tecnico/finanziamento e totali operativi (decide cosa entra nei totali).
+- A [-] `app/api/daily-costs/route.js` `calculatePeriodCosts`/`calculateWorkingDays` (non esportate): ri-implementa i KPI di Analytics con differenze (NON gestisce chiusure `mensile`; fallback 5/7). Due schermate possono mostrare "giorni lavorativi" diversi.
+- A [T] `lib/pianificazione-utils.js`: `calculateLiquidity`, `calculateSuggestedAllocations`, `validateAllocations`, `calculateAccantonamentoProgress`, `calculateBudgetComparison`, `distributeAnnualBudget`, `calculateMonthlyContractedHours`, `calculateOvertimeMonth`, `calculateAbsenceHours`, `calculateVacationBalance`.
+- A [-] `app/api/accantonamenti/liquidity/route.js`: banca (`bank_movements` +/-) meno saldi accantonamenti attivi; DUPLICA `calculateLiquidity` (stessa logica, testata solo la lib).
+- A [-] `app/api/revenue/daily` POST: % x incasso arrotondato ai centesimi, residuo non allocato; DUPLICA `calculateSuggestedAllocations`. Nessun tetto: percentuali che sommano >100% producono allocato > incasso.
+- A [-] `app/api/revenue/allocate` POST: valida somma <= incasso (corretto oggi), crea movimenti, il saldo lo calcola il trigger.
+- A [SQL] trigger `update_accantonamento_saldo()` (saldo = somma entrate - uscite + trasferimenti): esiste in 5 file di migrazione (SETUP-COMPLETO, RICREA, INSTALL, FIX, add-accantonamenti): verificare quale è live. Un UPDATE che sposta un movimento da un accantonamento a un altro ricalcola solo il NUOVO (il vecchio resta sbagliato).
+- M [-] `registro/stats`, `registro/medie`, `budget/comparison|monthly`, `obiettivi/*` (riepilogo %, suggeriti, progressi) + trigger SQL `calcola_raggiungimento_obiettivo`, `calcola_punteggio_obiettivo`: individuati, NON analizzati riga per riga.
+- A [-] `app/api/beautyx/chat` tool `get_financials`/`get_ricavi_giornalieri` (cifre che l'AI riporta alla titolare): non analizzati.
+- A [-] `lib/koibox-parsers.js` `toNum` + `scripts/import-bank-movements.js` (parsing importi IT): toNum vedi bug sotto; lo script usa invece la pulizia corretta dei punti.
+
+**Abbonamenti / AI / HPA**
+- A [SQL] `check_ai_limit` / `track_ai_usage`: 3 versioni nel repo (`20260211_subscription_system.sql`; `ESEGUI_align_subscription_plans.sql` 01/03 = conta SOLO token output, limiti tarati su output; `ESEGUI_addon_token_bonus.sql` 03/03 = conta input+output e aggiunge il pool bonus). Vedi bug sotto. L'app fa fail-open: se la RPC non esiste/errore salta il controllo (`catch -> skip`).
+- M [SQL] `reset_monthly_counters` (cron giorno 1): azzera token e ore usate, non il bonus.
+- M [T] `lib/token-utils.js` (1 token = 4 caratteri, `formatTokens/formatChars`); il fattore 4 è duplicato anche nell'SQL (`* 4`).
+- M [-] `app/api/subscriptions/balance`: % uso e residui token/ore dal solo limite del piano (ignora `token_ai_bonus` -> % >100 e residuo negativo con bonus attivo).
+- A [SQL] `get_minute_balance`, `consume_appointment_minutes`, `add_bonus_minutes` (`20260205_04`): saldo minuti. `consume` legge e poi aggiorna senza lock (race: due consumi simultanei passano entrambi il controllo); accetta minuti negativi; `get_minute_balance` prende l'ultima riga a prescindere dallo stato mentre `consume` usa solo `attivo`.
+- A [-] `app/api/booking/route.js`: controlla `minuti_rimanenti >= durata` ma NON scala né riserva: i minuti si scalano solo a consumo, quindi si possono prenotare più appuntamenti la cui somma supera il saldo.
+- A [-] `app/api/hpa/call` (end: `max(1, ceil(sec/60))` scalati da `hpa_minute_credits`), `hpa/minutes` (totale+extra-usati, fallback 30 min), `hpa/dashboard/stats`. Terzo sistema di minuti, scollegato da `client_subscriptions` e da `ore_hpa_usate` (vedi 01/10). `action=end` NON controlla se la sessione è già `completed`: richiamata due volte scala due volte.
+- A [-] `app/api/subscriptions/checkout` (`unit_amount = round(prezzo x 100)` / `prezzo_cents`) e `app/api/webhooks/stripe` (accredito minuti/token, `amount_total/100`, rinnovo mensile via `add_bonus_minutes`): denaro reale; testabili solo con mock Stripe.
+- M [SQL] `get_admin_subscription_overview` (MRR = annuale/12 oppure mensile, esclusi free/trial; `trimestrale` non gestito).
+- B [T] `lib/report/freeWindow.js` (finestra 90 giorni), `app/api/user/onboarding-checklist` (ore residue), `admin/ratings`, `public/stats` (medie).
+
+### Bug trovati dai test (con valori)
+1. **CORRETTO** `validateAllocations` (lib/pianificazione-utils.js): 0,1+0,2 su incasso 0,30 -> atteso valido/residuo 0, ottenuto non valido (0,30000000000000004 > 0,3). Stesso confronto in `app/api/revenue/allocate/route.js` (era `totalAllocated > importo_totale`): corretto in centesimi interi. Effetto reale: una ripartizione al 100% dell'incasso poteva essere rifiutata.
+2. **CORRETTO** `distributeAnnualBudget`: 1000 EUR -> 12 x 83,33 = 999,96 (persi 4 centesimi). Ora centesimi interi, resto sui primi mesi, somma sempre esatta.
+3. **CORRETTO** `calculateMonthlyContractedHours`: 40 h/sett a marzo 2026 atteso 177,14 (40x31/7), ottenuto 177,20 (moltiplicava per le settimane già arrotondate 4,43). Falsava gli straordinari.
+4. **CORRETTO** `calculateAbsenceHours`: ven 23 -> lun 26/10/2026 (cambio ora legale) atteso 16 h, ottenuto 8 h (avanzava di 24h in millisecondi e perdeva l'ultimo giorno); stesso il 27->30/03/2026. Ora usa `addDays`.
+5. **CORRETTO** `formatTokens`/`formatChars`: 999.999 mostrava "1000K" invece di "1.0M" (cosmetico).
+6. **NON CORRETTO — da decidere con Mason** `calculateKPIs` (lib/analytics.js ~r.236): `oreLavorativeTotali = (giorniLavorativi/7) x oreSettimanali`. Esempio 1 settimana, 6 giorni aperti x 8 h: atteso 48 h, ottenuto 41,14 h. Ore sottostimate di un fattore (giorni aperti/7) => costo orario e incasso medio orario sovrastimati del 16,7% (centro aperto 6 su 7). Cambia cifre già viste in Analytics: va deciso/comunicato.
+7. **NON CORRETTO** `toNum` (lib/koibox-parsers.js r.30): "1.234,56" -> atteso 1234,56, ottenuto 1,234 (errore 1000x) SE Koibox esporta importi come testo con migliaia; con celle numeriche non succede. Serve capire il formato reale: la correzione richiede un'euristica sul separatore.
+8. **NON CORRETTO (da verificare sul DB live)** SQL `track_ai_usage` versione `ESEGUI_addon_token_bonus.sql`: il bonus viene consumato DUE volte. Esempio: piano 100, bonus 50. Usati 130 -> bonus scalato a 20 -> limite = 100+20 = 120 < 130 -> bloccato, mentre restano 20 token pagati. In generale l'utente ottiene solo metà del bonus acquistato. Inoltre questa versione (03/03) conta input+output, la precedente (01/03) solo output: se sono state eseguite in ordine, i limiti tarati sull'output si esauriscono molto prima. Verifica read-only: `select pg_get_functiondef('track_ai_usage'::regproc);`
+9. **NON CORRETTO** `app/api/hpa/call` action `end` non idempotente (doppio scalo minuti) e `booking` non riserva i minuti (vedi inventario).
+10. **NON CORRETTO (minore)** `freeWindow.js`: scadenza = lancio + 90x24h in ms, con cambio ora legale scade 1 ora prima/dopo (lancio 01/10/2026 scade il 29/12 alle 23:00 invece del 30/12 alle 00:00).
+11. Osservazioni senza test: `calcolaServizio` con durate negative restituisce costo negativo (nessun clamp; l'UI ha min=0); `scontoMax` ha DUE definizioni (calcolaServizio: margine 20% sul costo; analizzaCongelato/calcBreakdown: tiene 40% dell'utile) nella stessa schermata; `calculateKPIs` calcola il saldo con le uscite lorde ma i costi con le `usciteReali`.
+
+### Come testare le funzioni SQL (non eseguibili qui: nessun Postgres nel sandbox)
+Usare un branch Supabase (o un DB locale `supabase start`), mai la produzione; ogni caso in transazione con `ROLLBACK`; i valori attesi vanno scritti a mano nella query.
+- `update_accantonamento_saldo`: creare accantonamento, inserire entrata 100, uscita 30.50, trasferimento 10 -> saldo atteso 79.50 (o 59.50 se il trasferimento va sottratto: decidere la regola); DELETE dell'uscita -> 110; UPDATE che sposta un movimento ad altro accantonamento -> verificare ENTRAMBI i saldi.
+- `check_ai_limit`/`track_ai_usage`: utente con piano limite 100 e bonus 50: `track_ai_usage(...,tokens_out:=90)` poi `...:=40`; atteso `limit_reached=false` finché usati < 150 (con la funzione attuale diventa true a 130: è il bug 8). Provare anche limite 0 (illimitato), cambio mese (`mese_conteggio` vecchio -> contatore riparte), stato `scaduto` (allowed=false), utente senza abbonamento (allowed=true, piano 'none').
+- `consume_appointment_minutes`/`get_minute_balance`/`add_bonus_minutes`: abbonamento 60 min; consumo 45 -> rimanenti 15 e riga in `minute_transactions` con saldo_precedente 60 / saldo_nuovo 15; consumo 20 -> eccezione 'Minuti insufficienti'; consumo 0 e negativo; due sessioni parallele che consumano 40+40 (race); `add_bonus_minutes(-10)`.
+- `reset_monthly_counters`: righe con `mese_conteggio` vecchio -> azzerate e conteggio restituito; riga già del mese -> invariata; `token_ai_bonus` invariato.
+- Per il resto (Stripe, route con Supabase): estrarre la logica in funzioni pure in `lib/` (come fatto per pianificazione) e testarle lì; i test d'integrazione vanno su ambiente di test, non in produzione.
+
+### File creati/toccati oggi
+Creati: `tests/listino-calc.test.js`, `tests/listino-tool-breakeven.test.js`, `tests/pianificazione-utils.test.js`, `tests/analytics-kpi.test.js`, `tests/token-utils.test.js`, `tests/koibox-freewindow.test.js`, `tests/register-resolver.js`, `tests/resolver-hooks.js`. Modificati (solo i fix 1-5): `lib/pianificazione-utils.js`, `lib/token-utils.js`, `app/api/revenue/allocate/route.js`, `package.json` (script `test`). Nulla committato.
+
+
+## CONSUMO TOKEN DI UNA CONVERSAZIONE BEAUTYX AI DA 50 MINUTI (2026-10-04) — sola analisi, nessuna chiamata API, nessuna scrittura DB
+
+**Risultato in una riga:** una conversazione scritta da 50 min consuma ~160.000-1.000.000 token (tipico 260.000-525.000 per 20-40 scambi). I 100.000 token del Base NON bastano nemmeno per UNA conversazione: bastano per ~10-12 messaggi semplici o ~4-5 messaggi con tool, in tutto il mese. I 500.000 del Pro = ~1-2 conversazioni tipiche. Stima non misurata (ai_usage_log vuota): vedi procedura di misura reale in fondo.
+
+**[VERIFICATO nel codice / DB di produzione]**
+- Modello: `claude-sonnet-5` (PRIMARY_MODEL, `lib/beautyx/callClaudeWithFallback.js`); riserva `claude-opus-5` solo su 404/5xx/timeout. Prezzo ufficiale Sonnet 5: 2 $/MTok input, 10 $/MTok output; cache read 0,20 $, cache write 5m 2,50 $ (platform.claude.com/docs/en/about-claude/pricing, letto 2026-10-04).
+- max_tokens: 1500 (prima chiamata), 2000 (giri successivi di tool). Nessun thinking, nessun prompt caching (nessun `cache_control` nel codice).
+- Ogni messaggio utente = almeno 1 chiamata API che rimanda TUTTO: array tool (22 tool, 14.963 caratteri JSON, SEMPRE inviati anche per "ciao") + system prompt statico da DB `agent_prompts.beautyx` (3.922 caratteri, attivo v1) + sezioni dinamiche (~4.300 caratteri di template + memoria <=1500 caratteri + insights + dati pagina `JSON.stringify(dati_contesto,null,2)`) + cronologia + messaggio.
+- Cronologia: il client (`contexts/BeautyxContext.js:273`) manda `messages.slice(-10)`; il server tiene `slice(-14)` (nel questionario profiling 14). Quindi MAX 10 messaggi (5 scambi) precedenti: troncata, non riassunta, crescita lineare e non quadratica. Nella cronologia c'e' solo il testo (monitor ripulito), MAI i risultati dei tool delle volte precedenti: se serve un dato di nuovo, il tool viene richiamato e il risultato rimandato.
+- Giri di tool: `MAX_ROUNDS = 3`; ogni giro = nuova chiamata con tutto il contesto + blocco assistant tool_use + tool_result (JSON.stringify senza limite di dimensione). `totalTokensIn/Out` = somma di tutte le chiamate del turno.
+- `track_ai_usage` (funzione attiva in produzione, letta con pg_get_functiondef): una chiamata per turno HTTP con `p_tokens_in = somma usage.input_tokens`, `p_tokens_out = somma usage.output_tokens`; conta input+output; NON passa cache_creation/cache_read (con caching attivo i token letti da cache NON verrebbero contati nella quota, e la quota sottostimerebbe il costo reale). Colonne `ai_usage_log`: token_input, token_output, token_totali, modello, conversation_id, created_at.
+- Altri consumatori di token mensili (stessa quota): `centro/servizi/[id]/market-research` e `centro/servizi/suggest`.
+
+**[ASSUNZIONE] parametri del modello** (script: `outputs/modello_token_beautyx.py`): token fissi per chiamata F = 6.300/7.700/9.500 (min/tip/max; ~chars/4 o /3,5 per italiano+JSON, +350 overhead tool); messaggio utente 25/40/80 token; risposta 150/250/450 token (+0/350/500 di blocco MONITOR quando ci sono numeri); quota di turni con tool 10%/25%/50%; risultato di un tool 1.500/3.500/8.000 token (get_ricavi_giornalieri 90 gg, get_financials, get_dipendenti sono i piu' pesanti); 10%/10%/25% dei turni con tool fanno 2 giri; cambio 1 USD = 0,86 EUR. Nessun tokenizer offline disponibile (tiktoken assente): conteggi caratteri VERIFICATI, conversione in token ASSUNTA.
+
+| Scenario (50 min) | Token quota min | tipico | max | Conv. in 100k (Base) tip | Conv. in 500k (Pro) tip | €/conv. tip |
+|---|---|---|---|---|---|---|
+| (a) 20 scambi | 162k | 260k | 510k | 0,4 | 1,9 | 0,52 |
+| (b) 30 scambi | 244k | 392k | 772k | 0,3 | 1,3 | 0,78 |
+| (c) 40 scambi | 327k | 525k | 1.034k | 0,2 | 1,0 | 1,05 |
+
+- Costo euro (senza caching, cambio 0,86): 0,30-1,00 (a), 0,45-1,52 (b), 0,61-2,03 (c).
+- Con caching di tools+system (ipotetico, NON presente): costo tipico (a) 0,23 / (b) 0,34 / (c) 0,45 euro (-55%); i token CONTATI in quota scenderebbero a 63k/98k/132k solo perche' la cache non e' contata: va deciso se contarla.
+- Senza troncamento cronologia (ipotetico, oggi NON succede): +15% (a) / +28% (b) / +42% (c) di token (tip: 298k/503k/745k), cresce in modo quadratico ma pesa meno del fisso perche' F (system+tool) domina: ~7.700 token a ogni chiamata.
+- Turno semplice tipico ~9.600 token (1 chiamata); turno con 1 tool ~22.000; con 2 giri ~35.000.
+- Leve di risparmio (da decidere con Mason, nessuna applicata): prompt caching su tools+system (-55% costo); inviare solo i tool pertinenti (i 22 tool pesano ~4.300 token a chiamata); accorciare le sezioni dinamiche; limiti per tool result; modello piu' piccolo per i turni conversazionali.
+
+**Procedura di misura reale (Mason, sola lettura per noi):** 1) fare 2-3 conversazioni di prova da ~20 scambi nell'app con un utente di test (una di sola chat, una con domande su incassi/clienti che attivano i tool), annotando ora di inizio e fine. 2) Eseguire (sostituire <UUID_UTENTE>):
+```sql
+select conversation_id, count(*) as turni, sum(token_input) as tin, sum(token_output) as tout,
+       sum(token_totali) as totale, round(avg(token_totali)) as media_turno, max(token_totali) as turno_max,
+       min(created_at) as inizio, max(created_at) as fine
+from ai_usage_log
+where user_id = '<UUID_UTENTE>' and created_at > now() - interval '1 day'
+group by conversation_id order by inizio;
+-- dettaglio per turno:
+select created_at, token_input, token_output, token_totali, modello
+from ai_usage_log where user_id = '<UUID_UTENTE>' and created_at > now() - interval '1 day' order by created_at;
+```
+3) Confrontare `media_turno` con le stime (9.600 turno semplice, 22.000 con tool) e correggere i parametri F, R nello script.
+
+## 2026-10-06 — Cicli della tradizione (Aria=Legno) nel motore identikit
+- `lib/beautyx/profilingEngine.js`: CICLO_CONTROLLO = ['fuoco','acqua','terra','aria','metallo'], CICLO_GENERATIVO = ['aria','fuoco','terra','metallo','acqua']; messaggio finale ora "L'identikit è stato generato…" (non più "report CARE"). Nuovo `tests/profiling-cicli.test.js` (6 test). Suite: 102 test, 99 pass, 0 fail, 3 todo. `lib/beautyx/reportContent.js` rigenerato (18 blocchi su 41 cambiati; nessun nome di elemento nelle stringhe pubbliche). DB: 0 report generati, 0 utenti reali → nessuna rigenerazione. Non committato: push a cura di Mason.
+- Stato abbonamenti (parere 2026-10-06): il checkout abbonamenti esiste solo per i pacchetti minuti HPA; in produzione mancano le tabelle `subscription_packages`/`client_subscriptions`; il webhook non gestisce pagamento fallito/abbonamento modificato.

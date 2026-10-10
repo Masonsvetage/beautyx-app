@@ -32,24 +32,46 @@ Ogni blocco ha due parti, sempre distinte:
   solo nelle note interne, mai nel testo pubblico: è così che si ottiene il "far
   intravedere" richiesto da Mason, senza etichette.
 
-**Mappa dei due cicli usata in questo documento** (solo per uso interno, coerente
-con `beautyx-report-profiling-note.md` aggiornato al 25/08/2026 — la "stella a
-cinque punte" del ciclo generativo, non più i due esempi originali a 4 elementi):
+**Mappa dei due cicli usata in questo documento** (solo per uso interno; **aggiornata il 2026-10-06** ai cicli della
+tradizione con Aria = Legno, decisione di Mason, vedi `beautyx-report-profiling-note.md` aggiornato e
+`memory/riferimenti/elementi-personalita/mappa-cicli-proposta.md`).
 
-| Elemento | Si compensa lavorando su (ciclo di controllo, il successivo) | È nutrito da (ciclo generativo, il predecessore) | Nutre già (ciclo generativo, il successivo) |
-|---|---|---|---|
-| Fuoco 🔥 | Acqua | Terra | Aria |
-| Acqua 💧 | Aria | Metallo | Terra |
-| Aria 🌪️ | Terra | Fuoco | Metallo |
-| Terra 🏔️ | Metallo | Acqua | Fuoco |
-| Metallo ⚙️ | Fuoco | Aria | Acqua |
+- Ciclo di nutrimento: Aria → Fuoco → Terra → Metallo → Acqua → Aria.
+- Ciclo di controllo (chi controlla chi): Aria → Terra → Acqua → Fuoco → Metallo → Aria.
 
-Nota positiva sul vecchio dubbio metodologico: il file a 4 elementi segnalava
-un'ambiguità sulle coppie generative non esplicitate da Mason (Terra→Aria,
-Acqua→Fuoco, dedotte per simmetria). Con la stella a cinque punte del 25/08/2026
-quel dubbio decade da solo: il nuovo ciclo generativo (Fuoco→Aria→Metallo→Acqua→
-Terra→Fuoco) è enunciato per intero nella nota metodologica, nessuna coppia è più
-una mia deduzione.
+| Elemento | Si compensa lavorando su (il suo controllore: chi lo controlla) | È nutrito da (predecessore nel ciclo di nutrimento) | Nutre già (successivo nel ciclo di nutrimento) | Leva di riequilibrio (nutritore del controllore) |
+|---|---|---|---|---|
+| Fuoco 🔥 | Acqua | Aria | Terra | Metallo |
+| Acqua 💧 | Terra | Metallo | Aria | Fuoco |
+| Aria 🌪️ | Metallo | Acqua | Fuoco | Terra |
+| Terra 🏔️ | Aria | Fuoco | Metallo | Acqua |
+| Metallo ⚙️ | Fuoco | Terra | Acqua | Aria |
+
+Nota 2026-10-06: la regola dei 3 nodi (eccesso → carenza del controllore → leva sul nutritore del controllore) e la
+leva restano "impostazione del metodo" di Mason, non "tradizione" (mappa-cicli-proposta, sez. 1.5): in nessun testo
+né nota esterna si scrive "secondo la tradizione" per debole e leva; solo le due catene vengono dalla tradizione.
+Il vecchio dubbio sulle coppie dedotte per simmetria (file a 4 elementi) resta chiuso: ora tutte le coppie sono
+enunciate nei due cicli sopra, nessuna è una deduzione mia.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore): mappa del 25/08/2026 (stella a cinque punte Fuoco→Aria→Metallo→Acqua→Terra→Fuoco) e nota sul vecchio dubbio.**
+> **Mappa dei due cicli usata in questo documento** (solo per uso interno, coerente
+> con `beautyx-report-profiling-note.md` aggiornato al 25/08/2026 — la "stella a
+> cinque punte" del ciclo generativo, non più i due esempi originali a 4 elementi):
+>
+> | Elemento | Si compensa lavorando su (ciclo di controllo, il successivo) | È nutrito da (ciclo generativo, il predecessore) | Nutre già (ciclo generativo, il successivo) |
+> |---|---|---|---|
+> | Fuoco 🔥 | Acqua | Terra | Aria |
+> | Acqua 💧 | Aria | Metallo | Terra |
+> | Aria 🌪️ | Terra | Fuoco | Metallo |
+> | Terra 🏔️ | Metallo | Acqua | Fuoco |
+> | Metallo ⚙️ | Fuoco | Aria | Acqua |
+>
+> Nota positiva sul vecchio dubbio metodologico: il file a 4 elementi segnalava
+> un'ambiguità sulle coppie generative non esplicitate da Mason (Terra→Aria,
+> Acqua→Fuoco, dedotte per simmetria). Con la stella a cinque punte del 25/08/2026
+> quel dubbio decade da solo: il nuovo ciclo generativo (Fuoco→Aria→Metallo→Acqua→
+> Terra→Fuoco) è enunciato per intero nella nota metodologica, nessuna coppia è più
+> una mia deduzione.
 
 **Due tipi di blocco, usati in ogni capitolo:**
 
@@ -128,9 +150,10 @@ ancora ferma fuori dalla porta.
 
 ### Variante 3 — Carenza non nutrita (Fuoco basso, ovunque prevale la routine)
 
-**NOTA INTERNA:** da usare quando Fuoco è basso in tutti e 3 gli ambiti e anche
-Terra (il nutritore) è bassa — nessuna base solida da cui il fuoco potrebbe
-attingere per accendersi.
+**NOTA INTERNA (aggiornata 2026-10-06):** da usare quando Fuoco è basso in tutti
+e 3 gli ambiti e anche Aria (il nutritore, cicli della tradizione) è bassa —
+poco ripensamento, poca novità che dia a Fuoco una direzione nuova da cui
+accendersi.
 
 **TESTO PER LA TITOLARE:**
 Raramente sei tu a muovere per prima le cose sul momento: aspetti, valuti,
@@ -139,9 +162,25 @@ una collaboratrice che propone qualcosa di nuovo, con un'occasione economica che
 si presenta all'improvviso. Non è indecisione, è un modo di procedere che ti
 appartiene. Ma quando ripensi ai momenti in cui avresti voluto sentire quello
 scatto — quella spinta a dire "lo faccio adesso" — noti che manca anche l'altra
-cosa: la sensazione di avere già un terreno abbastanza solido sotto i piedi da
-permetterti di rischiare. È come cercare la scintilla in un posto dove, al
-momento, non c'è ancora nemmeno la legna pronta.
+cosa: un'idea nuova, un cambio di direzione, qualcosa da provare che ti faccia
+venire voglia di muoverti. È come cercare la scintilla in un posto dove, al
+momento, non è ancora arrivato nulla di nuovo da accendere.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** da usare quando Fuoco è basso in tutti e 3 gli ambiti e anche
+> Terra (il nutritore) è bassa — nessuna base solida da cui il fuoco potrebbe
+> attingere per accendersi.
+>
+> *(testo sostituito)*
+> Raramente sei tu a muovere per prima le cose sul momento: aspetti, valuti,
+> raccogli altri segnali prima di decidere — con una cliente che cambia idea, con
+> una collaboratrice che propone qualcosa di nuovo, con un'occasione economica che
+> si presenta all'improvviso. Non è indecisione, è un modo di procedere che ti
+> appartiene. Ma quando ripensi ai momenti in cui avresti voluto sentire quello
+> scatto — quella spinta a dire "lo faccio adesso" — noti che manca anche l'altra
+> cosa: la sensazione di avere già un terreno abbastanza solido sotto i piedi da
+> permetterti di rischiare. È come cercare la scintilla in un posto dove, al
+> momento, non c'è ancora nemmeno la legna pronta.
 
 ## B. Applicazione pratica
 
@@ -164,11 +203,17 @@ di ciò che hai deciso, dopo?
 
 ### Quello che già fluisce bene
 
-Non è un caso che le tue intuizioni più veloci siano spesso anche quelle che, con
-il tempo, aprono la strada a un ripensamento più grande: quando decidi di getto,
-qualcosa in te si accende anche per rimettere in discussione ciò che non va più
-bene. La tua energia, quando scorre, non si esaurisce nell'attimo in cui agisci —
-continua a lavorare anche dopo.
+Non è un caso che le cose che accendi tu siano spesso quelle che poi restano in
+piedi: ogni volta che parti per prima, chi lavora con te ha qualcosa di concreto
+su cui appoggiarsi. La tua energia, quando scorre, non si esaurisce nell'attimo
+in cui agisci — col tempo diventa la base solida su cui il centro si regge.
+
+**NOTA INTERNA — testo aggiornato il 2026-10-06 (nutre già: cicli della tradizione); storico del testo sostituito:**
+> Non è un caso che le tue intuizioni più veloci siano spesso anche quelle che, con
+> il tempo, aprono la strada a un ripensamento più grande: quando decidi di getto,
+> qualcosa in te si accende anche per rimettere in discussione ciò che non va più
+> bene. La tua energia, quando scorre, non si esaurisce nell'attimo in cui agisci —
+> continua a lavorare anche dopo.
 
 ---
 
@@ -188,8 +233,9 @@ clienti).
 
 ### Variante 1 — Eccesso non compensato, trasversale (Acqua alta in clienti, personale e spese)
 
-**NOTA INTERNA:** Acqua alta e uniforme nei 3 ambiti, Aria (compensatore) bassa
-ovunque — la comprensione non si traduce quasi mai in una revisione di sistema.
+**NOTA INTERNA (aggiornata 2026-10-06):** Acqua alta e uniforme nei 3 ambiti,
+Terra (compensatore, cicli della tradizione) bassa ovunque — la comprensione non
+si traduce quasi mai in un'abitudine che si ripete e che resta.
 
 **TESTO PER LA TITOLARE:**
 C'è un modo di essere titolare che si vede in come reagisci quando qualcosa ti
@@ -201,25 +247,58 @@ quanto userai davvero quel prodotto. Questa capacità di leggere sotto la
 superficie è merce rara in un settore dove si decide sempre di corsa. Se però
 ripensi alle ultime volte che hai capito qualcosa a fondo — cosa ne è rimasto,
 dopo? Nella maggior parte dei casi la comprensione resta legata a quella singola
-situazione, senza diventare qualcos'altro: una regola nuova, un modo diverso di
-lavorare che resti anche quando quella cliente, quella collaboratrice, quel mese
-sono già alle spalle.
+situazione, senza diventare qualcos'altro: un'abitudine che si ripete ogni
+giorno nello stesso modo e che resta anche quando quella cliente, quella
+collaboratrice, quel mese sono già alle spalle.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Acqua alta e uniforme nei 3 ambiti, Aria (compensatore) bassa
+> ovunque — la comprensione non si traduce quasi mai in una revisione di sistema.
+>
+> *(testo sostituito)*
+> C'è un modo di essere titolare che si vede in come reagisci quando qualcosa ti
+> sorprende: una cliente che sparisce senza spiegazioni, una collaboratrice che
+> sbaglia, un mese in cui il fatturato cala. Non rispondi a caldo — ti fermi, fai
+> domande, cerchi di capire cosa c'è davvero dietro quello che vedi in superficie.
+> Prima di giudicare un ritardo lo chiedi, prima di tagliare una spesa ti chiedi
+> quanto userai davvero quel prodotto. Questa capacità di leggere sotto la
+> superficie è merce rara in un settore dove si decide sempre di corsa. Se però
+> ripensi alle ultime volte che hai capito qualcosa a fondo — cosa ne è rimasto,
+> dopo? Nella maggior parte dei casi la comprensione resta legata a quella singola
+> situazione, senza diventare qualcos'altro: una regola nuova, un modo diverso di
+> lavorare che resti anche quando quella cliente, quella collaboratrice, quel mese
+> sono già alle spalle.
 
 ### Variante 2 — Eccesso non compensato, localizzato (Acqua alta su clienti e spese, altro registro sul personale)
 
-**NOTA INTERNA:** Acqua alta su C e S, ambito P mostra un elemento diverso (es.
-Fuoco) — il blocco (Aria bassa) va letto come specifico dei due ambiti dove Acqua
-domina.
+**NOTA INTERNA (aggiornata 2026-10-06):** Acqua alta su C e S, ambito P mostra
+un elemento diverso (es. Fuoco) — il blocco (Terra bassa) va letto come
+specifico dei due ambiti dove Acqua domina.
 
 **TESTO PER LA TITOLARE:**
 Con le clienti e con i conti sei quella che si ferma, chiede, ascolta prima di
 muoversi — capisci sempre cosa c'è dietro un ritardo, dietro un calo di
-fatturato, prima di decidere. Con lo staff, invece, il tuo passo cambia: davanti a
-una collaboratrice che sbaglia o che ti chiede qualcosa, la tua prima reazione è
-più diretta, quasi immediata. In quei due mondi dove ti fermi ad ascoltare, però,
-la comprensione raramente arriva a diventare qualcosa che resta oltre il singolo
-episodio — una policy, un criterio nuovo, qualcosa di scritto che valga anche la
-prossima volta.
+fatturato, prima di decidere. Con lo staff, invece, il tuo passo cambia: davanti
+a una collaboratrice che sbaglia o che ti chiede qualcosa, la tua prima reazione
+è più diretta, quasi immediata. In quei due mondi dove ti fermi ad ascoltare,
+però, la comprensione raramente arriva a diventare qualcosa che resta oltre il
+singolo episodio — un'abitudine, un gesto che si ripete uguale, una prassi che
+regga anche la prossima volta.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Acqua alta su C e S, ambito P mostra un elemento diverso (es.
+> Fuoco) — il blocco (Aria bassa) va letto come specifico dei due ambiti dove Acqua
+> domina.
+>
+> *(testo sostituito)*
+> Con le clienti e con i conti sei quella che si ferma, chiede, ascolta prima di
+> muoversi — capisci sempre cosa c'è dietro un ritardo, dietro un calo di
+> fatturato, prima di decidere. Con lo staff, invece, il tuo passo cambia: davanti a
+> una collaboratrice che sbaglia o che ti chiede qualcosa, la tua prima reazione è
+> più diretta, quasi immediata. In quei due mondi dove ti fermi ad ascoltare, però,
+> la comprensione raramente arriva a diventare qualcosa che resta oltre il singolo
+> episodio — una policy, un criterio nuovo, qualcosa di scritto che valga anche la
+> prossima volta.
 
 ### Variante 3 — Carenza non nutrita (Acqua bassa, si giudica o si agisce prima di capire)
 
@@ -240,12 +319,21 @@ la domanda "cosa c'è dietro" non ha quasi materiale su cui lavorare.
 
 ## B. Applicazione pratica
 
-**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di Acqua
-→ carenza del controllore Aria → leva di riequilibrio: il nutritore di Aria,
-cioè Fuoco (mai limitare la comprensione stessa). Le domande sotto orientano
-l'attenzione verso il comportamento-Fuoco (scintilla immediata, agire subito) che
-nutrirebbe la spinta a rivedere il sistema (Aria) capace di dare uno sbocco
-concreto a ogni comprensione.
+**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo; aggiornata
+2026-10-06):** eccesso di Acqua → carenza del controllore Terra → leva di
+riequilibrio: il nutritore di Terra, cioè Fuoco (mai limitare la comprensione
+stessa). Le domande sotto orientano l'attenzione verso il comportamento-Fuoco
+(scintilla immediata, agire subito) che nutrirebbe il consolidamento (Terra)
+capace di trasformare ogni comprensione in un'abitudine che resta. Testo delle
+domande ricontrollato il 2026-10-06: invariato (la leva Fuoco è la stessa).
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di Acqua
+> → carenza del controllore Aria → leva di riequilibrio: il nutritore di Aria,
+> cioè Fuoco (mai limitare la comprensione stessa). Le domande sotto orientano
+> l'attenzione verso il comportamento-Fuoco (scintilla immediata, agire subito) che
+> nutrirebbe la spinta a rivedere il sistema (Aria) capace di dare uno sbocco
+> concreto a ogni comprensione.
 
 **TESTO PER LA TITOLARE:**
 Delle ultime tre volte che hai capito a fondo cosa c'era dietro un problema,
@@ -257,10 +345,17 @@ gesto immediato, senza aspettare — quale sarebbe il primo che ti viene in ment
 
 ### Quello che già fluisce bene
 
-Non è un caso che le persone che ascolti con calma restino spesso le più fedeli al
-tuo centro nel tempo: capire davvero qualcuno — perché è in ritardo, perché ha
-sbagliato, perché ha rallentato — è già, di per sé, ciò che costruisce una fiducia
-che dura oltre il singolo episodio.
+Non è un caso che, quando capisci davvero qualcosa, il tuo sguardo arrivi presto
+a rimettere in discussione anche il modo in cui le cose funzionano: capire a
+fondo perché una procedura si inceppa, o perché una cliente se ne va, è già il
+primo passo di ogni cambiamento che regge. La tua comprensione, quando scorre,
+apre la strada a un modo di lavorare rinnovato per tutto il centro.
+
+**NOTA INTERNA — testo aggiornato il 2026-10-06 (nutre già: cicli della tradizione); storico del testo sostituito:**
+> Non è un caso che le persone che ascolti con calma restino spesso le più fedeli al
+> tuo centro nel tempo: capire davvero qualcuno — perché è in ritardo, perché ha
+> sbagliato, perché ha rallentato — è già, di per sé, ciò che costruisce una fiducia
+> che dura oltre il singolo episodio.
 
 ---
 
@@ -280,76 +375,150 @@ centro).
 
 ### Variante 1 — Eccesso non compensato, trasversale (Aria alta in clienti, personale e spese)
 
-**NOTA INTERNA:** Aria alta e uniforme nei 3 ambiti, Terra (compensatore) bassa
-ovunque — nessun tempo di assestamento tra un cambiamento e l'altro.
+**NOTA INTERNA (aggiornata 2026-10-06):** Aria alta e uniforme nei 3 ambiti,
+Metallo (compensatore, cicli della tradizione) basso ovunque — il cambiamento
+non viene mai affiancato da una verifica puntuale di come è andato.
 
 **TESTO PER LA TITOLARE:**
 Ogni imprevisto, per te, è anche una domanda più grande. Una recensione negativa
 non è solo da gestire: è l'occasione per rivedere il protocollo di quel
 trattamento per tutto il centro. Una collaboratrice che salta le procedure ti fa
 chiedere se le procedure vadano rese più chiare per tutte. Un mese di fatturato
-basso ti fa pensare se sia il momento di cambiare qualcosa di strutturale nel modo
-in cui organizzi il centro. Questo sguardo che va oltre il singolo episodio è
-quello che, nel tempo, fa evolvere davvero un centro invece di lasciarlo fermo
+basso ti fa pensare se sia il momento di cambiare qualcosa di strutturale nel
+modo in cui organizzi il centro. Questo sguardo che va oltre il singolo episodio
+è quello che, nel tempo, fa evolvere davvero un centro invece di lasciarlo fermo
 agli stessi schemi da anni. Se però ripercorri gli ultimi cambiamenti che hai
 introdotto — uno dopo l'altro, in tutti e tre gli ambiti — noti che tra un
-ripensamento e il successivo passa sempre poco tempo. Come se il centro fosse
-sempre a metà di un cambiamento quando già ne arriva un altro.
+ripensamento e il successivo c'è raramente un momento in cui controlli, voce per
+voce, se il precedente ha davvero funzionato. Come se il centro fosse sempre a
+metà di un cambiamento quando già ne arriva un altro.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Aria alta e uniforme nei 3 ambiti, Terra (compensatore) bassa
+> ovunque — nessun tempo di assestamento tra un cambiamento e l'altro.
+>
+> *(testo sostituito)*
+> Ogni imprevisto, per te, è anche una domanda più grande. Una recensione negativa
+> non è solo da gestire: è l'occasione per rivedere il protocollo di quel
+> trattamento per tutto il centro. Una collaboratrice che salta le procedure ti fa
+> chiedere se le procedure vadano rese più chiare per tutte. Un mese di fatturato
+> basso ti fa pensare se sia il momento di cambiare qualcosa di strutturale nel modo
+> in cui organizzi il centro. Questo sguardo che va oltre il singolo episodio è
+> quello che, nel tempo, fa evolvere davvero un centro invece di lasciarlo fermo
+> agli stessi schemi da anni. Se però ripercorri gli ultimi cambiamenti che hai
+> introdotto — uno dopo l'altro, in tutti e tre gli ambiti — noti che tra un
+> ripensamento e il successivo passa sempre poco tempo. Come se il centro fosse
+> sempre a metà di un cambiamento quando già ne arriva un altro.
 
 ### Variante 2 — Eccesso non compensato, localizzato (Aria alta su personale e spese, altro registro sulle clienti)
 
-**NOTA INTERNA:** Aria alta su P e S, ambito C mostra Terra alta — il blocco
-(Terra bassa) va letto come specifico dei due ambiti dove Aria domina.
+**NOTA INTERNA (aggiornata 2026-10-06):** Aria alta su P e S, ambito C mostra
+Terra alta — il blocco (Metallo basso) va letto come specifico dei due ambiti
+dove Aria domina.
 
 **TESTO PER LA TITOLARE:**
-Sul personale e sui conti sei quella che rimette in discussione tutto — procedure,
-criteri, organizzazione — appena vedi un segnale che qualcosa si potrebbe fare
-meglio. Con le clienti, invece, il tuo passo cambia: lì tendi a restare sul
-collaudato, quello che hai sempre fatto va bene così. In quei due mondi dove
-rivedi tutto, però, il ripensamento successivo arriva quasi sempre prima che il
-precedente abbia avuto il tempo di mostrare se ha funzionato davvero.
+Sul personale e sui conti sei quella che rimette in discussione tutto —
+procedure, criteri, organizzazione — appena vedi un segnale che qualcosa si
+potrebbe fare meglio. Con le clienti, invece, il tuo passo cambia: lì tendi a
+restare sul collaudato, quello che hai sempre fatto va bene così. In quei due
+mondi dove rivedi tutto, però, il ripensamento successivo arriva quasi sempre
+prima di aver controllato, nel dettaglio, se il precedente ha funzionato
+davvero.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Aria alta su P e S, ambito C mostra Terra alta — il blocco
+> (Terra bassa) va letto come specifico dei due ambiti dove Aria domina.
+>
+> *(testo sostituito)*
+> Sul personale e sui conti sei quella che rimette in discussione tutto — procedure,
+> criteri, organizzazione — appena vedi un segnale che qualcosa si potrebbe fare
+> meglio. Con le clienti, invece, il tuo passo cambia: lì tendi a restare sul
+> collaudato, quello che hai sempre fatto va bene così. In quei due mondi dove
+> rivedi tutto, però, il ripensamento successivo arriva quasi sempre prima che il
+> precedente abbia avuto il tempo di mostrare se ha funzionato davvero.
 
 ### Variante 3 — Carenza non nutrita (Aria bassa, resta il collaudato ovunque)
 
-**NOTA INTERNA:** Aria bassa in tutti e 3 gli ambiti, Fuoco (nutritore) anche
-basso — poca energia/impulso a mettere in discussione ciò che non funziona più.
+**NOTA INTERNA (aggiornata 2026-10-06):** Aria bassa in tutti e 3 gli ambiti,
+Acqua (nutritore, cicli della tradizione) anche bassa — poca comprensione di
+cosa, esattamente, non funziona più, quindi poca urgenza di cambiare.
 
 **TESTO PER LA TITOLARE:**
 Raramente sei tu a rimettere in discussione un sistema intero — un protocollo,
 un'organizzazione, un listino — anche quando qualcosa, nel singolo episodio,
-segnala che potrebbe non funzionare più come prima. Tendi a restare su quello che
-conosci, con una cliente che cambia idea come con una collaboratrice che propone
-qualcosa di nuovo. Quando ripensi a cosa ti servirebbe per sentire davvero
-l'urgenza di cambiare qualcosa di più grande, noti che manca anche un altro
-ingrediente: quella scintilla immediata, quell'energia che ti farebbe dire "basta,
-lo cambio adesso" invece di continuare a rimandare.
+segnala che potrebbe non funzionare più come prima. Tendi a restare su quello
+che conosci, con una cliente che cambia idea come con una collaboratrice che
+propone qualcosa di nuovo. Quando ripensi a cosa ti servirebbe per sentire
+davvero l'urgenza di cambiare qualcosa di più grande, noti che manca anche un
+altro ingrediente: il tempo di fermarti a capire a fondo cosa, esattamente, non
+funziona più — chiedere a chi lavora con te, ascoltare cosa dice una cliente
+prima di andarsene. Senza quella comprensione, il bisogno di cambiare resta
+sfocato, e continui a rimandare.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Aria bassa in tutti e 3 gli ambiti, Fuoco (nutritore) anche
+> basso — poca energia/impulso a mettere in discussione ciò che non funziona più.
+>
+> *(testo sostituito)*
+> Raramente sei tu a rimettere in discussione un sistema intero — un protocollo,
+> un'organizzazione, un listino — anche quando qualcosa, nel singolo episodio,
+> segnala che potrebbe non funzionare più come prima. Tendi a restare su quello che
+> conosci, con una cliente che cambia idea come con una collaboratrice che propone
+> qualcosa di nuovo. Quando ripensi a cosa ti servirebbe per sentire davvero
+> l'urgenza di cambiare qualcosa di più grande, noti che manca anche un altro
+> ingrediente: quella scintilla immediata, quell'energia che ti farebbe dire "basta,
+> lo cambio adesso" invece di continuare a rimandare.
 
 ## B. Applicazione pratica
 
-**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di Aria
-→ carenza del controllore Terra → leva di riequilibrio: il nutritore di Terra,
-cioè Acqua (mai limitare il ripensamento in sé). Le domande sotto orientano
-l'attenzione verso il comportamento-Acqua (fermarsi ad ascoltare/capire prima di
-agire) che nutrirebbe la stabilità (Terra) capace di dare al cambiamento il tempo
-di attecchire.
+**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo; aggiornata
+2026-10-06):** eccesso di Aria → carenza del controllore Metallo → leva di
+riequilibrio: il nutritore di Metallo, cioè Terra (mai limitare il ripensamento
+in sé). Le domande sotto orientano l'attenzione verso il comportamento-Terra
+(costanza, ripetere uguale, portare a termine, base stabile) che nutrirebbe la
+rifinitura e la verifica (Metallo) capaci di dire se un cambiamento ha
+funzionato.
 
 **TESTO PER LA TITOLARE:**
 L'ultimo cambiamento che hai messo in moto nel centro — un protocollo,
-un'organizzazione, un listino — quanto tempo ti sei presa, prima di deciderlo,
-per ascoltare davvero come lo avrebbe vissuto chi lo avrebbe applicato ogni
-giorno? Quando senti che qualcosa va rivisto da capo, cosa arriva prima: la
-comprensione piena di cosa non funziona, o già la spinta a cambiarlo? Se prima
-del prossimo ripensamento ti fermassi a chiedere, con calma, a chi lavora con te
-o a una cliente cosa vede lei che tu non vedi ancora — cosa pensi che
-scopriresti?
+un'organizzazione, un listino — per quanti giorni, di fila, lo hai lasciato
+esattamente uguale prima di decidere se funzionava? C'è qualcosa, nel tuo
+centro, che si ripete identico ogni giorno da molto tempo e regge ancora: cosa
+ti dà, quel punto fermo? Se prima del prossimo ripensamento tenessi ferma una
+cosa per un periodo preciso, portandola a termine fino in fondo, cosa pensi che
+vedresti di quel cambiamento che oggi non fai in tempo a vedere?
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di Aria
+> → carenza del controllore Terra → leva di riequilibrio: il nutritore di Terra,
+> cioè Acqua (mai limitare il ripensamento in sé). Le domande sotto orientano
+> l'attenzione verso il comportamento-Acqua (fermarsi ad ascoltare/capire prima di
+> agire) che nutrirebbe la stabilità (Terra) capace di dare al cambiamento il tempo
+> di attecchire.
+>
+> *(testo sostituito)*
+> L'ultimo cambiamento che hai messo in moto nel centro — un protocollo,
+> un'organizzazione, un listino — quanto tempo ti sei presa, prima di deciderlo,
+> per ascoltare davvero come lo avrebbe vissuto chi lo avrebbe applicato ogni
+> giorno? Quando senti che qualcosa va rivisto da capo, cosa arriva prima: la
+> comprensione piena di cosa non funziona, o già la spinta a cambiarlo? Se prima
+> del prossimo ripensamento ti fermassi a chiedere, con calma, a chi lavora con te
+> o a una cliente cosa vede lei che tu non vedi ancora — cosa pensi che
+> scopriresti?
 
 ### Quello che già fluisce bene
 
-Ogni volta che ti fermi a chiederti perché una procedura non funziona più, o cosa
-sta cambiando nel centro, stai anche costruendo — per te e per chi lavora con te
-— una cura più fine di come sono fatte davvero le cose: le tue domande di sistema
-aprono già la strada a un livello di dettaglio che altrimenti resterebbe
-invisibile.
+Ogni volta che ti chiedi perché una procedura non funziona più, o cosa sta
+cambiando nel centro, accendi anche la voglia di muoverti: per te un'idea nuova
+diventa presto energia per partire. Le tue domande di sistema portano con sé già
+lo slancio per metterle in pratica.
+
+**NOTA INTERNA — testo aggiornato il 2026-10-06 (nutre già: cicli della tradizione); storico del testo sostituito:**
+> Ogni volta che ti fermi a chiederti perché una procedura non funziona più, o cosa
+> sta cambiando nel centro, stai anche costruendo — per te e per chi lavora con te
+> — una cura più fine di come sono fatte davvero le cose: le tue domande di sistema
+> aprono già la strada a un livello di dettaglio che altrimenti resterebbe
+> invisibile.
 
 ---
 
@@ -369,78 +538,151 @@ sempre fatto).
 
 ### Variante 1 — Eccesso non compensato, trasversale (Terra alta in clienti, personale e spese)
 
-**NOTA INTERNA:** Terra alta e uniforme nei 3 ambiti, Metallo (compensatore)
-basso ovunque — la stabilità non viene mai affiancata da una rifinitura/verifica
-periodica di ciò che si tiene fermo.
+**NOTA INTERNA (aggiornata 2026-10-06):** Terra alta e uniforme nei 3 ambiti,
+Aria (compensatore, cicli della tradizione) bassa ovunque — la stabilità non
+viene mai affiancata dal ripensamento di ciò che si tiene fermo.
 
 **TESTO PER LA TITOLARE:**
 C'è un modo di essere titolare che si riconosce da quanto poco, in fondo, ti
 scompone. Una cliente storica che se ne va senza dire niente, un fatturato che
 cala in bassa stagione, una collaboratrice che salta le procedure ma con le
-clienti va benissimo: tu non stravolgi nulla, continui a lavorare come hai sempre
-fatto, con la fiducia che il tempo e la coerenza pagano più di una reazione a
-caldo. Questa stabilità è quello che fa sentire il centro un posto sicuro, per chi
-ci lavora e per chi ci entra come cliente. Se però ripensi a quando è stata
-l'ultima volta che hai riguardato da vicino una di queste abitudini consolidate —
-lo spazio fisso lasciato a una cliente, il margine dato sempre alla stessa
-collaboratrice, il modo in cui affronti ogni bassa stagione — probabilmente fatica
-a venirti in mente. Restano ferme così come sono nate, senza che nessuno le
-riguardi mai da vicino.
+clienti va benissimo: tu non stravolgi nulla, continui a lavorare come hai
+sempre fatto, con la fiducia che il tempo e la coerenza pagano più di una
+reazione a caldo. Questa stabilità è quello che fa sentire il centro un posto
+sicuro, per chi ci lavora e per chi ci entra come cliente. Se però ripensi a
+quando è stata l'ultima volta che hai rimesso in discussione una di queste
+abitudini consolidate — lo spazio fisso lasciato a una cliente, il margine dato
+sempre alla stessa collaboratrice, il modo in cui affronti ogni bassa stagione —
+probabilmente fatica a venirti in mente. Restano ferme così come sono nate,
+senza che nessuno si chieda se esista un modo diverso di farle.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Terra alta e uniforme nei 3 ambiti, Metallo (compensatore)
+> basso ovunque — la stabilità non viene mai affiancata da una rifinitura/verifica
+> periodica di ciò che si tiene fermo.
+>
+> *(testo sostituito)*
+> C'è un modo di essere titolare che si riconosce da quanto poco, in fondo, ti
+> scompone. Una cliente storica che se ne va senza dire niente, un fatturato che
+> cala in bassa stagione, una collaboratrice che salta le procedure ma con le
+> clienti va benissimo: tu non stravolgi nulla, continui a lavorare come hai sempre
+> fatto, con la fiducia che il tempo e la coerenza pagano più di una reazione a
+> caldo. Questa stabilità è quello che fa sentire il centro un posto sicuro, per chi
+> ci lavora e per chi ci entra come cliente. Se però ripensi a quando è stata
+> l'ultima volta che hai riguardato da vicino una di queste abitudini consolidate —
+> lo spazio fisso lasciato a una cliente, il margine dato sempre alla stessa
+> collaboratrice, il modo in cui affronti ogni bassa stagione — probabilmente fatica
+> a venirti in mente. Restano ferme così come sono nate, senza che nessuno le
+> riguardi mai da vicino.
 
 ### Variante 2 — Eccesso non compensato, localizzato (Terra alta su clienti e personale, altro registro sulle spese)
 
-**NOTA INTERNA:** Terra alta su C e P, ambito S mostra Fuoco alto — il blocco
-(Metallo basso) va letto come specifico dei due ambiti dove Terra domina.
+**NOTA INTERNA (aggiornata 2026-10-06):** Terra alta su C e P, ambito S mostra
+Fuoco alto — il blocco (Aria bassa) va letto come specifico dei due ambiti dove
+Terra domina.
 
 **TESTO PER LA TITOLARE:**
 Con le clienti e con lo staff sei un punto fermo: le stesse regole per tutte, lo
-stesso passo, la stessa fiducia nel tempo. Sui soldi, invece, il tuo passo cambia:
-davanti a un'occasione, uno sconto forte, un acquisto scontato in grande
-quantità, ti ritrovi a decidere di getto, spinta dall'entusiasmo del momento. Nei
-due mondi dove resti stabile, però, quella stessa stabilità non viene quasi mai
-riaperta e controllata nel dettaglio — resta un blocco unico, intoccato, anno dopo
-anno.
+stesso passo, la stessa fiducia nel tempo. Sui soldi, invece, il tuo passo
+cambia: davanti a un'occasione, uno sconto forte, un acquisto scontato in grande
+quantità, ti ritrovi a decidere di getto, spinta dall'entusiasmo del momento.
+Nei due mondi dove resti stabile, però, quella stessa stabilità non viene quasi
+mai rimessa in discussione, provata in un modo diverso — resta un blocco unico,
+intoccato, anno dopo anno.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Terra alta su C e P, ambito S mostra Fuoco alto — il blocco
+> (Metallo basso) va letto come specifico dei due ambiti dove Terra domina.
+>
+> *(testo sostituito)*
+> Con le clienti e con lo staff sei un punto fermo: le stesse regole per tutte, lo
+> stesso passo, la stessa fiducia nel tempo. Sui soldi, invece, il tuo passo cambia:
+> davanti a un'occasione, uno sconto forte, un acquisto scontato in grande
+> quantità, ti ritrovi a decidere di getto, spinta dall'entusiasmo del momento. Nei
+> due mondi dove resti stabile, però, quella stessa stabilità non viene quasi mai
+> riaperta e controllata nel dettaglio — resta un blocco unico, intoccato, anno dopo
+> anno.
 
 ### Variante 3 — Carenza non nutrita (Terra bassa, poco si consolida davvero)
 
-**NOTA INTERNA:** Terra bassa in tutti e 3 gli ambiti, Acqua (nutritore) anche
-bassa — poca pausa di comprensione che darebbe a una routine il tempo di
-formarsi e radicarsi.
+**NOTA INTERNA (aggiornata 2026-10-06):** Terra bassa in tutti e 3 gli ambiti,
+Fuoco (nutritore, cicli della tradizione) anche basso — poco slancio iniziale
+con cui una prassi parte e viene portata a termine la prima volta.
 
 **TESTO PER LA TITOLARE:**
 Raramente qualcosa, nel tuo centro, resta uguale abbastanza a lungo da diventare
 "il modo in cui si fa sempre" — con le clienti, con lo staff, con i conti, ogni
 situazione tende a essere affrontata quasi da capo, più che appoggiandosi a una
 prassi già rodata. Quando ripensi a cosa ti servirebbe per lasciare che qualcosa
-si consolidi davvero, noti che manca anche un altro passaggio: il tempo che ti
-prendi, prima, per capire a fondo una situazione. Senza quella pausa di
-comprensione, ogni abitudine parte sempre un po' più fragile, prima ancora di
+si consolidi davvero, noti che manca anche un altro passaggio: lo scatto con cui
+una cosa parte, adesso, e viene portata a termine la prima volta. Senza quella
+spinta iniziale, ogni abitudine resta una buona intenzione, prima ancora di
 avere la possibilità di mettere radici.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Terra bassa in tutti e 3 gli ambiti, Acqua (nutritore) anche
+> bassa — poca pausa di comprensione che darebbe a una routine il tempo di
+> formarsi e radicarsi.
+>
+> *(testo sostituito)*
+> Raramente qualcosa, nel tuo centro, resta uguale abbastanza a lungo da diventare
+> "il modo in cui si fa sempre" — con le clienti, con lo staff, con i conti, ogni
+> situazione tende a essere affrontata quasi da capo, più che appoggiandosi a una
+> prassi già rodata. Quando ripensi a cosa ti servirebbe per lasciare che qualcosa
+> si consolidi davvero, noti che manca anche un altro passaggio: il tempo che ti
+> prendi, prima, per capire a fondo una situazione. Senza quella pausa di
+> comprensione, ogni abitudine parte sempre un po' più fragile, prima ancora di
+> avere la possibilità di mettere radici.
 
 ## B. Applicazione pratica
 
-**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di Terra
-→ carenza del controllore Metallo → leva di riequilibrio: il nutritore di
-Metallo, cioè Aria (mai limitare la stabilità in sé). Le domande sotto orientano
-l'attenzione verso il comportamento-Aria (rimettere in discussione l'intero
-sistema, non solo un dettaglio) che nutrirebbe la rifinitura/lo standard
-(Metallo) capace di aggiornare ciò che resta fermo troppo a lungo.
+**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo; aggiornata
+2026-10-06):** eccesso di Terra → carenza del controllore Aria → leva di
+riequilibrio: il nutritore di Aria, cioè Acqua (mai limitare la stabilità in
+sé). Le domande sotto orientano l'attenzione verso il comportamento-Acqua
+(fermarsi, osservare, ascoltare, chiedere senza decidere) che nutrirebbe la
+capacità di rimettere in discussione (Aria) ciò che resta fermo troppo a lungo.
 
 **TESTO PER LA TITOLARE:**
-Da quanto tempo un'abitudine del centro — uno spazio fisso lasciato a una
-cliente, un margine sempre dato alla stessa persona, il modo in cui affronti ogni
-bassa stagione — non viene ripensata da capo nell'intera logica che c'è dietro,
-non solo controllata nel singolo dettaglio? Se ti chiedessi se l'intera
-organizzazione dietro quella prassi meriti ancora di restare così com'è, cosa
-pensi che scopriresti a monte? Cosa ti trattiene di solito dal mettere in
-discussione non il singolo passaggio, ma il sistema intero che lo regge?
+L'ultima volta che un'abitudine del centro è andata avanti "come sempre" — uno
+spazio fisso lasciato a una cliente, un margine sempre dato alla stessa persona,
+il modo in cui affronti ogni bassa stagione — quanto tempo ti sei presa per
+osservare, senza decidere nulla, cosa stava succedendo davvero intorno a
+quell'abitudine? Se chiedessi con calma a una cliente o a una collaboratrice
+come la vive lei, cosa pensi che ti direbbe che oggi non sai? Cosa noteresti,
+dopo cinque minuti passati solo ad ascoltare, di una prassi che dai per
+scontata?
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di Terra
+> → carenza del controllore Metallo → leva di riequilibrio: il nutritore di
+> Metallo, cioè Aria (mai limitare la stabilità in sé). Le domande sotto orientano
+> l'attenzione verso il comportamento-Aria (rimettere in discussione l'intero
+> sistema, non solo un dettaglio) che nutrirebbe la rifinitura/lo standard
+> (Metallo) capace di aggiornare ciò che resta fermo troppo a lungo.
+>
+> *(testo sostituito)*
+> Da quanto tempo un'abitudine del centro — uno spazio fisso lasciato a una
+> cliente, un margine sempre dato alla stessa persona, il modo in cui affronti ogni
+> bassa stagione — non viene ripensata da capo nell'intera logica che c'è dietro,
+> non solo controllata nel singolo dettaglio? Se ti chiedessi se l'intera
+> organizzazione dietro quella prassi meriti ancora di restare così com'è, cosa
+> pensi che scopriresti a monte? Cosa ti trattiene di solito dal mettere in
+> discussione non il singolo passaggio, ma il sistema intero che lo regge?
 
 ### Quello che già fluisce bene
 
-La solidità che costruisci ogni giorno è anche quello che, quando arriva il
-momento di decidere in fretta qualcosa di importante, ti permette di farlo senza
-sentire il terreno tremare sotto i piedi: la tua base ferma è ciò che rende
-possibili, e sicuri, anche gli scatti più immediati.
+La solidità che costruisci ogni giorno è anche ciò che dà peso a ogni dettaglio
+che curi: quando una cosa viene fatta sempre allo stesso modo, ogni scarto si
+nota subito, e ogni standard che ti dai ha un terreno su cui reggersi. La tua
+base ferma è ciò che rende possibili, e credibili, anche le rifiniture più
+precise.
+
+**NOTA INTERNA — testo aggiornato il 2026-10-06 (nutre già: cicli della tradizione); storico del testo sostituito:**
+> La solidità che costruisci ogni giorno è anche quello che, quando arriva il
+> momento di decidere in fretta qualcosa di importante, ti permette di farlo senza
+> sentire il terreno tremare sotto i piedi: la tua base ferma è ciò che rende
+> possibili, e sicuri, anche gli scatti più immediati.
 
 ---
 
@@ -493,38 +735,75 @@ prima c'è sempre un altro giro di controllo.
 
 ### Variante 3 — Carenza non nutrita (Metallo basso, gli standard scivolano senza che se ne accorga subito)
 
-**NOTA INTERNA:** Metallo basso in tutti e 3 gli ambiti, Aria (nutritore) anche
-bassa — poco ripensamento di sistema che porterebbe naturalmente a notare dove
-un dettaglio non regge più.
+**NOTA INTERNA (aggiornata 2026-10-06):** Metallo basso in tutti e 3 gli ambiti,
+Terra (nutritore, cicli della tradizione) anche bassa — poca routine stabile,
+cioè nessun appuntamento fisso e uguale in cui gli scarti piccoli possano
+emergere.
 
 **TESTO PER LA TITOLARE:**
 Capita che uno standard si abbassi un po' — un prodotto che non rende più come
 prima, un orario che scivola di qualche minuto, un prezzo che non copre più il
 margine di una volta — e che te ne accorga solo quando qualcuno te lo fa notare,
-non prima. Non è disattenzione: è che raramente ti fermi a controllare il singolo
-dettaglio finché tutto sembra reggere nell'insieme. Quando ripensi a cosa ti
-aiuterebbe a notare prima questi scarti, noti che manca anche un altro
-passaggio: la spinta a rivedere ogni tanto l'intero sistema — un'organizzazione,
-un listino, un protocollo — che è anche il momento in cui, naturalmente, i
-dettagli fuori posto vengono a galla da soli.
+non prima. Non è disattenzione: è che raramente ti fermi a controllare il
+singolo dettaglio finché tutto sembra reggere nell'insieme. Quando ripensi a
+cosa ti aiuterebbe a notare prima questi scarti, noti che manca anche un altro
+passaggio: un momento fisso, sempre uguale, in cui riguardare come stanno
+andando le cose — lo stesso giorno, lo stesso modo, ogni volta. Senza
+quell'appuntamento che torna, gli scarti piccoli si accumulano senza che nulla
+li faccia emergere.
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA:** Metallo basso in tutti e 3 gli ambiti, Aria (nutritore) anche
+> bassa — poco ripensamento di sistema che porterebbe naturalmente a notare dove
+> un dettaglio non regge più.
+>
+> *(testo sostituito)*
+> Capita che uno standard si abbassi un po' — un prodotto che non rende più come
+> prima, un orario che scivola di qualche minuto, un prezzo che non copre più il
+> margine di una volta — e che te ne accorga solo quando qualcuno te lo fa notare,
+> non prima. Non è disattenzione: è che raramente ti fermi a controllare il singolo
+> dettaglio finché tutto sembra reggere nell'insieme. Quando ripensi a cosa ti
+> aiuterebbe a notare prima questi scarti, noti che manca anche un altro
+> passaggio: la spinta a rivedere ogni tanto l'intero sistema — un'organizzazione,
+> un listino, un protocollo — che è anche il momento in cui, naturalmente, i
+> dettagli fuori posto vengono a galla da soli.
 
 ## B. Applicazione pratica
 
-**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di
-Metallo → carenza del controllore Fuoco → leva di riequilibrio: il nutritore di
-Fuoco, cioè Terra (mai limitare la cura del dettaglio in sé). Le domande sotto
-orientano l'attenzione verso il comportamento-Terra (fiducia nella base solida
-già costruita nel tempo) che nutrirebbe lo scatto immediato (Fuoco) capace di
-chiudere una decisione senza un altro giro di controllo.
+**NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo; aggiornata
+2026-10-06):** eccesso di Metallo → carenza del controllore Fuoco → leva di
+riequilibrio: il nutritore di Fuoco, cioè Aria (mai limitare la cura del
+dettaglio in sé). Le domande sotto orientano l'attenzione verso il
+comportamento-Aria (rimettere in discussione un criterio o un modo di fare,
+provare una cosa nuova e guardarla solo dopo) che nutrirebbe lo scatto immediato
+(Fuoco) capace di chiudere una decisione senza un altro giro di controllo.
+Confine Metallo/Aria: qui l'Aria è il criterio con cui si decide, non il singolo
+dettaglio.
 
 **TESTO PER LA TITOLARE:**
 L'ultima volta che hai rimandato una decisione per controllare ancora un
-dettaglio, quanto ti saresti sentita sicura a deciderla comunque, contando solo
-sulla solidità di ciò che nel centro hai già costruito nel tempo? C'è una base,
-un'abitudine, un rapporto così consolidato che, a pensarci bene, potrebbe reggere
-anche una scelta presa d'istinto, senza un altro passaggio di verifica? Cosa
-cambierebbe se ti fidassi un po' di più di quella stabilità, prima di rimandare
-ancora?
+dettaglio, hai pensato anche al criterio con cui decidi — i passaggi che ti sei
+data, le regole che ti sei fissata? C'è una regola tua che applichi da tempo
+senza chiederti se sia ancora quella giusta? Se per due settimane ne provassi
+una versione diversa, guardando solo dopo cosa è successo, cosa ti aspetteresti
+di scoprire?
+
+**NOTA INTERNA — storico, sostituito il 2026-10-06 (non in vigore, non da assemblare):**
+> **NOTA INTERNA (meccanismo a 3 nodi, mai esplicito nel testo):** eccesso di
+> Metallo → carenza del controllore Fuoco → leva di riequilibrio: il nutritore di
+> Fuoco, cioè Terra (mai limitare la cura del dettaglio in sé). Le domande sotto
+> orientano l'attenzione verso il comportamento-Terra (fiducia nella base solida
+> già costruita nel tempo) che nutrirebbe lo scatto immediato (Fuoco) capace di
+> chiudere una decisione senza un altro giro di controllo.
+>
+> *(testo sostituito)*
+> L'ultima volta che hai rimandato una decisione per controllare ancora un
+> dettaglio, quanto ti saresti sentita sicura a deciderla comunque, contando solo
+> sulla solidità di ciò che nel centro hai già costruito nel tempo? C'è una base,
+> un'abitudine, un rapporto così consolidato che, a pensarci bene, potrebbe reggere
+> anche una scelta presa d'istinto, senza un altro passaggio di verifica? Cosa
+> cambierebbe se ti fidassi un po' di più di quella stabilità, prima di rimandare
+> ancora?
 
 ### Quello che già fluisce bene
 
@@ -894,3 +1173,33 @@ verifica Elena (26/08/2026)` e una `## Changelog quinta passata — Federica
 etichetta e mantenere l'ordine cronologico leggibile, ho numerato questa come
 **sesta passata** (prossima libera in sequenza). Segnalo la cosa qui perché
 la si confermi o corregga se la numerazione voluta era un'altra.
+
+## Changelog ottava passata — Federica (2026-10-06): aggiornamento ai cicli della tradizione (Aria = Legno)
+
+Istruzione di Mason (06/10/2026, decisioni raccolte in `memory/generale.md`): cicli della tradizione, Aria = Legno confermato. Aggiornato secondo la lista punto per punto della sezione 4.2 di `memory/riferimenti/elementi-personalita/mappa-cicli-proposta.md`. Regola seguita: nel testo per la titolare nessun nome di elemento né di ciclo; cambiano SOLO note interne, tabella dei cicli e i testi di blocco/applicazione pratica che dipendevano dai cicli. Ogni testo sostituito è conservato sotto il nuovo, in una riga "**NOTA INTERNA — storico, sostituito il 2026-10-06**" seguita da una citazione con ">": non è testo da assemblare. Il generatore `scripts/gen-report-content.mjs` si ferma al primo "boundary" e prende il primo blocco TESTO, quindi lo storico non entra in `reportContent.js` (verificato lanciando una copia del generatore su un file temporaneo: rispetto al `reportContent.js` attuale differiscono solo i 18 blocchi elencati sotto, più la CTA finale, che differiva già prima di questa passata). `reportContent.js` NON è stato toccato né rigenerato: resta a Davide.
+
+**Modifiche, in ordine di file**
+1. **Tabella dei cicli (inizio file):** sostituita con i due cicli nuovi (nutrimento Aria→Fuoco→Terra→Metallo→Acqua→Aria; controllo Aria→Terra→Acqua→Fuoco→Metallo→Aria) e colonna aggiunta "Leva di riequilibrio". Nota sul vecchio dubbio delle coppie dedotte: riscritta. Tabella e nota del 25/08 (stella a cinque punte) conservate come storico.
+2. **Fuoco:** Variante 3 (nutritore ora Aria, non più Terra): nota e testo; il testo ora dice che manca un'idea nuova, un cambio di direzione da provare, non più "il terreno solido / la legna pronta". "Quello che già fluisce bene" (ora nutre la Terra): riscritto. Varianti 1 e 2 e Applicazione pratica invariate (controllore Acqua, leva Metallo: coincidono con i cicli nuovi).
+3. **Acqua:** Varianti 1 e 2 (controllore ora Terra, non più Aria): note e testi; la comprensione che non resta ora "non diventa un'abitudine / una prassi", non più "una regola o un criterio". Applicazione pratica: nota riscritta (carenza Terra, leva Fuoco), testo delle domande invariato e ricontrollato. "Già fluisce bene" (ora nutre l'Aria): riscritto. Variante 3 invariata (nutritore Metallo).
+4. **Aria:** Varianti 1 e 2 (controllore ora Metallo, non più Terra): note e testi; ora manca la verifica puntuale di come è andato il cambiamento, non più "il tempo di assestarsi". Variante 3 (nutritore ora Acqua, non più Fuoco): nota e testo; ora manca il tempo di capire a fondo cosa non funziona, non più "la scintilla". Applicazione pratica (carenza Metallo, leva Terra; era leva Acqua): nota e domande riscritte su costanza e portare a termine. "Già fluisce bene" (ora nutre il Fuoco): riscritto.
+5. **Terra:** Varianti 1 e 2 (controllore ora Aria, non più Metallo): note e testi; ora manca il rimettere in discussione, non più "riguardare da vicino". Variante 3 (nutritore ora Fuoco, non più Acqua): nota e testo; ora manca lo scatto con cui una cosa parte e viene portata a termine. Applicazione pratica (carenza Aria, leva Acqua; era leva Aria): nota e domande riscritte su osservare e ascoltare senza decidere. "Già fluisce bene" (ora nutre il Metallo): riscritto.
+6. **Metallo:** Variante 3 (nutritore ora Terra, non più Aria): nota e testo; ora manca un momento fisso e uguale in cui riguardare le cose. Applicazione pratica (carenza Fuoco, leva Aria; era leva Terra): nota e domande riscritte su rimettere in discussione un criterio e provare una versione diversa. Varianti 1 e 2 e "già fluisce bene" (nutre sempre l'Acqua) invariati.
+7. **Parti 1, 4 e 5:** non toccate. Riletta per intero la ricerca dei riferimenti ai cicli: nessuno nei testi (la riga ~822 citata dalla mappa è la nota 2 sulla differenza per ambito, non riguarda i cicli).
+8. **Non toccati:** `banco-domande-profiling.md`, `reportContent.js`, codice, note per il Coordinatore e changelog precedenti (storico).
+9. Controlli fatti: (a) ricerca dei nomi di elemento, "ciclo", "metodo", "dovresti", "devi" in tutti i blocchi TESTO (27 blocchi): nessuna occorrenza (le sole etichette di elemento sono i tag interni di Parte 4, già presenti prima); (b) controllore e nutritore di ogni nota riletti uno a uno contro le tabelle: Fuoco→Acqua→Metallo, Acqua→Terra→Fuoco, Aria→Metallo→Terra, Terra→Aria→Acqua, Metallo→Fuoco→Aria; (c) nessuna domanda retorica che affermi la risposta, nessun imperativo: le domande restano condizionali o aperte.
+
+**Dove non sono sicura**
+- **Terra, "già fluisce" (nutre il Metallo) e Metallo, applicazione (leva Aria):** il legame Terra→Metallo regge solo per via della costanza che rende visibili gli scarti, un filo più sottile degli altri; l'applicazione Metallo usa l'Aria come "rivedere il criterio" e il confine con "il singolo dettaglio" (Metallo) è sottile.
+- **Aria, applicazione (leva Terra):** "per quanti giorni lo hai lasciato esattamente uguale" può sembrare un invito a non cambiare. Resta una domanda, ma va riletta con attenzione.
+- **Acqua V1/V2 e Terra V1/V2:** ho tolto "regola/criterio scritto" (ora è Metallo/Aria) e messo "abitudine/prassi" (Terra) e "rimettere in discussione" (Aria). Il confine tra "prassi" e "regola" resta sfumato.
+- **Confusione Fuoco/Legno** (mappa 1.2, riserva 1): le opzioni del banco con tono diretto o arrabbiato (C1-B, P1-A, P3-B) sono Fuoco; non toccate, ma da riguardare.
+- **Parte 4:** la frase dell'elemento Aria ("lo stesso soffio che rimette in discussione le cose vecchie è quello che apre la strada a quelle nuove") regge ancora; ora Aria nutre il Fuoco e non il Metallo, ma nessun ciclo compare nel testo: non l'ho cambiata.
+
+**Per il controllo del Coordinatore (punti che Elena avrebbe riletto; ora nessuno li riguarda)**
+1. Assenza totale dei nomi di elemento e di ciclo nei nuovi TESTO (sezioni A e B e "già fluisce" di Fuoco, Acqua, Aria, Terra, Metallo).
+2. Assenza di consigli diretti e domande retoriche nelle tre applicazioni riscritte (Aria, Terra, Metallo) e nelle due ritoccate (Acqua, Fuoco).
+3. Confine Metallo/Aria nella nuova applicazione Metallo e nelle nuove Varianti 1/2 di Aria (verifica puntuale contro ripensamento di sistema).
+4. Voce: soggetto esplicito, nessun "voi", nessun "vista/e", al massimo un "non X ma Y" per blocco (nei nuovi testi non ne ho messi; da ricontare).
+5. Coerenza tra le note interne aggiornate e le tabelle (inizio file e `beautyx-report-profiling-note.md`).
+6. Rigenerare `reportContent.js` con `node scripts/gen-report-content.mjs` (Davide) dopo l'approvazione e ricontrollare le 18 differenze. I report già generati con i cicli vecchi non cambiano da soli (decisione di Mason ancora da registrare, mappa 5.2).
